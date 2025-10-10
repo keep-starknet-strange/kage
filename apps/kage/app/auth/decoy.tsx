@@ -1,12 +1,34 @@
-import { Text, YStack } from 'tamagui';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'styled-components/native';
 
 export default function DecoyScreen() {
+  const theme = useTheme();
+
   return (
-    <YStack flex={1} alignItems="center" justifyContent="center" backgroundColor="$background">
-      <Text fontSize={28} fontWeight="600">Decoy Wallet</Text>
-      <Text color="$colorMuted" textAlign="center" paddingHorizontal="$xl" marginTop="$md">
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+      <Text style={[styles.title, { color: theme.colors.text }]}>Decoy Wallet</Text>
+      <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
         Decoy wallet configuration placeholder.
       </Text>
-    </YStack>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+  },
+});

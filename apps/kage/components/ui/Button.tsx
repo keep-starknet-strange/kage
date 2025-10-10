@@ -1,50 +1,96 @@
-import { Button as TamaguiButton, ButtonProps, styled } from 'tamagui';
+import { ReactNode } from 'react';
+import {
+  GestureResponderEvent,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  ViewStyle,
+} from 'react-native';
+import { useTheme } from 'styled-components/native';
 
 import { vibrateSelection } from '../../utils/haptics';
 
 export type KageButtonVariant = 'primary' | 'secondary' | 'ghost';
 
-export interface KageButtonProps extends Omit<ButtonProps, 'variant'> {
+export interface KageButtonProps extends Omit<TouchableOpacityProps, 'onPress'> {
+  children: ReactNode;
   variant?: KageButtonVariant;
+  onPress?: (event: GestureResponderEvent) => void;
 }
 
-const BaseButton = styled(TamaguiButton, {
-  height: 52,
-  borderRadius: '$lg',
-  fontFamily: 'Inter_600SemiBold',
-  fontSize: 17,
-  letterSpacing: 0,
-  pressStyle: {
-    scale: 0.98,
-  },
-});
+export const Button = ({
+  children,
+  variant = 'primary',
+  onPress,
+  disabled,
+  style,
+  ...touchableProps
+}: KageButtonProps) => {
+  const theme = useTheme();
 
-const variantStyles: Record<KageButtonVariant, Partial<ButtonProps>> = {
-  primary: {
-    backgroundColor: '$accent',
-    color: '$background',
-  },
-  secondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '$borderStrong',
-    color: '$color',
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    color: '$color',
-    hoverStyle: { backgroundColor: '$glass' },
-    pressStyle: { backgroundColor: '$glass', scale: 0.98 },
-  },
-};
+  const containerStyle: StyleProp<ViewStyle> = [
+    styles.base,
+    variant === 'primary' && {
+      backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accent,
+    },
+    variant === 'secondary' && {
+      backgroundColor: 'transparent',
+      borderColor: theme.colors.borderStrong,
+      borderWidth: 1.5,
+    },
+    variant === 'ghost' && {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+    },
+    disabled && styles.disabled,
+    style,
+  ];
 
-export const Button = ({ variant = 'primary', onPress, ...props }: KageButtonProps) => {
-  const variantProps = variantStyles[variant];
+  const labelStyle: StyleProp<TextStyle> = [
+    styles.label,
+    {
+      color: variant === 'primary' ? theme.colors.background : theme.colors.text,
+    },
+  ];
 
-  const handlePress: ButtonProps['onPress'] = (event) => {
+  const handlePress = (event: GestureResponderEvent) => {
+    if (disabled) return;
     vibrateSelection();
     onPress?.(event);
   };
 
-  return <BaseButton {...variantProps} {...props} onPress={handlePress} />;
+  return (
+    <TouchableOpacity
+      activeOpacity={0.86}
+      style={containerStyle}
+      onPress={handlePress}
+      disabled={disabled}
+      {...touchableProps}
+    >
+      {typeof children === 'string' ? <Text style={labelStyle}>{children}</Text> : children}
+    </TouchableOpacity>
+  );
 };
+
+const styles = StyleSheet.create({
+  base: {
+    height: 52,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0,
+  },
+  label: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 17,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+});

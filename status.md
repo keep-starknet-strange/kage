@@ -13,4 +13,5 @@
 - Implemented Receive screen with rotating shielded IDs and QR sharing.
 - Added Swap flow with token toggles, rate preview, and mocked execution pipeline.
 - Fixed Expo bundler by aliasing babel-plugin-tamagui dependency.
+- Replaced Tamagui with styled-components theme system; refactored UI screens and components accordingly.
 

@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowsLeftRight } from 'phosphor-react-native';
-import { Text, XStack, YStack, Switch } from 'tamagui';
+import { useTheme } from 'styled-components/native';
 
 import { Keypad, KeypadValue } from '../../components/composables/Keypad';
 import { Button } from '../../components/ui/Button';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { Card } from '../../components/ui/Card';
-import { useWalletStore } from '../../stores/useWalletStore';
 import { usePrivacyStore } from '../../stores/usePrivacyStore';
+import { useWalletStore } from '../../stores/useWalletStore';
 import { formatCurrency } from '../../utils/format';
 import { vibrateSuccess, vibrateWarning } from '../../utils/haptics';
 
@@ -25,6 +25,7 @@ const KEYPAD_LAYOUT: KeypadValue[][] = [
 ];
 
 export default function SwapScreen() {
+  const theme = useTheme();
   const router = useRouter();
   const balances = useWalletStore((state) => state.balances);
   const swap = useWalletStore((state) => state.swap);
@@ -105,15 +106,13 @@ export default function SwapScreen() {
   };
 
   return (
-    <YStack flex={1} padding="$lg" gap="$lg" backgroundColor="$background">
-      <Text fontSize={28} fontFamily="Inter_600SemiBold">
-        Swap assets
-      </Text>
-      <Card gap="$md">
-        <YStack gap="$sm">
-          <Text color="$colorSecondary">From</Text>
-          <XStack gap="$sm">
-            {TOKENS.map((token) => (
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={[styles.title, { color: theme.colors.text }]}>Swap assets</Text>
+        <Card style={styles.swapCard}>
+          <Text style={[styles.caption, { color: theme.colors.textSecondary }]}>From</Text>
+          <View style={styles.tokenRow}>
+            {TOKENS.map((token, index) => (
               <Button
                 key={token.symbol}
                 variant={token.symbol === fromToken ? 'primary' : 'secondary'}
@@ -121,70 +120,150 @@ export default function SwapScreen() {
                   setFromToken(token.symbol);
                   setToToken(token.symbol === 'USDC' ? 'BTC' : 'USDC');
                 }}
+                style={[styles.tokenButton, { marginRight: index === TOKENS.length - 1 ? 0 : 12 }]}
               >
                 {token.label}
               </Button>
             ))}
-          </XStack>
-          <Text fontSize={36} fontFamily="Inter_700Bold">{amount || '0'}</Text>
-          <Text fontSize={13} color="$colorMuted">
-            Shielded balance: {(fromBalance?.shieldedAmount ?? 0).toFixed(2)} {fromToken}
+          </View>
+          <Text style={[styles.amount, { color: theme.colors.text }]}>{amount || '0'}</Text>
+          <Text style={[styles.caption, { color: theme.colors.textMuted }]}>Shielded balance: {(fromBalance?.shieldedAmount ?? 0).toFixed(2)} {fromToken}</Text>
+          <View style={styles.switchRow}>
+            <Text style={[styles.switchLabel, { color: theme.colors.textSecondary }]}>Private routing</Text>
+            <Switch
+              value={privateMode}
+              onValueChange={(val) => setPrivateMode(val)}
+              thumbColor={privateMode ? theme.colors.accent : '#FFFFFF'}
+              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+            />
+          </View>
+        </Card>
+
+        <Card style={styles.previewCard}>
+          <Text style={[styles.caption, { color: theme.colors.textSecondary }]}>To</Text>
+          <Text style={[styles.previewValue, { color: theme.colors.text }]}>
+            {swapPreview.output.toFixed(6)} {toToken}
           </Text>
-        </YStack>
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text color="$colorSecondary">Private routing</Text>
-          <Switch size="$3" checked={privateMode} onCheckedChange={(val) => setPrivateMode(!!val)}>
-            <Switch.Thumb backgroundColor="$accent" />
-          </Switch>
-        </XStack>
-      </Card>
+          <Text style={[styles.caption, { color: theme.colors.textMuted }]}>Rate ~ {swapPreview.rate} {toToken}/{fromToken}</Text>
+        </Card>
 
-      <Card gap="$sm">
-        <Text color="$colorSecondary">To</Text>
-        <Text fontSize={24} fontFamily="Inter_700Bold">
-          {swapPreview.output.toFixed(6)} {toToken}
-        </Text>
-        <Text fontSize={13} color="$colorMuted">
-          Rate ~ {swapPreview.rate} {toToken}/{fromToken}
-        </Text>
-      </Card>
+        {error ? <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text> : null}
 
-      {error ? (
-        <Text color="$status.error" fontSize={13}>
-          {error}
-        </Text>
-      ) : null}
+        <View style={styles.keypadWrapper}>
+          <Keypad layout={KEYPAD_LAYOUT} onPress={handleKeypad} />
+        </View>
 
-      <Keypad
-        layout={KEYPAD_LAYOUT}
-        onPress={handleKeypad}
-      />
-
-      <Button onPress={handleReview} disabled={loading}>
-        Review swap
-      </Button>
+        <Button onPress={handleReview} disabled={loading} style={styles.primaryButton}>
+          Review swap
+        </Button>
+      </ScrollView>
 
       <BottomSheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <YStack gap="$md">
-          <Text fontSize={20} fontFamily="Inter_600SemiBold">
-            Confirm swap
-          </Text>
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">From</Text>
-            <Text>{amount || '0'} {fromToken}</Text>
-          </YStack>
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">To</Text>
-            <Text>{swapPreview.output.toFixed(6)} {toToken}</Text>
-          </YStack>
-          <Text fontSize={13} color="$colorMuted">
-            Includes mocked routing through shielded pools.
-          </Text>
+        <View style={styles.sheetContent}>
+          <Text style={[styles.sheetTitle, { color: theme.colors.text }]}>Confirm swap</Text>
+          <View style={styles.sheetRow}>
+            <Text style={[styles.sheetLabel, { color: theme.colors.textSecondary }]}>From</Text>
+            <Text style={[styles.sheetValue, { color: theme.colors.text }]}>
+              {amount || '0'} {fromToken}
+            </Text>
+          </View>
+          <View style={styles.sheetRow}>
+            <Text style={[styles.sheetLabel, { color: theme.colors.textSecondary }]}>To</Text>
+            <Text style={[styles.sheetValue, { color: theme.colors.text }]}>
+              {swapPreview.output.toFixed(6)} {toToken}
+            </Text>
+          </View>
+          <Text style={[styles.sheetHelper, { color: theme.colors.textMuted }]}>Includes mocked routing through shielded pools.</Text>
           <Button onPress={handleSwap} disabled={loading}>
             {loading ? 'Swapping…' : 'Confirm swap'}
           </Button>
-        </YStack>
+        </View>
       </BottomSheet>
-    </YStack>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  content: {
+    padding: 24,
+    paddingBottom: 160,
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 16,
+  },
+  swapCard: {
+    marginBottom: 24,
+  },
+  caption: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    marginBottom: 8,
+  },
+  tokenRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  tokenButton: {},
+  amount: {
+    fontSize: 36,
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 8,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  switchLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  previewCard: {
+    marginBottom: 24,
+  },
+  previewValue: {
+    fontSize: 24,
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 6,
+  },
+  error: {
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    marginBottom: 16,
+  },
+  keypadWrapper: {
+    marginBottom: 24,
+  },
+  primaryButton: {
+    marginBottom: 24,
+  },
+  sheetContent: {},
+  sheetTitle: {
+    fontSize: 20,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 12,
+  },
+  sheetRow: {
+    marginBottom: 8,
+  },
+  sheetLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+  },
+  sheetValue: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: 2,
+  },
+  sheetHelper: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    marginVertical: 12,
+  },
+});

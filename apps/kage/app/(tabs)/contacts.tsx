@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
-import { ScrollView, Text, XStack, YStack } from 'tamagui';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'styled-components/native';
 
+import { Card } from '../../components/ui/Card';
 import { useWalletStore } from '../../stores/useWalletStore';
 import { maskAddress } from '../../utils/format';
 
 export default function ContactsScreen() {
+  const theme = useTheme();
   const { contacts, bootstrap } = useWalletStore((state) => ({
     contacts: state.contacts,
     bootstrap: state.bootstrap,
@@ -17,34 +20,55 @@ export default function ContactsScreen() {
   }, [contacts.length, bootstrap]);
 
   return (
-    <YStack flex={1} backgroundColor="$background">
-      <ScrollView contentContainerStyle={{ padding: 24, gap: 12 }}>
-        <Text fontSize={20} fontWeight="600">
-          Contacts
-        </Text>
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Contacts</Text>
         {contacts.map((contact) => (
-          <XStack
-            key={contact.id}
-            justifyContent="space-between"
-            alignItems="center"
-            padding="$md"
-            borderRadius="$md"
-            backgroundColor="$surfaceElevated"
-          >
-            <YStack>
-              <Text fontSize={16} fontWeight="600">
-                {contact.name}
-              </Text>
-              <Text fontSize={13} color="$colorMuted">
-                {contact.alias}
-              </Text>
-            </YStack>
-            <Text fontFamily="JetBrainsMono_500Medium" fontSize={12} color="$colorSecondary">
+          <Card key={contact.id} style={styles.card}>
+            <View>
+              <Text style={[styles.contactName, { color: theme.colors.text }]}>{contact.name}</Text>
+              <Text style={[styles.contactAlias, { color: theme.colors.textMuted }]}>{contact.alias}</Text>
+            </View>
+            <Text style={[styles.contactAddress, { color: theme.colors.textSecondary }]}>
               {maskAddress(contact.address)}
             </Text>
-          </XStack>
+          </Card>
         ))}
       </ScrollView>
-    </YStack>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  content: {
+    padding: 24,
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 16,
+  },
+  card: {
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  contactName: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  contactAlias: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 4,
+  },
+  contactAddress: {
+    fontSize: 12,
+    fontFamily: 'JetBrainsMono_500Medium',
+    maxWidth: '50%',
+    textAlign: 'right',
+  },
+});

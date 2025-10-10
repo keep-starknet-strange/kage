@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Backspace } from 'phosphor-react-native';
-import { Text, XStack, YStack, Switch } from 'tamagui';
+import { useTheme } from 'styled-components/native';
 
 import { AssociationChips } from '../../components/composables/AssociationChips';
 import { Keypad, KeypadValue } from '../../components/composables/Keypad';
@@ -11,8 +12,8 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { ASSOCIATION_PRESETS } from '../../domain/constants';
 import { AssocSet } from '../../domain/models';
-import { useWalletStore } from '../../stores/useWalletStore';
 import { usePrivacyStore } from '../../stores/usePrivacyStore';
+import { useWalletStore } from '../../stores/useWalletStore';
 import { formatCurrency, maskAddress } from '../../utils/format';
 import { vibrateSuccess, vibrateWarning } from '../../utils/haptics';
 
@@ -24,6 +25,7 @@ const KEYPAD_LAYOUT: KeypadValue[][] = [
 ];
 
 export default function SendScreen() {
+  const theme = useTheme();
   const router = useRouter();
   const balances = useWalletStore((state) => state.balances);
   const send = useWalletStore((state) => state.send);
@@ -40,6 +42,10 @@ export default function SendScreen() {
   const feeEstimated = useMemo(() => 0.0005 * selectedPreset.feeModifier, [selectedPreset.feeModifier]);
   const balanceUSDC = balances.find((balance) => balance.currency === 'USDC');
 
+  const formattedAmount = amount || '0';
+  const numericAmount = Number(formattedAmount);
+  const primaryDisabled = !address || numericAmount <= 0 || loading;
+
   const handleKeypad = (value: KeypadValue) => {
     if (value === 'back') {
       setAmount((prev) => prev.slice(0, -1));
@@ -53,10 +59,6 @@ export default function SendScreen() {
     if (amount.length >= 10) return;
     setAmount((prev) => `${prev}${value}`);
   };
-
-  const formattedAmount = amount || '0';
-  const numericAmount = Number(formattedAmount);
-  const primaryDisabled = !address || numericAmount <= 0 || loading;
 
   const handleReview = () => {
     if (!address) {
@@ -85,10 +87,7 @@ export default function SendScreen() {
       });
       setSheetOpen(false);
       vibrateSuccess();
-      router.replace({
-        pathname: '/send/result',
-        params: { status: 'success', amount: numericAmount.toString(), address },
-      });
+      router.replace({ pathname: '/send/result', params: { status: 'success', amount: numericAmount.toString(), address } });
       setAmount('');
       setAddress('');
     } catch (err) {
@@ -100,37 +99,28 @@ export default function SendScreen() {
   };
 
   return (
-    <YStack flex={1} padding="$lg" gap="$lg" backgroundColor="$background">
-      <YStack gap="$md">
-        <Text fontSize={28} fontFamily="Inter_600SemiBold">
-          Send funds
-        </Text>
-        <Card gap="$md">
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">Amount (USDC)</Text>
-            <Text fontSize={36} fontFamily="Inter_700Bold">
-              {formattedAmount}
-            </Text>
-            <Text fontSize={13} color="$colorMuted">
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={[styles.title, { color: theme.colors.text }]}>Send funds</Text>
+        <Card style={styles.summaryCard}>
+          <View>
+            <Text style={[styles.caption, { color: theme.colors.textSecondary }]}>Amount (USDC)</Text>
+            <Text style={[styles.amount, { color: theme.colors.text }]}>{formattedAmount}</Text>
+            <Text style={[styles.caption, { color: theme.colors.textMuted }]}>
               Available: {balanceUSDC ? balanceUSDC.shieldedAmount.toFixed(2) : '0.00'} USDC
             </Text>
-          </YStack>
-          <XStack justifyContent="space-between" alignItems="center">
-            <Text fontSize={15} color="$colorSecondary">
-              Private routing
-            </Text>
+          </View>
+          <View style={styles.switchRow}>
+            <Text style={[styles.switchLabel, { color: theme.colors.textSecondary }]}>Private routing</Text>
             <Switch
-              size="$3"
-              checked={privateMode}
-              onCheckedChange={(val) => setPrivateMode(!!val)}
-            >
-              <Switch.Thumb backgroundColor="$accent" />
-            </Switch>
-          </XStack>
+              value={privateMode}
+              onValueChange={(val) => setPrivateMode(val)}
+              thumbColor={privateMode ? theme.colors.accent : '#FFFFFF'}
+              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+            />
+          </View>
         </Card>
-      </YStack>
 
-      <YStack gap="$md">
         <AssociationChips selected={assocSet} onSelect={setAssocSet} />
         <Input
           value={address}
@@ -138,59 +128,134 @@ export default function SendScreen() {
           placeholder="Recipient address"
           autoCapitalize="none"
           keyboardType="default"
-          fontFamily="JetBrainsMono_500Medium"
+          style={styles.input}
         />
-        <Text fontSize={13} color="$colorMuted">
+        <Text style={[styles.helper, { color: theme.colors.textMuted }]}>
           We rotate IDs after sharing to keep your graph shielded.
         </Text>
-      </YStack>
 
-      {error ? (
-        <Text color="$status.error" fontSize={13}>
-          {error}
-        </Text>
-      ) : null}
+        {error ? <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text> : null}
 
-      <Keypad
-        layout={KEYPAD_LAYOUT}
-        onPress={handleKeypad}
-        renderIcon={(value, color) =>
-          value === 'back' ? <Backspace size={24} color={color} weight="duotone" /> : null
-        }
-      />
+        <View style={styles.keypadWrapper}>
+          <Keypad
+            layout={KEYPAD_LAYOUT}
+            onPress={handleKeypad}
+            renderIcon={(value, color) =>
+              value === 'back' ? <Backspace size={24} color={color} weight="duotone" /> : null
+            }
+          />
+        </View>
 
-      <Button onPress={handleReview} disabled={primaryDisabled}>
-        Review &amp; send
-      </Button>
+        <Button onPress={handleReview} disabled={primaryDisabled} style={styles.primaryButton}>
+          Review &amp; send
+        </Button>
+      </ScrollView>
 
       <BottomSheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <YStack gap="$md">
-          <Text fontSize={20} fontFamily="Inter_600SemiBold">
-            Confirm send
-          </Text>
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">To</Text>
-            <Text fontFamily="JetBrainsMono_500Medium">{maskAddress(address)}</Text>
-          </YStack>
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">Amount</Text>
-            <Text fontSize={24} fontFamily="Inter_700Bold">
+        <View style={styles.sheetContent}>
+          <Text style={[styles.sheetTitle, { color: theme.colors.text }]}>Confirm send</Text>
+          <View style={styles.sheetRow}>
+            <Text style={[styles.sheetLabel, { color: theme.colors.textSecondary }]}>To</Text>
+            <Text style={[styles.sheetValue, { color: theme.colors.text }]}>{maskAddress(address)}</Text>
+          </View>
+          <View style={styles.sheetRow}>
+            <Text style={[styles.sheetLabel, { color: theme.colors.textSecondary }]}>Amount</Text>
+            <Text style={[styles.sheetValue, { color: theme.colors.text }]}>
               {numericAmount.toFixed(2)} USDC
             </Text>
-          </YStack>
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">Association set</Text>
-            <Text>{selectedPreset.title}</Text>
-          </YStack>
-          <YStack gap="$xs">
-            <Text color="$colorSecondary">Fee estimate</Text>
-            <Text>{formatCurrency(feeEstimated, 'USD')} · ETA {selectedPreset.etaSeconds}s</Text>
-          </YStack>
+          </View>
+          <View style={styles.sheetRow}>
+            <Text style={[styles.sheetLabel, { color: theme.colors.textSecondary }]}>Association set</Text>
+            <Text style={[styles.sheetValue, { color: theme.colors.text }]}>{selectedPreset.title}</Text>
+          </View>
+          <View style={styles.sheetRow}>
+            <Text style={[styles.sheetLabel, { color: theme.colors.textSecondary }]}>Fee estimate</Text>
+            <Text style={[styles.sheetValue, { color: theme.colors.text }]}>
+              {formatCurrency(feeEstimated, 'USD')} · ETA {selectedPreset.etaSeconds}s
+            </Text>
+          </View>
           <Button onPress={handleSend} disabled={loading}>
             {loading ? 'Sending…' : 'Confirm send'}
           </Button>
-        </YStack>
+        </View>
       </BottomSheet>
-    </YStack>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  content: {
+    padding: 24,
+    paddingBottom: 160,
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 16,
+  },
+  summaryCard: {
+    marginBottom: 24,
+  },
+  summaryValueBlock: {
+    marginBottom: 16,
+  },
+  caption: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    marginBottom: 6,
+  },
+  amount: {
+    fontSize: 36,
+    fontFamily: 'Inter_700Bold',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  switchLabel: {
+    fontSize: 15,
+    fontFamily: 'Inter_500Medium',
+  },
+  input: {
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  helper: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    marginBottom: 16,
+  },
+  error: {
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    marginBottom: 16,
+  },
+  keypadWrapper: {
+    marginBottom: 24,
+  },
+  primaryButton: {
+    marginBottom: 24,
+  },
+  sheetContent: {},
+  sheetTitle: {
+    fontSize: 20,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 8,
+  },
+  sheetRow: {
+    marginBottom: 4,
+  },
+  sheetLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+  },
+  sheetValue: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    marginTop: 2,
+  },
+});

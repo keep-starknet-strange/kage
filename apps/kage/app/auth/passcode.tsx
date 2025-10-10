@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Backspace } from 'phosphor-react-native';
-import { Pressable } from 'react-native';
-import { Text, XStack, YStack, useTheme } from 'tamagui';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'styled-components/native';
 
+import { Keypad, KeypadValue } from '../../components/composables/Keypad';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { vibrateError, vibrateSuccess, vibrateSelection } from '../../utils/haptics';
 
-const DIGITS = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9'], ['clear', '0', 'back']];
+const DIGITS: KeypadValue[][] = [
+  ['1', '2', '3'],
+  ['4', '5', '6'],
+  ['7', '8', '9'],
+  ['clear', '0', 'back'],
+];
 
 export default function PasscodeScreen() {
+  const theme = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ phase?: string }>();
   const phase = params.phase === 'setup' ? 'setup' : 'unlock';
-  const theme = useTheme();
   const [entry, setEntry] = useState<string[]>([]);
   const [firstPin, setFirstPin] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -36,7 +42,7 @@ export default function PasscodeScreen() {
     return 'Unlock with passcode';
   }, [phase, firstPin]);
 
-  const handleDigit = async (digit: string) => {
+  const handleDigit = (digit: KeypadValue) => {
     if (digit === 'back') {
       vibrateSelection();
       setEntry((prev) => prev.slice(0, -1));
@@ -49,6 +55,7 @@ export default function PasscodeScreen() {
       setError('');
       return;
     }
+    if (typeof digit !== 'string') return;
 
     vibrateSelection();
     setEntry((prev) => {
@@ -100,77 +107,89 @@ export default function PasscodeScreen() {
   };
 
   return (
-    <YStack flex={1} padding="$xl" gap="$xl" backgroundColor="$background" justifyContent="space-between">
-      <YStack gap="$md" marginTop="$2xl">
-        <Text fontSize={24} fontFamily="Inter_600SemiBold">
-          {title}
-        </Text>
-        <XStack gap="$sm">
+    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
+        <View style={styles.pinRow}>
           {Array.from({ length: 6 }).map((_, index) => (
-            <YStack
+            <View
               key={index}
-              width={44}
-              height={44}
-              borderRadius="$pill"
-              borderWidth={1.5}
-              borderColor={entry[index] ? '$accent' : '$border'}
-              backgroundColor={entry[index] ? '$accent' : 'transparent'}
+              style={[
+                styles.pinDot,
+                {
+                  borderColor: entry[index] ? theme.colors.accent : theme.colors.border,
+                  backgroundColor: entry[index] ? theme.colors.accent : 'transparent',
+                },
+              ]}
             />
           ))}
-        </XStack>
+        </View>
         {phase === 'unlock' && hasDecoy && (
-          <Text fontSize={13} color="$colorMuted">
-            Enter decoy PIN to open camouflage wallet.
-          </Text>
+          <Text style={[styles.helper, { color: theme.colors.textMuted }]}>Enter decoy PIN to open camouflage wallet.</Text>
         )}
-        {error ? (
-          <Text color="$status.error" fontSize={13}>
-            {error}
-          </Text>
-        ) : null}
-      </YStack>
+        {error ? <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text> : null}
+      </View>
 
-      <YStack gap="$sm">
-        {DIGITS.map((row, rowIndex) => (
-          <XStack key={rowIndex} justifyContent="space-between" gap="$sm">
-            {row.map((value) => (
-              <Pressable
-                key={value}
-                accessibilityRole="button"
-                onPress={() => handleDigit(value)}
-                style={{
-                  flex: 1,
-                  height: 64,
-                  borderRadius: 16,
-                  backgroundColor: value === 'clear' ? 'transparent' : 'rgba(17,22,26,0.6)',
-                  borderWidth: value === 'clear' ? 1.5 : 0,
-                  borderColor: 'rgba(38,49,58,0.6)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {value === 'back' ? (
-                  <Backspace size={24} color="#A6B3B8" weight="duotone" />
-                ) : (
-                  <Text fontSize={24} fontFamily="Inter_600SemiBold" color="#E6F0F2">
-                    {value === 'clear' ? 'CLR' : value}
-                  </Text>
-                )}
-              </Pressable>
-            ))}
-          </XStack>
-        ))}
-      </YStack>
+      <View style={styles.keypad}>
+        <Keypad
+          layout={DIGITS}
+          onPress={handleDigit}
+          renderIcon={(value, color) =>
+            value === 'back' ? <Backspace size={24} color={color} weight="duotone" /> : null
+          }
+        />
+      </View>
 
-      {phase === 'setup' ? (
-        <Button variant="ghost" onPress={() => router.replace('/auth/decoy')}>
-          Skip for now
-        </Button>
-      ) : (
-        <Button variant="ghost" onPress={() => router.replace('/auth/onboarding')}>
-          Need help?
-        </Button>
-      )}
-    </YStack>
+      <Button
+        variant="ghost"
+        onPress={() => router.replace(phase === 'setup' ? '/auth/decoy' : '/auth/onboarding')}
+        style={styles.footerButton}
+      >
+        {phase === 'setup' ? 'Skip for now' : 'Need help?'}
+      </Button>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'space-between',
+  },
+  header: {
+    marginTop: 48,
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 24,
+  },
+  pinRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  pinDot: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+  },
+  helper: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 8,
+  },
+  error: {
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    marginTop: 12,
+  },
+  keypad: {
+    marginBottom: 32,
+  },
+  footerButton: {
+    alignSelf: 'center',
+  },
+});

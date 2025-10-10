@@ -1,6 +1,6 @@
 import { MotiView } from 'moti';
-import { Pressable } from 'react-native';
-import { Text, XStack } from 'tamagui';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'styled-components/native';
 
 import { usePrivacyStore } from '../../stores/usePrivacyStore';
 import { vibrateSelection } from '../../utils/haptics';
@@ -10,6 +10,7 @@ interface PrivateToggleProps {
 }
 
 export const PrivateToggle = ({ showLabel = false }: PrivateToggleProps) => {
+  const theme = useTheme();
   const privateMode = usePrivacyStore((state) => state.privateMode);
   const toggle = usePrivacyStore((state) => state.togglePrivateMode);
 
@@ -19,31 +20,51 @@ export const PrivateToggle = ({ showLabel = false }: PrivateToggleProps) => {
   };
 
   return (
-    <Pressable onPress={handlePress} accessibilityRole="switch" accessibilityState={{ checked: privateMode }}>
-      <XStack
-        width={64}
-        height={34}
-        borderRadius="$pill"
-        backgroundColor={privateMode ? '$accent' : '$borderStrong'}
-        alignItems="center"
-        paddingHorizontal="$xs"
+    <View style={styles.wrapper}>
+      <Pressable
+        accessibilityRole="switch"
+        accessibilityState={{ checked: privateMode }}
+        onPress={handlePress}
+        style={[styles.track, { backgroundColor: privateMode ? theme.colors.accent : theme.colors.borderStrong }]}
       >
         <MotiView
-          animate={{ translateX: privateMode ? 28 : 0 }}
+          animate={{ translateX: privateMode ? 30 : 0 }}
           transition={{ type: 'timing', duration: 180 }}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            backgroundColor: privateMode ? '#0B0F10' : '#FFFFFF',
-          }}
+          style={[
+            styles.thumb,
+            { backgroundColor: privateMode ? theme.colors.background : '#FFFFFF' },
+          ]}
         />
-      </XStack>
+      </Pressable>
       {showLabel && (
-        <Text marginTop="$xs" fontSize={12} color="$colorSecondary" textAlign="center">
+        <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
           {privateMode ? 'Private' : 'Public'}
         </Text>
       )}
-    </Pressable>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  wrapper: {
+    alignItems: 'center',
+  },
+  track: {
+    width: 64,
+    height: 34,
+    borderRadius: 17,
+    padding: 3,
+    justifyContent: 'center',
+  },
+  thumb: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
+  label: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    marginTop: 6,
+    textAlign: 'center',
+  },
+});

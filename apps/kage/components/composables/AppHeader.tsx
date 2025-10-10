@@ -1,6 +1,6 @@
 import { MagnifyingGlass, EyeSlash } from 'phosphor-react-native';
-import { Pressable } from 'react-native';
-import { Text, XStack, useTheme } from 'tamagui';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'styled-components/native';
 
 import { usePrivacyStore } from '../../stores/usePrivacyStore';
 import { vibrateSelection } from '../../utils/haptics';
@@ -11,9 +11,8 @@ interface AppHeaderProps {
 }
 
 export const AppHeader = ({ title }: AppHeaderProps) => {
-  const quickHide = usePrivacyStore((state) => state.quickHide);
   const theme = useTheme();
-  const secondary = theme?.colorSecondary?.val ?? '#A6B3B8';
+  const quickHide = usePrivacyStore((state) => state.quickHide);
 
   const handleQuickHide = () => {
     vibrateSelection();
@@ -21,26 +20,44 @@ export const AppHeader = ({ title }: AppHeaderProps) => {
   };
 
   return (
-    <XStack
-      alignItems="center"
-      justifyContent="space-between"
-      paddingHorizontal="$md"
-      paddingVertical="$sm"
-      height={56}
-      backgroundColor="$background"
-    >
-      <Text fontSize={20} fontFamily="Inter_600SemiBold">
-        {title}
-      </Text>
-      <XStack alignItems="center" gap="$md">
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}> 
+      <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
+      <View style={styles.actions}>
         <PrivateToggle />
-        <Pressable accessibilityLabel="Search" accessibilityRole="button">
-          <MagnifyingGlass size={24} color={secondary} weight='duotone' />
+        <Pressable accessibilityLabel="Search" accessibilityRole="button" style={styles.iconButton}>
+          <MagnifyingGlass size={24} color={theme.colors.textSecondary} weight="duotone" />
         </Pressable>
-        <Pressable onPress={handleQuickHide} accessibilityLabel="Quick hide" accessibilityRole="button">
-          <EyeSlash size={24} color={secondary} weight='duotone' />
+        <Pressable
+          onPress={handleQuickHide}
+          accessibilityLabel="Quick hide"
+          accessibilityRole="button"
+          style={styles.iconButton}
+        >
+          <EyeSlash size={24} color={theme.colors.textSecondary} weight="duotone" />
         </Pressable>
-      </XStack>
-    </XStack>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    marginLeft: 16,
+  },
+});

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Shield } from 'phosphor-react-native';
-import { Text, XStack, YStack, Switch } from 'tamagui';
+import { useTheme } from 'styled-components/native';
 
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -14,6 +14,7 @@ import { useWalletStore } from '../../stores/useWalletStore';
 import { generateMnemonicPreview } from '../../utils/mnemonic';
 
 export default function OnboardingScreen() {
+  const theme = useTheme();
   const router = useRouter();
   const paranoidMode = useUserStore((state) => state.paranoidMode);
   const setParanoidMode = useUserStore((state) => state.setParanoidMode);
@@ -51,78 +52,139 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 48 }}>
-      <YStack gap="$lg">
-        <YStack gap="$sm" alignItems="center">
-          <Shield size={48} color="#4AF0B8" weight="duotone" />
-          <Text fontSize={28} fontFamily="Inter_600SemiBold">
-            Privacy is STARK Normal
-          </Text>
-          <Text fontSize={16} color="$colorSecondary" textAlign="center">
-            Mocked experience for demos — no real funds move.
-          </Text>
-        </YStack>
+    <ScrollView contentContainerStyle={[styles.content, { backgroundColor: theme.colors.background }]}> 
+      <View style={styles.hero}>
+        <Shield size={48} color={theme.colors.accent} weight="duotone" />
+        <Text style={[styles.heroTitle, { color: theme.colors.text }]}>Privacy is STARK Normal</Text>
+        <Text style={[styles.heroSubtitle, { color: theme.colors.textSecondary }]}>Mocked experience for demos — no real funds move.</Text>
+      </View>
 
-        <Card gap="$md">
-          <Text fontSize={16} fontFamily="Inter_600SemiBold">
-            12-word preview
-          </Text>
-          <XStack flexWrap="wrap" gap="$xs">
-            {mnemonicPreview.map((word, index) => (
-              <YStack
-                key={`${word}-${index}`}
-                padding="$xs"
-                borderRadius="$md"
-                backgroundColor="$surfaceElevated"
-              >
-                <Text fontSize={13} color="$colorSecondary">
-                  {index + 1}. {word}
-                </Text>
-              </YStack>
-            ))}
-          </XStack>
-        </Card>
+      <Card style={styles.mnemonicCard}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>12-word preview</Text>
+        <View style={styles.mnemonicGrid}>
+          {mnemonicPreview.map((word, index) => (
+            <View key={`${word}-${index}`} style={[styles.mnemonicItem, { backgroundColor: theme.colors.surfaceElevated }]}> 
+              <Text style={[styles.mnemonicText, { color: theme.colors.textSecondary }]}>
+                {index + 1}. {word}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </Card>
 
-        <YStack gap="$md">
-          <XStack justifyContent="space-between" alignItems="center">
-            <YStack maxWidth="70%">
-              <Text fontSize={17} fontFamily="Inter_600SemiBold">
-                Paranoid Mode
-              </Text>
-              <Text fontSize={13} color="$colorMuted">
-                Auto-lock 15s, block screenshots, obfuscate balances.
-              </Text>
-            </YStack>
-            <Switch
-              size="$3"
-              checked={paranoidMode}
-              onCheckedChange={(val) => setParanoidMode(!!val)}
-            >
-              <Switch.Thumb backgroundColor="$accent" />
-            </Switch>
-          </XStack>
+      <View style={styles.section}>
+        <SettingRow
+          title="Paranoid Mode"
+          description="Auto-lock 15s, block screenshots, obfuscate balances."
+          value={paranoidMode}
+          onValueChange={(val) => setParanoidMode(val)}
+        />
+        <SettingRow
+          title="Biometrics unlock"
+          description="Face ID / Touch ID after passcode."
+          value={biometricsEnabled}
+          onValueChange={(val) => setBiometricsEnabled(val)}
+        />
+      </View>
 
-          <XStack justifyContent="space-between" alignItems="center">
-            <YStack maxWidth="70%">
-              <Text fontSize={17} fontFamily="Inter_600SemiBold">
-                Biometrics unlock
-              </Text>
-              <Text fontSize={13} color="$colorMuted">
-                Face ID / Touch ID after passcode.
-              </Text>
-            </YStack>
-            <Switch
-              size="$3"
-              checked={biometricsEnabled}
-              onCheckedChange={(val) => setBiometricsEnabled(!!val)}
-            >
-              <Switch.Thumb backgroundColor="$accent" />
-            </Switch>
-          </XStack>
-        </YStack>
-
-        <Button onPress={handleContinue}>Continue</Button>
-      </YStack>
+      <Button onPress={handleContinue}>Continue</Button>
     </ScrollView>
   );
 }
+
+const SettingRow = ({
+  title,
+  description,
+  value,
+  onValueChange,
+}: {
+  title: string;
+  description: string;
+  value: boolean;
+  onValueChange: (val: boolean) => void;
+}) => {
+  const theme = useTheme();
+  return (
+    <View style={styles.settingRow}>
+      <View style={styles.settingCopy}>
+        <Text style={[styles.settingTitle, { color: theme.colors.text }]}>{title}</Text>
+        <Text style={[styles.settingDescription, { color: theme.colors.textMuted }]}>{description}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        thumbColor={value ? theme.colors.accent : '#FFFFFF'}
+        trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  content: {
+    flexGrow: 1,
+    padding: 24,
+    paddingBottom: 48,
+  },
+  hero: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontFamily: 'Inter_600SemiBold',
+    textAlign: 'center',
+    marginTop: 12,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  mnemonicCard: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 16,
+  },
+  mnemonicGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  mnemonicItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  mnemonicText: {
+    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+  },
+  section: {
+    marginBottom: 32,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  settingCopy: {
+    flex: 1,
+    paddingRight: 16,
+  },
+  settingTitle: {
+    fontSize: 17,
+    fontFamily: 'Inter_600SemiBold',
+    marginBottom: 4,
+  },
+  settingDescription: {
+    fontSize: 13,
+    fontFamily: 'Inter_400Regular',
+  },
+});

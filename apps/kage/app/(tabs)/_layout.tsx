@@ -1,15 +1,15 @@
 import { Tabs } from 'expo-router';
 import { Gear, House, List, ListPlus, Users } from 'phosphor-react-native';
-import { useTheme } from 'tamagui';
+import { useTheme } from 'styled-components/native';
 
 const iconSize = 24;
 
 export default function TabsLayout() {
   const theme = useTheme();
-  const accent = theme?.accent?.val ?? '#4AF0B8';
-  const secondary = theme?.colorSecondary?.val ?? '#A6B3B8';
-  const surface = theme?.surfaceElevated?.val ?? '#11161A';
-  const border = theme?.border?.val ?? '#1A2329';
+  const accent = theme.colors.accent;
+  const secondary = theme.colors.textSecondary;
+  const surface = theme.colors.surfaceElevated;
+  const border = theme.colors.border;
 
   return (
     <Tabs
