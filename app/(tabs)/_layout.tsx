@@ -1,32 +1,30 @@
 import { Tabs } from 'expo-router';
-import { Gear, House, List, ListPlus, Users } from 'phosphor-react-native';
+import { GearSix, HouseSimple, List } from 'phosphor-react-native';
 import { useTheme } from 'styled-components/native';
 
 const iconSize = 24;
 
 export default function TabsLayout() {
   const theme = useTheme();
-  const accent = theme.colors.accent;
-  const secondary = theme.colors.textSecondary;
-  const surface = theme.colors.surfaceElevated;
-  const border = theme.colors.border;
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: accent,
-        tabBarInactiveTintColor: secondary,
+        tabBarActiveTintColor: theme.colors.text,
+        tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {
-          backgroundColor: surface,
-          borderTopColor: border,
-          height: 72,
-          paddingBottom: 10,
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          height: 60,
+          paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
+          letterSpacing: 0.2,
           fontFamily: 'Inter_500Medium',
+          textTransform: 'uppercase',
         },
       }}
     >
@@ -34,14 +32,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <House size={iconSize} color={color} weight="duotone" />,
-        }}
-      />
-      <Tabs.Screen
-        name="actions"
-        options={{
-          title: 'Actions',
-          tabBarIcon: ({ color }) => <ListPlus size={iconSize} color={color} weight="duotone" />,
+          tabBarIcon: ({ color }) => <HouseSimple size={iconSize} color={color} weight="fill" />,
         }}
       />
       <Tabs.Screen
@@ -52,17 +43,10 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="contacts"
-        options={{
-          title: 'Contacts',
-          tabBarIcon: ({ color }) => <Users size={iconSize} color={color} weight="duotone" />,
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <Gear size={iconSize} color={color} weight="duotone" />,
+          title: 'Controls',
+          tabBarIcon: ({ color }) => <GearSix size={iconSize} color={color} weight="duotone" />,
         }}
       />
     </Tabs>

@@ -1,24 +1,24 @@
 export const colorTokens = {
-  'bg.default': '#0B0F10',
-  'bg.elevated': '#11161A',
-  'bg.sunken': '#070A0C',
-  'surface.glass': 'rgba(255,255,255,0.06)',
-  'text.primary': '#E6F0F2',
-  'text.secondary': '#A6B3B8',
-  'text.muted': '#7A8792',
-  'brand.accent': '#4AF0B8',
-  'brand.accentAlt': '#9B8CFF',
-  'status.success': '#2AD38C',
-  'status.warning': '#FFB545',
-  'status.error': '#FF5D5D',
-  'border.subtle': '#1A2329',
-  'border.strong': '#26313A',
+  'bg.default': '#FFFFFF',
+  'bg.elevated': '#F5F5F7',
+  'bg.sunken': '#ECEDEF',
+  'surface.glass': 'rgba(20,20,20,0.04)',
+  'text.primary': '#0A0C0F',
+  'text.secondary': '#3C3F45',
+  'text.muted': '#6E7075',
+  'brand.accent': '#111318',
+  'brand.accentAlt': '#C0C2C8',
+  'status.success': '#2E2F33',
+  'status.warning': '#4A4B4F',
+  'status.error': '#1F2024',
+  'border.subtle': '#E3E4E8',
+  'border.strong': '#C9CBD1',
 } as const;
 
 export const lightColorOverrides = {
-  'bg.default': '#F6F8FA',
-  'text.primary': '#0B0F10',
-  'border.subtle': '#E3E8ED',
+  'bg.default': '#FFFFFF',
+  'text.primary': '#111318',
+  'border.subtle': '#E3E4E8',
 } as const;
 
 export const radiusTokens = {

@@ -3,7 +3,7 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import { ArrowCircleUpRight, ArrowDownLeft, ArrowsLeftRight, ShieldCheck } from 'phosphor-react-native';
+import { ArrowCircleUpRight, ArrowDownLeft, ArrowsLeftRight } from 'phosphor-react-native';
 import { useTheme } from 'styled-components/native';
 
 import { AppHeader } from '../../components/composables/AppHeader';
@@ -16,10 +16,9 @@ import { formatCurrency, maskAddress } from '../../utils/format';
 import { fromNow } from '../../utils/time';
 
 const ACTIONS = [
-  { label: 'Send', icon: ArrowCircleUpRight, href: '/send' },
   { label: 'Receive', icon: ArrowDownLeft, href: '/receive' },
-  { label: 'Swap', icon: ArrowsLeftRight, href: '/swap' },
-  { label: 'Shielded', icon: ShieldCheck, href: '/shielded' },
+  { label: 'Send', icon: ArrowCircleUpRight, href: '/send' },
+  { label: 'Pay', icon: ArrowsLeftRight, href: '/swap' },
 ];
 
 export default function HomeScreen() {
@@ -57,7 +56,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}> 
       <View style={styles.headerRow}>
-        <Image source={require('../../kage-logo.png')} style={styles.logo} />
+        <Image source={require('../../kage-logo.png')} style={styles.logo} resizeMode='contain' />
         <Text style={[styles.brand, { color: theme.colors.text }]}>KAGE Pay</Text>
       </View>
       <AppHeader title="Home" />
@@ -68,7 +67,7 @@ export default function HomeScreen() {
       >
         <Card style={styles.balanceCard}>
           <LinearGradient
-            colors={['rgba(74,240,184,0.18)', 'rgba(155,140,255,0.08)']}
+            colors={['#FFFFFF', '#F6F7F8']}
             style={styles.gradient}
           >
             {loading ? (
@@ -120,17 +119,15 @@ export default function HomeScreen() {
         {activity.slice(0, 4).map((txn) => (
           <Card key={txn.id} style={styles.activityCard}>
             <View style={styles.activityRow}>
-              <View>
+              <View style={[styles.activityIconWrap, { borderColor: theme.colors.border }]}>
+                <Text style={[styles.activityIcon, { color: theme.colors.text }]}>{txn.type.slice(0, 1)}</Text>
+              </View>
+              <View style={styles.activityCopy}>
                 <Text style={[styles.activityTitle, { color: theme.colors.text }]}>{txn.type}</Text>
-                <Text style={[styles.activitySubtitle, { color: theme.colors.textMuted }]}> 
-                  {maskAddress(txn.toFrom)} · {fromNow(txn.timestamp)}
-                </Text>
+                <Text style={[styles.activitySubtitle, { color: theme.colors.textMuted }]}>{maskAddress(txn.toFrom)} · {fromNow(txn.timestamp)}</Text>
               </View>
               <View style={styles.activityAmount}>
-                <Text style={[styles.activityValue, { color: theme.colors.text }] }>
-                  {txn.privacy === 'PRIVATE' ? '•' : ''}
-                  {txn.amount.toFixed(4)} {txn.currency}
-                </Text>
+                <Text style={[styles.activityValue, { color: theme.colors.text }]}>{txn.privacy === 'PRIVATE' ? '•' : ''}{txn.amount.toFixed(4)} {txn.currency}</Text>
                 <Text style={[styles.activityStatus, { color: theme.colors.textSecondary }]}>{txn.status}</Text>
               </View>
             </View>
@@ -198,21 +195,22 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 16,
     marginTop: 8,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   actionButton: {
     flex: 1,
-    marginRight: 12,
-    flexDirection: 'column',
+    borderRadius: 16,
+    height: 76,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 64,
   },
   actionLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'Inter_500Medium',
-    marginTop: 4,
+    marginTop: 12,
+    letterSpacing: 0.3,
   },
   sectionHeader: {
     marginTop: 24,
@@ -228,6 +226,21 @@ const styles = StyleSheet.create({
   activityRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  activityIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#D8D9DD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  activityIcon: {
+    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
   },
   activityTitle: {
     fontSize: 16,
@@ -237,6 +250,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Inter_400Regular',
     marginTop: 4,
+  },
+  activityCopy: {
+    flex: 1,
   },
   activityAmount: {
     alignItems: 'flex-end',

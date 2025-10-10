@@ -19,11 +19,14 @@ export default function ContactsScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+      <View style={styles.header}> 
+        <Text style={[styles.title, { color: theme.colors.text }]}>Trusted Contacts</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>Curate who can receive STRK from you instantly.</Text>
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>Contacts</Text>
         {contacts.map((contact) => (
           <Card key={contact.id} style={styles.card}>
-            <View>
+            <View style={styles.contactBlock}> 
               <Text style={[styles.contactName, { color: theme.colors.text }]}>{contact.name}</Text>
               <Text style={[styles.contactAlias, { color: theme.colors.textMuted }]}>{contact.alias}</Text>
             </View>
@@ -41,18 +44,33 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  content: {
-    padding: 24,
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 28,
     fontFamily: 'Inter_600SemiBold',
-    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    marginTop: 6,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingBottom: 80,
+    gap: 16,
   },
   card: {
-    marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  contactBlock: {
+    flex: 1,
+    marginRight: 16,
   },
   contactName: {
     fontSize: 16,

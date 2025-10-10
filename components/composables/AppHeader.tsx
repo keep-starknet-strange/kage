@@ -1,4 +1,4 @@
-import { MagnifyingGlass, EyeSlash } from 'phosphor-react-native';
+import { EyeSlash } from 'phosphor-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'styled-components/native';
 
@@ -24,9 +24,6 @@ export const AppHeader = ({ title }: AppHeaderProps) => {
       <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
       <View style={styles.actions}>
         <PrivateToggle />
-        <Pressable accessibilityLabel="Search" accessibilityRole="button" style={styles.iconButton}>
-          <MagnifyingGlass size={24} color={theme.colors.textSecondary} weight="duotone" />
-        </Pressable>
         <Pressable
           onPress={handleQuickHide}
           accessibilityLabel="Quick hide"

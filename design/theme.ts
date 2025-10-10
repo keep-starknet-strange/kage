@@ -57,15 +57,32 @@ const makeTheme = (overrides: Partial<ColorPalette> = {}): AppTheme => ({
   },
 });
 
-export const darkTheme: AppTheme = makeTheme();
+export const darkTheme: AppTheme = makeTheme({
+  background: '#0A0C0F',
+  surface: '#111318',
+  surfaceElevated: '#171A1E',
+  surfaceSunken: '#0E1014',
+  text: '#F5F6F8',
+  textSecondary: '#D0D3D8',
+  textMuted: '#9599A1',
+  accent: '#F0F1F5',
+  accentAlt: '#C0C2C8',
+  border: '#262A31',
+  borderStrong: '#3A3F48',
+});
 
 export const lightTheme: AppTheme = makeTheme({
   background: lightColorOverrides['bg.default'],
-  surface: lightColorOverrides['bg.default'],
-  surfaceElevated: '#FFFFFF',
-  surfaceSunken: '#F0F3F7',
+  surface: '#FFFFFF',
+  surfaceElevated: '#F7F7F9',
+  surfaceSunken: '#F0F1F3',
   text: lightColorOverrides['text.primary'],
+  textSecondary: '#3C3F45',
+  textMuted: '#6E7075',
+  accent: '#111318',
+  accentAlt: '#C0C2C8',
   border: lightColorOverrides['border.subtle'],
+  borderStrong: '#D5D7DC',
 });
 
 export type ThemeName = 'dark' | 'light';

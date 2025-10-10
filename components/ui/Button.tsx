@@ -31,21 +31,27 @@ export const Button = ({
 }: KageButtonProps) => {
   const theme = useTheme();
 
-  const containerStyle: StyleProp<ViewStyle> = [
-    styles.base,
-    variant === 'primary' && {
+  const variantStyles: Record<KageButtonVariant, ViewStyle> = {
+    primary: {
       backgroundColor: theme.colors.accent,
       borderColor: theme.colors.accent,
+      borderWidth: 1,
     },
-    variant === 'secondary' && {
-      backgroundColor: 'transparent',
-      borderColor: theme.colors.borderStrong,
-      borderWidth: 1.5,
+    secondary: {
+      backgroundColor: theme.colors.surfaceElevated,
+      borderColor: theme.colors.border,
+      borderWidth: 1,
     },
-    variant === 'ghost' && {
+    ghost: {
       backgroundColor: 'transparent',
+      borderColor: 'transparent',
       borderWidth: 0,
     },
+  };
+
+  const containerStyle: StyleProp<ViewStyle> = [
+    styles.base,
+    variantStyles[variant],
     disabled && styles.disabled,
     style,
   ];

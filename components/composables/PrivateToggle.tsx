@@ -25,7 +25,7 @@ export const PrivateToggle = ({ showLabel = false }: PrivateToggleProps) => {
         accessibilityRole="switch"
         accessibilityState={{ checked: privateMode }}
         onPress={handlePress}
-        style={[styles.track, { backgroundColor: privateMode ? theme.colors.accent : theme.colors.borderStrong }]}
+        style={[styles.track, { backgroundColor: privateMode ? theme.colors.accent : theme.colors.surfaceElevated, borderColor: privateMode ? theme.colors.accent : theme.colors.border }]}
       >
         <MotiView
           animate={{ translateX: privateMode ? 30 : 0 }}
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     padding: 3,
     justifyContent: 'center',
+    borderWidth: 1,
   },
   thumb: {
     width: 28,
