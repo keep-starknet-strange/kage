@@ -62,6 +62,7 @@
     "@tamagui/metro-plugin": "^1.135.2",
     "@types/react": "~19.1.0",
     "@types/seedrandom": "^3.0.8",
+    "babel-plugin-tamagui": "npm:@tamagui/babel-plugin",
     "typescript": "~5.9.2"
   },
   "private": true

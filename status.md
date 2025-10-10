@@ -11,4 +11,6 @@
 - Implemented onboarding and passcode flows with secure storage-backed auth gating.
 - Built full mocked Send flow with association sets, keypad, and confirmation sheet.
 - Implemented Receive screen with rotating shielded IDs and QR sharing.
+- Added Swap flow with token toggles, rate preview, and mocked execution pipeline.
+- Fixed Expo bundler by aliasing babel-plugin-tamagui dependency.
 
