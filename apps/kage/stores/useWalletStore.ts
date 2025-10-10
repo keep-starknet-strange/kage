@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import { mockChain } from '../domain/mockChain';
 import { AssocSet, Balance, Contact, Txn, ViewingKey } from '../domain/models';
+import { generateAddressList } from '../utils/address';
 
 type WalletState = {
   balances: Balance[];
@@ -9,6 +10,7 @@ type WalletState = {
   viewingKeys: ViewingKey[];
   contacts: Contact[];
   mnemonicPreview: string[];
+  receiveQueue: string[];
   loading: boolean;
   lastUpdated?: number;
 };
@@ -18,6 +20,7 @@ type WalletActions = {
   refreshBalances: () => Promise<void>;
   refreshActivity: () => Promise<void>;
   setMnemonicPreview: (words: string[]) => void;
+  rotateReceiveAddress: () => void;
   send: (options: {
     to: string;
     amount: number;
@@ -37,12 +40,19 @@ const INITIAL_STATE: WalletState = {
   viewingKeys: [],
   contacts: [],
   mnemonicPreview: [],
+  receiveQueue: generateAddressList(),
   loading: false,
 };
 
 export const useWalletStore = create<WalletState & WalletActions>((set) => ({
   ...INITIAL_STATE,
   setMnemonicPreview: (words) => set({ mnemonicPreview: words }),
+  rotateReceiveAddress: () =>
+    set((state) => ({
+      receiveQueue: state.receiveQueue.length
+        ? [...state.receiveQueue.slice(1), state.receiveQueue[0]]
+        : generateAddressList(),
+    })),
   bootstrap: async () => {
     set({ loading: true });
     const [balances, activity, contacts, viewingKeys] = await Promise.all([
@@ -51,14 +61,15 @@ export const useWalletStore = create<WalletState & WalletActions>((set) => ({
       Promise.resolve(mockChain.listContacts()),
       Promise.resolve(mockChain.listViewingKeys()),
     ]);
-    set({
+    set((state) => ({
       balances,
       activity,
       contacts,
       viewingKeys,
+      receiveQueue: state.receiveQueue.length ? state.receiveQueue : generateAddressList(),
       loading: false,
       lastUpdated: Date.now(),
-    });
+    }));
   },
   refreshBalances: async () => {
     const balances = await Promise.resolve(mockChain.getBalances());

@@ -9,4 +9,5 @@
 - Implemented mock chain engine, Zustand stores, and placeholder route screens for core IA.
 - Built Tamagui-based UI components, upgraded Home screen visuals, and added linear gradient dependency.
 - Implemented onboarding and passcode flows with secure storage-backed auth gating.
+- Built full mocked Send flow with association sets, keypad, and confirmation sheet.
 
