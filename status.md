@@ -8,4 +8,5 @@
 - Added Expo Router scaffolding, dependencies, and Tamagui configuration with seeded design tokens.
 - Implemented mock chain engine, Zustand stores, and placeholder route screens for core IA.
 - Built Tamagui-based UI components, upgraded Home screen visuals, and added linear gradient dependency.
+- Implemented onboarding and passcode flows with secure storage-backed auth gating.
 

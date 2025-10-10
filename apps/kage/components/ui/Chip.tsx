@@ -1,29 +1,39 @@
-import { XStack, XStackProps, Text, styled } from 'tamagui';
+import { Pressable } from 'react-native';
+import { Text, useTheme } from 'tamagui';
 
-interface ChipProps extends XStackProps {
+interface ChipProps {
   label: string;
   selected?: boolean;
   icon?: React.ReactNode;
+  onPress?: () => void;
 }
 
-const Container = styled(XStack, {
-  alignItems: 'center',
-  paddingHorizontal: '$md',
-  paddingVertical: '$xs',
-  borderRadius: '$pill',
-  gap: '$xs',
-  borderWidth: 1,
-});
+export const Chip = ({ label, selected, icon, onPress }: ChipProps) => {
+  const theme = useTheme();
+  const background = selected ? theme.accent?.val ?? '#4AF0B8' : 'transparent';
+  const border = selected ? theme.accent?.val ?? '#4AF0B8' : theme.border?.val ?? '#26313A';
+  const color = selected ? '#0B0F10' : theme.color?.val ?? '#E6F0F2';
 
-export const Chip = ({ label, selected, icon, ...props }: ChipProps) => (
-  <Container
-    backgroundColor={selected ? '$accent' : 'transparent'}
-    borderColor={selected ? '$accent' : '$border'}
-    {...props}
-  >
-    {icon}
-    <Text fontSize={13} fontFamily="Inter_500Medium" color={selected ? '$background' : '$color'}>
-      {label}
-    </Text>
-  </Container>
-);
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 999,
+        borderWidth: 1.5,
+        borderColor: border as string,
+        backgroundColor: background as string,
+        gap: 8,
+      }}
+    >
+      {icon}
+      <Text fontSize={13} fontFamily="Inter_500Medium" color={color}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+};
