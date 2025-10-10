@@ -10,4 +10,5 @@
 - Built Tamagui-based UI components, upgraded Home screen visuals, and added linear gradient dependency.
 - Implemented onboarding and passcode flows with secure storage-backed auth gating.
 - Built full mocked Send flow with association sets, keypad, and confirmation sheet.
+- Implemented Receive screen with rotating shielded IDs and QR sharing.
 

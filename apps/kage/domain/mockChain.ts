@@ -25,6 +25,12 @@ const associationCopy: Record<AssocSet, string> = {
   MINIMAL: 'Fastest exit, higher scrutiny',
 };
 
+const getSwapRate = (from: BalanceCurrency, to: BalanceCurrency) => {
+  if (from === 'USDC' && to === 'BTC') return 0.000018;
+  if (from === 'BTC' && to === 'USDC') return 54000;
+  return 1;
+};
+
 const balances: Balance[] = currencies.map((currency) => ({
   currency,
   publicAmount: randomFloat(rng, 0.4, 4.8, 3),
@@ -130,6 +136,33 @@ export const mockChain = {
     activity.unshift(txn);
     adjustBalance(currency, -amount, privacy === 'PRIVATE');
     return txn;
+  },
+
+  async swap({ fromCurrency, toCurrency, amount, privacy }: {
+    fromCurrency: Balance['currency'];
+    toCurrency: Balance['currency'];
+    amount: number;
+    privacy: 'PUBLIC' | 'PRIVATE';
+  }) {
+    await timeout(randomInt(rng, 500, 800));
+    const rate = getSwapRate(fromCurrency, toCurrency);
+    const outputAmount = parseFloat((amount * rate).toFixed(6));
+    adjustBalance(fromCurrency, -amount, privacy === 'PRIVATE');
+    adjustBalance(toCurrency, outputAmount, privacy === 'PRIVATE');
+    const txn: Txn = {
+      id: seededId(rng, 'txn'),
+      type: 'SWAP',
+      privacy,
+      currency: toCurrency,
+      amount: outputAmount,
+      toFrom: `${fromCurrency}→${toCurrency}`,
+      fee: randomFloat(rng, 0.0001, 0.001, 5),
+      timestamp: Date.now(),
+      status: 'CONFIRMED',
+      note: `${amount.toFixed(4)} ${fromCurrency} → ${outputAmount.toFixed(4)} ${toCurrency}`,
+    };
+    activity.unshift(txn);
+    return { txn, rate };
   },
   async depositShielded({ amount, denom }: { amount: number; denom: number }): Promise<ShieldedOp> {
     await timeout(randomInt(rng, 400, 600));

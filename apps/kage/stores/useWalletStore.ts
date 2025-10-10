@@ -28,6 +28,12 @@ type WalletActions = {
     privacy: 'PUBLIC' | 'PRIVATE';
     assocSet?: AssocSet;
   }) => Promise<Txn>;
+  swap: (options: {
+    fromCurrency: Balance['currency'];
+    toCurrency: Balance['currency'];
+    amount: number;
+    privacy: 'PUBLIC' | 'PRIVATE';
+  }) => Promise<Txn>;
   depositShielded: (options: { amount: number; denom: number }) => Promise<void>;
   withdrawShielded: (options: { amount: number; assocSet: AssocSet }) => Promise<{ proof: string }>;
   issueViewingKey: (label: string) => Promise<ViewingKey>;
@@ -82,6 +88,19 @@ export const useWalletStore = create<WalletState & WalletActions>((set) => ({
   send: async (options) => {
     set({ loading: true });
     const txn = await mockChain.send(options);
+    const balances = mockChain.getBalances();
+    const activity = mockChain.listActivity();
+    set({
+      balances,
+      activity,
+      loading: false,
+      lastUpdated: Date.now(),
+    });
+    return txn;
+  },
+  swap: async ({ fromCurrency, toCurrency, amount, privacy }) => {
+    set({ loading: true });
+    const { txn } = await mockChain.swap({ fromCurrency, toCurrency, amount, privacy });
     const balances = mockChain.getBalances();
     const activity = mockChain.listActivity();
     set({
