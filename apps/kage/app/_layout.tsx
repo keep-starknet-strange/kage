@@ -16,8 +16,12 @@ import {
 
 import { AppProviders } from '../providers/AppProviders';
 import '../utils/i18n';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export default function RootLayout() {
+  const initialize = useAuthStore((state) => state.initialize);
+  const initialized = useAuthStore((state) => state.initialized);
+
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -29,12 +33,18 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    if (!initialized) {
+      initialize().catch(() => undefined);
+    }
+  }, [initialize, initialized]);
+
+  useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync().catch(() => undefined);
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !initialized) {
     return null;
   }
 

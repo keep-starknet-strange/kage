@@ -8,6 +8,7 @@ type WalletState = {
   activity: Txn[];
   viewingKeys: ViewingKey[];
   contacts: Contact[];
+  mnemonicPreview: string[];
   loading: boolean;
   lastUpdated?: number;
 };
@@ -16,6 +17,7 @@ type WalletActions = {
   bootstrap: () => Promise<void>;
   refreshBalances: () => Promise<void>;
   refreshActivity: () => Promise<void>;
+  setMnemonicPreview: (words: string[]) => void;
   send: (options: {
     to: string;
     amount: number;
@@ -34,11 +36,13 @@ const INITIAL_STATE: WalletState = {
   activity: [],
   viewingKeys: [],
   contacts: [],
+  mnemonicPreview: [],
   loading: false,
 };
 
 export const useWalletStore = create<WalletState & WalletActions>((set) => ({
   ...INITIAL_STATE,
+  setMnemonicPreview: (words) => set({ mnemonicPreview: words }),
   bootstrap: async () => {
     set({ loading: true });
     const [balances, activity, contacts, viewingKeys] = await Promise.all([
