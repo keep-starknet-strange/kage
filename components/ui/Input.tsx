@@ -9,6 +9,7 @@ export const Input = forwardRef<TextInput, TextInputProps>((props, ref) => {
     <TextInput
       ref={ref}
       placeholderTextColor={theme.colors.textMuted}
+      selectionColor={theme.colors.accent}
       style={[
         styles.base,
         {
@@ -27,10 +28,10 @@ Input.displayName = 'Input';
 
 const styles = StyleSheet.create({
   base: {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    paddingHorizontal: 16,
+    height: 54,
+    borderRadius: 14,
+    borderWidth: 1.25,
+    paddingHorizontal: 18,
     fontFamily: 'Inter_500Medium',
     fontSize: 16,
   },

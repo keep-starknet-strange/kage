@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 
-type ThemePreference = 'dark' | 'light';
-
 type UserState = {
-  theme: ThemePreference;
   paranoidMode: boolean;
   biometricsEnabled: boolean;
   decoyPinEnabled: boolean;
@@ -11,8 +8,6 @@ type UserState = {
 };
 
 type UserActions = {
-  setTheme: (theme: ThemePreference) => void;
-  toggleTheme: () => void;
   setParanoidMode: (enabled: boolean) => void;
   setBiometricsEnabled: (enabled: boolean) => void;
   setDecoyPinEnabled: (enabled: boolean) => void;
@@ -20,7 +15,6 @@ type UserActions = {
 };
 
 const DEFAULT_STATE: UserState = {
-  theme: 'light',
   paranoidMode: true,
   biometricsEnabled: true,
   decoyPinEnabled: false,
@@ -29,15 +23,8 @@ const DEFAULT_STATE: UserState = {
 
 export const useUserStore = create<UserState & UserActions>((set) => ({
   ...DEFAULT_STATE,
-  setTheme: (theme) => set({ theme }),
-  toggleTheme: () =>
-    set((state) => ({
-      theme: state.theme === 'dark' ? 'light' : 'dark',
-    })),
   setParanoidMode: (enabled) => set({ paranoidMode: enabled }),
   setBiometricsEnabled: (enabled) => set({ biometricsEnabled: enabled }),
   setDecoyPinEnabled: (enabled) => set({ decoyPinEnabled: enabled }),
   setAutoLockSeconds: (seconds) => set({ autoLockSeconds: seconds }),
 }));
-
-export const selectTheme = (state: UserState) => state.theme;

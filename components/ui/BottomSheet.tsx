@@ -19,9 +19,17 @@ export const BottomSheet = ({ open, onOpenChange, children }: PropsWithChildren<
       visible={open}
       onRequestClose={handleClose}
     >
-      <View style={styles.wrapper}>
+      <View style={[styles.wrapper, { backgroundColor: theme.colors.overlay }]}> 
         <Pressable style={styles.backdrop} onPress={handleClose} />
-        <View style={[styles.sheet, { backgroundColor: theme.colors.surfaceElevated }]}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
           <View style={[styles.handle, { backgroundColor: theme.colors.border }]} />
           {children}
         </View>
@@ -34,7 +42,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(4, 7, 9, 0.64)',
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -44,6 +51,10 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    borderWidth: 1,
+    shadowColor: '#141824',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.06,
   },
   handle: {
     width: 44,

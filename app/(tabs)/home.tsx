@@ -67,7 +67,7 @@ export default function HomeScreen() {
       >
         <Card style={styles.balanceCard}>
           <LinearGradient
-            colors={['#FFFFFF', '#F6F7F8']}
+            colors={['#FFFFFF', '#EBEDF6']}
             style={styles.gradient}
           >
             {loading ? (

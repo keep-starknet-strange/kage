@@ -12,8 +12,8 @@ export const Meter = ({ label, value }: MeterProps) => {
   const clamped = Math.min(Math.max(value, 0), 1);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.surfaceElevated }]}> 
-      <View style={[styles.track, { backgroundColor: theme.colors.border }]}> 
+    <View style={[styles.container, { backgroundColor: theme.colors.glass }]}> 
+      <View style={[styles.track, { backgroundColor: theme.colors.accentGlow }]}> 
         <MotiView
           from={{ width: '0%' }}
           animate={{ width: `${clamped * 100}%` }}

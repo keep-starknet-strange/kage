@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useTheme } from 'styled-components/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { vibrateSelection } from '../../utils/haptics';
 
@@ -34,13 +35,11 @@ export const Button = ({
   const variantStyles: Record<KageButtonVariant, ViewStyle> = {
     primary: {
       backgroundColor: theme.colors.accent,
-      borderColor: theme.colors.accent,
-      borderWidth: 1,
     },
     secondary: {
-      backgroundColor: theme.colors.surfaceElevated,
-      borderColor: theme.colors.border,
-      borderWidth: 1,
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.borderStrong,
+      borderWidth: 1.25,
     },
     ghost: {
       backgroundColor: 'transparent',
@@ -49,17 +48,17 @@ export const Button = ({
     },
   };
 
-  const containerStyle: StyleProp<ViewStyle> = [
-    styles.base,
-    variantStyles[variant],
-    disabled && styles.disabled,
-    style,
-  ];
+  const containerStyle: StyleProp<ViewStyle> = [styles.base, variantStyles[variant], disabled && styles.disabled, style];
 
   const labelStyle: StyleProp<TextStyle> = [
     styles.label,
     {
-      color: variant === 'primary' ? theme.colors.background : theme.colors.text,
+      color:
+        variant === 'primary'
+          ? theme.colors.textInverted
+          : variant === 'ghost'
+          ? theme.colors.textSecondary
+          : theme.colors.text,
     },
   ];
 
@@ -71,12 +70,21 @@ export const Button = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.86}
+      activeOpacity={0.88}
       style={containerStyle}
       onPress={handlePress}
       disabled={disabled}
       {...touchableProps}
     >
+      {variant === 'primary' ? (
+        <LinearGradient
+          pointerEvents="none"
+          colors={[theme.colors.accent, theme.colors.accentSoft]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      ) : null}
       {typeof children === 'string' ? <Text style={labelStyle}>{children}</Text> : children}
     </TouchableOpacity>
   );
@@ -84,17 +92,19 @@ export const Button = ({
 
 const styles = StyleSheet.create({
   base: {
-    height: 52,
-    paddingHorizontal: 20,
-    borderRadius: 16,
+    height: 54,
+    paddingHorizontal: 22,
+    borderRadius: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0,
+    overflow: 'hidden',
   },
   label: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 17,
+    letterSpacing: 0.2,
   },
   disabled: {
     opacity: 0.5,

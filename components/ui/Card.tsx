@@ -10,11 +10,24 @@ export interface CardProps extends ViewProps {
 
 export const Card = ({ children, glass, style, ...props }: CardProps) => {
   const theme = useTheme();
-  const backgroundColor = glass ? theme.colors.glass : theme.colors.surfaceElevated;
+  const backgroundColor = glass ? theme.colors.glass : theme.colors.surface;
+  const borderColor = glass ? theme.colors.border : theme.colors.border;
+  const borderWidth = glass ? StyleSheet.hairlineWidth : 1;
 
   return (
     <View
-      style={[styles.base, { backgroundColor, borderColor: theme.colors.border }, style as StyleProp<ViewStyle>]}
+      style={[
+        styles.base,
+        {
+          backgroundColor,
+          borderColor,
+          borderWidth,
+          borderRadius: theme.radii.lg,
+          shadowColor: '#141824',
+          shadowOpacity: glass ? 0.08 : 0.12,
+        },
+        style as StyleProp<ViewStyle>,
+      ]}
       {...props}
     >
       {children}
@@ -24,14 +37,9 @@ export const Card = ({ children, glass, style, ...props }: CardProps) => {
 
 const styles = StyleSheet.create({
   base: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    shadowColor: 'rgba(0,0,0,0.4)',
-    shadowOpacity: 0.6,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
-    elevation: 4,
-    marginBottom: 0,
+    padding: 20,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 32,
+    elevation: 6,
   },
 });

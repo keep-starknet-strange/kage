@@ -28,7 +28,7 @@ export const Keypad = ({ layout, onPress, renderIcon }: KeypadProps) => {
       {layout.map((row, rowIndex) => (
         <View key={rowIndex} style={[styles.row, rowIndex === layout.length - 1 ? { marginBottom: 0 } : undefined]}>
           {row.map((value, valueIndex) => {
-            const isClear = value === 'clear';
+            const isAction = value === 'clear' || value === 'back';
             return (
               <Pressable
                 key={value}
@@ -38,17 +38,16 @@ export const Keypad = ({ layout, onPress, renderIcon }: KeypadProps) => {
                   styles.key,
                   {
                     marginRight: valueIndex === row.length - 1 ? 0 : 12,
-                    backgroundColor: isClear ? 'transparent' : surface,
-                    borderColor: isClear ? border : 'transparent',
-                    borderWidth: isClear ? 1.5 : 0,
+                    backgroundColor: isAction ? theme.colors.surface : surface,
+                    borderColor: isAction ? border : 'transparent',
+                    borderWidth: isAction ? 1 : 0,
                   },
                 ]}
               >
-                {renderIcon && renderIcon(value, textColor)}
-                {!renderIcon && value !== 'back' && (
-                  <Text style={[styles.label, { color: textColor }]}>
-                    {value === 'clear' ? 'CLR' : value}
-                  </Text>
+                {value === 'back' && renderIcon ? renderIcon(value, textColor) : null}
+                {value === 'clear' && <Text style={[styles.actionLabel, { color: textColor }]}>CLR</Text>}
+                {typeof value === 'string' && value !== 'clear' && value !== 'back' && (
+                  <Text style={[styles.label, { color: textColor }]}>{value}</Text>
                 )}
               </Pressable>
             );
@@ -75,5 +74,9 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 24,
+  },
+  actionLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 16,
   },
 });
