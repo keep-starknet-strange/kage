@@ -7,4 +7,5 @@
 - Scaffolded Expo TypeScript workspace under apps/kage and installed dependencies with yarn --ignore-engines.
 - Added Expo Router scaffolding, dependencies, and Tamagui configuration with seeded design tokens.
 - Implemented mock chain engine, Zustand stores, and placeholder route screens for core IA.
+- Built Tamagui-based UI components, upgraded Home screen visuals, and added linear gradient dependency.
 
