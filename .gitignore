@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Expo / React Native
+.expo/
+.expo-shared/
+.expo-go/
+expo-debug.log
+.expo-packager-cache/
+.expo-cache/
+web-build/
+android/
+ios/
+
+# Build outputs
+build/
+dist/
+out/
+*.ipa
+*.apk
+*.aab
+
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# Tooling
+.cursorrules
+.cursor
+.env
+.env.*
+
+# Other
+target/
+
