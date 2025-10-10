@@ -17,5 +17,6 @@
 - Aligned RN dependencies and routing bootstrap to restore Expo dev runtime.
 - Relocated Expo app to repository root and wired in campaign branding assets (kage logo + favicon kit).
 - Adjusted Zustand selectors to prevent render loops and ensured screens use stable hooks.
+- Restyled payments-centric home experience with light theme, STRK focus, and refreshed mock balances.
 - Aligned RN dependencies and routing bootstrap to restore Expo dev runtime.
 

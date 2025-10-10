@@ -1,4 +1,4 @@
-export type Currency = 'BTC' | 'USDC';
+export type Currency = 'STRK' | 'BTC' | 'USDC';
 
 export interface Balance {
   currency: Currency;

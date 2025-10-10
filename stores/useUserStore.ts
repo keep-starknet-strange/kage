@@ -20,7 +20,7 @@ type UserActions = {
 };
 
 const DEFAULT_STATE: UserState = {
-  theme: 'dark',
+  theme: 'light',
   paranoidMode: true,
   biometricsEnabled: true,
   decoyPinEnabled: false,

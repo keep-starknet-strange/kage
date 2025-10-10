@@ -15,7 +15,7 @@ const rng = createSeededRng(SEED);
 
 faker.seed(420042);
 
-const currencies: Balance['currency'][] = ['BTC', 'USDC'];
+const currencies: Balance['currency'][] = ['STRK', 'BTC', 'USDC'];
 
 const assocSets: AssocSet[] = ['RECOMMENDED', 'CUSTOM', 'MINIMAL'];
 
@@ -26,8 +26,13 @@ const associationCopy: Record<AssocSet, string> = {
 };
 
 const getSwapRate = (from: BalanceCurrency, to: BalanceCurrency) => {
+  if (from === to) return 1;
   if (from === 'USDC' && to === 'BTC') return 0.000018;
   if (from === 'BTC' && to === 'USDC') return 54000;
+  if (from === 'USDC' && to === 'STRK') return 12;
+  if (from === 'STRK' && to === 'USDC') return 1 / 12;
+  if (from === 'BTC' && to === 'STRK') return 320000;
+  if (from === 'STRK' && to === 'BTC') return 1 / 320000;
   return 1;
 };
 

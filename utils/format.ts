@@ -1,4 +1,8 @@
 export const formatCurrency = (amount: number, currency: string, options?: { minimumFractionDigits?: number }) => {
+  if (currency === 'STRK') {
+    const digits = options?.minimumFractionDigits ?? 2;
+    return `${amount.toFixed(digits)} STRK`;
+  }
   return Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,

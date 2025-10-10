@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { ArrowCircleUpRight, ArrowDownLeft, ArrowsLeftRight, ShieldCheck } from 'phosphor-react-native';
@@ -35,19 +36,30 @@ export default function HomeScreen() {
   }, [bootstrap]);
 
   const totals = useMemo(() => {
-    const publicTotal = balances.reduce((acc, balance) => acc + balance.publicAmount, 0);
-    const privateTotal = balances.reduce((acc, balance) => acc + balance.shieldedAmount, 0);
-    return { publicTotal, privateTotal };
+    const strk = balances.find((balance) => balance.currency === 'STRK');
+    const totalUsd = balances
+      .filter((balance) => balance.currency !== 'STRK')
+      .reduce((acc, balance) => acc + balance.shieldedAmount + balance.publicAmount, 0);
+    return {
+      strkValue: (strk?.shieldedAmount ?? 0) + (strk?.publicAmount ?? 0),
+      usdValue: totalUsd,
+    };
   }, [balances]);
 
   const privacyScore = useMemo(() => {
     if (!balances.length) return 0.5;
-    const ratio = totals.privateTotal / (totals.publicTotal + totals.privateTotal + 1e-6);
+    const shielded = balances.reduce((acc, item) => acc + item.shieldedAmount, 0);
+    const total = balances.reduce((acc, item) => acc + item.shieldedAmount + item.publicAmount, 0) + 1e-6;
+    const ratio = shielded / total;
     return Math.min(Math.max(ratio, 0.05), 0.95);
-  }, [balances.length, totals.privateTotal, totals.publicTotal]);
+  }, [balances]);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.colors.background }]}> 
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}> 
+      <View style={styles.headerRow}>
+        <Image source={require('../../kage-logo.png')} style={styles.logo} />
+        <Text style={[styles.brand, { color: theme.colors.text }]}>KAGE Pay</Text>
+      </View>
       <AppHeader title="Home" />
       <ScrollView
         onScrollBeginDrag={revealBalances}
@@ -66,11 +78,11 @@ export default function HomeScreen() {
             ) : (
               <View>
                 <Text style={[styles.balanceLabel, { color: theme.colors.textSecondary }]}>Shielded balance</Text>
-                <Text style={styles.balanceValue}>
-                  {balancesHidden ? '•••••' : formatCurrency(totals.privateTotal, 'USD')}
+                <Text style={[styles.balanceValue, { color: theme.colors.text }] }>
+                  {balancesHidden ? '•••••' : `${totals.strkValue.toFixed(2)} STRK`}
                 </Text>
                 <Text style={[styles.balanceCaption, { color: theme.colors.textMuted }]}> 
-                  Public: {formatCurrency(totals.publicTotal, 'USD')}
+                  Multi-asset: {formatCurrency(totals.usdValue, 'USD')}
                 </Text>
               </View>
             )}
@@ -115,7 +127,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <View style={styles.activityAmount}>
-                <Text style={styles.activityValue}>
+                <Text style={[styles.activityValue, { color: theme.colors.text }] }>
                   {txn.privacy === 'PRIVATE' ? '•' : ''}
                   {txn.amount.toFixed(4)} {txn.currency}
                 </Text>
@@ -125,13 +137,29 @@ export default function HomeScreen() {
           </Card>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  safeArea: {
     flex: 1,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 12,
+  },
+  logo: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  brand: {
+    fontSize: 20,
+    fontFamily: 'Inter_600SemiBold',
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -161,7 +189,6 @@ const styles = StyleSheet.create({
   balanceValue: {
     fontSize: 40,
     fontFamily: 'Inter_700Bold',
-    color: '#E6F0F2',
   },
   balanceCaption: {
     fontSize: 13,
@@ -217,7 +244,6 @@ const styles = StyleSheet.create({
   activityValue: {
     fontSize: 14,
     fontFamily: 'JetBrainsMono_600SemiBold',
-    color: '#E6F0F2',
   },
   activityStatus: {
     fontSize: 12,
