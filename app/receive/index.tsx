@@ -12,10 +12,8 @@ import { vibrateSuccess } from '../../utils/haptics';
 
 export default function ReceiveScreen() {
   const theme = useTheme();
-  const { receiveQueue, rotateReceiveAddress } = useWalletStore((state) => ({
-    receiveQueue: state.receiveQueue,
-    rotateReceiveAddress: state.rotateReceiveAddress,
-  }));
+  const receiveQueue = useWalletStore((state) => state.receiveQueue);
+  const rotateReceiveAddress = useWalletStore((state) => state.rotateReceiveAddress);
   const [copied, setCopied] = useState(false);
 
   const currentAddress = receiveQueue[0];

@@ -23,16 +23,12 @@ const ACTIONS = [
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const { balances, activity, loading, bootstrap } = useWalletStore((state) => ({
-    balances: state.balances,
-    activity: state.activity,
-    loading: state.loading,
-    bootstrap: state.bootstrap,
-  }));
-  const { balancesHidden, revealBalances } = usePrivacyStore((state) => ({
-    balancesHidden: state.balancesHidden,
-    revealBalances: state.revealBalances,
-  }));
+  const balances = useWalletStore((state) => state.balances);
+  const activity = useWalletStore((state) => state.activity);
+  const loading = useWalletStore((state) => state.loading);
+  const bootstrap = useWalletStore((state) => state.bootstrap);
+  const balancesHidden = usePrivacyStore((state) => state.balancesHidden);
+  const revealBalances = usePrivacyStore((state) => state.revealBalances);
 
   useEffect(() => {
     bootstrap().catch((error) => console.warn('bootstrap failed', error));

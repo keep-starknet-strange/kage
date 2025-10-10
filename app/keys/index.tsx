@@ -10,10 +10,8 @@ import { fromNow } from '../../utils/time';
 
 export default function KeysScreen() {
   const theme = useTheme();
-  const { viewingKeys, bootstrap } = useWalletStore((state) => ({
-    viewingKeys: state.viewingKeys,
-    bootstrap: state.bootstrap,
-  }));
+  const viewingKeys = useWalletStore((state) => state.viewingKeys);
+  const bootstrap = useWalletStore((state) => state.bootstrap);
 
   useEffect(() => {
     if (!viewingKeys.length) {

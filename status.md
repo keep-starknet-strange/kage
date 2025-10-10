@@ -16,5 +16,6 @@
 - Replaced Tamagui with styled-components theme system; refactored UI screens and components accordingly.
 - Aligned RN dependencies and routing bootstrap to restore Expo dev runtime.
 - Relocated Expo app to repository root and wired in campaign branding assets (kage logo + favicon kit).
+- Adjusted Zustand selectors to prevent render loops and ensured screens use stable hooks.
 - Aligned RN dependencies and routing bootstrap to restore Expo dev runtime.
 

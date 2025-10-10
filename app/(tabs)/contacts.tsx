@@ -8,10 +8,8 @@ import { maskAddress } from '../../utils/format';
 
 export default function ContactsScreen() {
   const theme = useTheme();
-  const { contacts, bootstrap } = useWalletStore((state) => ({
-    contacts: state.contacts,
-    bootstrap: state.bootstrap,
-  }));
+  const contacts = useWalletStore((state) => state.contacts);
+  const bootstrap = useWalletStore((state) => state.bootstrap);
 
   useEffect(() => {
     if (!contacts.length) {

@@ -9,11 +9,9 @@ import { fromNow } from '../../utils/time';
 
 export default function ActivityScreen() {
   const theme = useTheme();
-  const { activity, refreshActivity, bootstrap } = useWalletStore((state) => ({
-    activity: state.activity,
-    refreshActivity: state.refreshActivity,
-    bootstrap: state.bootstrap,
-  }));
+  const activity = useWalletStore((state) => state.activity);
+  const refreshActivity = useWalletStore((state) => state.refreshActivity);
+  const bootstrap = useWalletStore((state) => state.bootstrap);
 
   useEffect(() => {
     if (!activity.length) {
