@@ -15,4 +15,6 @@
 - Fixed Expo bundler by aliasing babel-plugin-tamagui dependency.
 - Replaced Tamagui with styled-components theme system; refactored UI screens and components accordingly.
 - Aligned RN dependencies and routing bootstrap to restore Expo dev runtime.
+- Relocated Expo app to repository root and wired in campaign branding assets (kage logo + favicon kit).
+- Aligned RN dependencies and routing bootstrap to restore Expo dev runtime.
 
