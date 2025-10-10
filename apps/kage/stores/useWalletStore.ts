@@ -1,0 +1,111 @@
+import { create } from 'zustand';
+
+import { mockChain } from '../domain/mockChain';
+import { AssocSet, Balance, Contact, Txn, ViewingKey } from '../domain/models';
+
+type WalletState = {
+  balances: Balance[];
+  activity: Txn[];
+  viewingKeys: ViewingKey[];
+  contacts: Contact[];
+  loading: boolean;
+  lastUpdated?: number;
+};
+
+type WalletActions = {
+  bootstrap: () => Promise<void>;
+  refreshBalances: () => Promise<void>;
+  refreshActivity: () => Promise<void>;
+  send: (options: {
+    to: string;
+    amount: number;
+    currency: Balance['currency'];
+    privacy: 'PUBLIC' | 'PRIVATE';
+    assocSet?: AssocSet;
+  }) => Promise<Txn>;
+  depositShielded: (options: { amount: number; denom: number }) => Promise<void>;
+  withdrawShielded: (options: { amount: number; assocSet: AssocSet }) => Promise<{ proof: string }>;
+  issueViewingKey: (label: string) => Promise<ViewingKey>;
+  revokeViewingKey: (id: string) => Promise<ViewingKey | undefined>;
+};
+
+const INITIAL_STATE: WalletState = {
+  balances: [],
+  activity: [],
+  viewingKeys: [],
+  contacts: [],
+  loading: false,
+};
+
+export const useWalletStore = create<WalletState & WalletActions>((set) => ({
+  ...INITIAL_STATE,
+  bootstrap: async () => {
+    set({ loading: true });
+    const [balances, activity, contacts, viewingKeys] = await Promise.all([
+      Promise.resolve(mockChain.getBalances()),
+      Promise.resolve(mockChain.listActivity()),
+      Promise.resolve(mockChain.listContacts()),
+      Promise.resolve(mockChain.listViewingKeys()),
+    ]);
+    set({
+      balances,
+      activity,
+      contacts,
+      viewingKeys,
+      loading: false,
+      lastUpdated: Date.now(),
+    });
+  },
+  refreshBalances: async () => {
+    const balances = await Promise.resolve(mockChain.getBalances());
+    set({ balances, lastUpdated: Date.now() });
+  },
+  refreshActivity: async () => {
+    const activity = await Promise.resolve(mockChain.listActivity());
+    set({ activity, lastUpdated: Date.now() });
+  },
+  send: async (options) => {
+    set({ loading: true });
+    const txn = await mockChain.send(options);
+    const balances = mockChain.getBalances();
+    const activity = mockChain.listActivity();
+    set({
+      balances,
+      activity,
+      loading: false,
+      lastUpdated: Date.now(),
+    });
+    return txn;
+  },
+  depositShielded: async ({ amount, denom }) => {
+    set({ loading: true });
+    await mockChain.depositShielded({ amount, denom });
+    set({
+      balances: mockChain.getBalances(),
+      activity: mockChain.listActivity(),
+      loading: false,
+      lastUpdated: Date.now(),
+    });
+  },
+  withdrawShielded: async ({ amount, assocSet }) => {
+    set({ loading: true });
+    const result = await mockChain.withdrawShielded({ amount, assocSet });
+    set({
+      balances: mockChain.getBalances(),
+      activity: mockChain.listActivity(),
+      loading: false,
+      lastUpdated: Date.now(),
+    });
+    return result;
+  },
+  issueViewingKey: async (label) => {
+    const key = await Promise.resolve(mockChain.issueViewingKey({ label }));
+    set({ viewingKeys: mockChain.listViewingKeys(), lastUpdated: Date.now() });
+    return key;
+  },
+  revokeViewingKey: async (id) => {
+    const key = await Promise.resolve(mockChain.revokeViewingKey(id));
+    set({ viewingKeys: mockChain.listViewingKeys(), lastUpdated: Date.now() });
+    return key;
+  },
+}));
