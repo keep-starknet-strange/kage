@@ -5,11 +5,9 @@ import { useAuthStore } from '../stores/useAuthStore';
 
 export default function Index() {
   const router = useRouter();
-  const { initialized, isOnboarded, isLocked } = useAuthStore((state) => ({
-    initialized: state.initialized,
-    isOnboarded: state.isOnboarded,
-    isLocked: state.isLocked,
-  }));
+  const initialized = useAuthStore((state) => state.initialized);
+  const isOnboarded = useAuthStore((state) => state.isOnboarded);
+  const isLocked = useAuthStore((state) => state.isLocked);
 
   useEffect(() => {
     if (!initialized) return;
