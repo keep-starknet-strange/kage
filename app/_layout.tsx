@@ -1,42 +1,39 @@
-import {Stack} from 'expo-router';
+import { AppProviders } from '@/providers/AppProviders';
+import { useAccountStore } from "@/stores/useAccountStore";
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect } from "react";
 import 'react-native-reanimated';
-import {StatusBar} from 'expo-status-bar';
-import {useAccountStore} from "@/stores/useAccountStore";
-import {ActivityIndicator, useColorScheme, View} from "react-native";
-import React, {useEffect} from "react";
-import {DarkTheme, DefaultTheme, ThemeProvider} from "@react-navigation/native";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-    const {isInitialized, initialize, starknetAccount} = useAccountStore();
-    const colorScheme = useColorScheme();
+    const { isInitialized, initialize, starknetAccount } = useAccountStore();
 
     useEffect(() => {
         if (!isInitialized) {
-            void initialize()
+            void initialize().then(() => {
+                SplashScreen.hide();
+            });
         }
     }, [isInitialized, initialize]);
 
-    if (!isInitialized) {
-        return (
-            <View style={{flex: 1, width: "100%", height: "100%", justifyContent: "center"}}>
-                <ActivityIndicator size={"large"}/>
-            </View>
-        );
-    } else {
-        return (
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <Stack>
-                    <Stack.Protected guard={starknetAccount === null}>
-                        <Stack.Screen name="welcome" options={{headerShown: false}}/>
-                    </Stack.Protected>
+    if (!isInitialized) return null;
 
-                    <Stack.Protected guard={starknetAccount !== null}>
-                        <Stack.Screen name="(wallet)" options={{headerShown: false}}/>
-                    </Stack.Protected>
-                </Stack>
+    return (
+        <AppProviders>
+            <Stack>
+                <Stack.Protected guard={starknetAccount === null}>
+                    <Stack.Screen name="welcome" options={{ headerShown: false }} />
+                </Stack.Protected>
 
-                <StatusBar style="auto" />
-            </ThemeProvider>
-        );
-    }
+                <Stack.Protected guard={starknetAccount !== null}>
+                    <Stack.Screen name="(wallet)" options={{ headerShown: false }} />
+                </Stack.Protected>
+            </Stack>
+
+            <StatusBar style="auto" />
+        </AppProviders>
+    );
 }

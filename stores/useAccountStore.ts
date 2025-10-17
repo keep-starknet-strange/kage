@@ -1,12 +1,10 @@
-import isValidPrivateKey from "@/utils/isValidPrivateKey";
-import randomHex from "@/utils/randomHex";
-import {getStringItem, removeItem, setStringItem} from "@/utils/secureStorage";
+import { getStringItem, removeItem, setStringItem } from "@/utils/secureStorage";
 import starknetAccountFromPrivateKey from "@/utils/starknetAccountFromPrivateKey";
-import {Account as TongoAccount} from "@fatsolutions/tongo-sdk";
-import {ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine} from "@fatsolutions/tongo-sdk/src/types";
-import {deriveStarknetKeyPairs, joinMnemonicWords, mnemonicToWords} from "@starkms/key-management";
-import {Account, CallData, RpcError, RpcProvider} from "starknet";
-import {create} from "zustand";
+import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
+import { ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine } from "@fatsolutions/tongo-sdk/src/types";
+import { deriveStarknetKeyPairs, joinMnemonicWords, mnemonicToWords } from "@starkms/key-management";
+import { Account, CallData, RpcError, RpcProvider } from "starknet";
+import { create } from "zustand";
 
 const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564";
 const TONGO_STRK_CONTRACT_ADDRESS = "0x00b4cca30f0f641e01140c1c388f55641f1c3fe5515484e622b6cb91d8cee585";
@@ -23,11 +21,7 @@ export interface AccountState {
     initialize: () => Promise<void>;
 
     readMnemonic: () => Promise<string[]>;
-    // "(welcome) (wallet)"
     restoreFromMnemonic: (mnemonic: string[], save: boolean) => Promise<void>;
-
-    restoreStarknetAccount: (privateKey: string) => Promise<void>;
-    createStarknetAccount: (privateKey?: string) => Promise<void>;
     deployStarknetAccount: () => Promise<void>;
 
     createTongoAccount: () => Promise<void>;
@@ -132,38 +126,6 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         if (deployed) {
             await associateTongoAccount(mnemonicPhrase)
         }
-    },
-
-    restoreStarknetAccount: async (privateKey: string) => {
-        const {provider} = get();
-
-        const key = privateKey.startsWith("0x")
-            ? privateKey
-            : `0x${privateKey}`;
-
-        if (!isValidPrivateKey(key)) {
-            throw new Error("Invalid Private Key");
-        }
-
-        const account = starknetAccountFromPrivateKey(key, OZ_ACCOUNT_CLASS_HASH, provider);
-        await setStringItem(OZ_ACCOUNT_MNEMONIC, key);
-
-        let classHash = await getAccountClassHash(provider, account);
-        set({starknetAccount: account, isDeployed: classHash !== null});
-        console.log("Account restored", account.address);
-    },
-    createStarknetAccount: async (privateKey?: string) => {
-        const {provider} = get();
-        const privKey: string = privateKey
-            ? (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`)
-            : `0x0${randomHex(63)}`;
-
-        console.log("Private Key: ", privKey);
-        const account = starknetAccountFromPrivateKey(privKey, OZ_ACCOUNT_CLASS_HASH, provider);
-        await setStringItem(OZ_ACCOUNT_MNEMONIC, privKey);
-
-        set({starknetAccount: account, isDeployed: false});
-        console.log("Account created ", account.address);
     },
     deployStarknetAccount: async () => {
         const {starknetAccount, provider} = get();
