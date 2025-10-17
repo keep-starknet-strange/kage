@@ -12,7 +12,7 @@
     "skipLibCheck": false,
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     }
   },
