@@ -1,58 +1,42 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
-import {
-  JetBrainsMono_400Regular,
-  JetBrainsMono_500Medium,
-  JetBrainsMono_600SemiBold,
-} from '@expo-google-fonts/jetbrains-mono';
-
-import { AppProviders } from '../providers/AppProviders';
-import '../utils/i18n';
-import { useAuthStore } from '../stores/useAuthStore';
+import {Stack} from 'expo-router';
+import 'react-native-reanimated';
+import {StatusBar} from 'expo-status-bar';
+import {useAccountStore} from "@/stores/useAccountStore";
+import {ActivityIndicator, useColorScheme, View} from "react-native";
+import React, {useEffect} from "react";
+import {DarkTheme, DefaultTheme, ThemeProvider} from "@react-navigation/native";
 
 export default function RootLayout() {
-  const initialize = useAuthStore((state) => state.initialize);
-  const initialized = useAuthStore((state) => state.initialized);
+    const {isInitialized, initialize, starknetAccount} = useAccountStore();
+    const colorScheme = useColorScheme();
 
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    JetBrainsMono_400Regular,
-    JetBrainsMono_500Medium,
-    JetBrainsMono_600SemiBold,
-  });
+    useEffect(() => {
+        if (!isInitialized) {
+            void initialize()
+        }
+    }, [isInitialized, initialize]);
 
-  useEffect(() => {
-    if (!initialized) {
-      initialize().catch(() => undefined);
+    if (!isInitialized) {
+        return (
+            <View style={{flex: 1, width: "100%", height: "100%", justifyContent: "center"}}>
+                <ActivityIndicator size={"large"}/>
+            </View>
+        );
+    } else {
+        return (
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <Stack>
+                    <Stack.Protected guard={starknetAccount === null}>
+                        <Stack.Screen name="welcome" options={{headerShown: false}}/>
+                    </Stack.Protected>
+
+                    <Stack.Protected guard={starknetAccount !== null}>
+                        <Stack.Screen name="(wallet)" options={{headerShown: false}}/>
+                    </Stack.Protected>
+                </Stack>
+
+                <StatusBar style="auto" />
+            </ThemeProvider>
+        );
     }
-  }, [initialize, initialized]);
-
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync().catch(() => undefined);
-    }
-  }, [fontsLoaded, fontError]);
-
-  if (!fontsLoaded || !initialized) {
-    return null;
-  }
-
-  return (
-    <AppProviders>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </AppProviders>
-  );
 }

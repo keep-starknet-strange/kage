@@ -4,7 +4,16 @@
     "strict": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "paths": {
+      "@/*": [
+        "./*"
+      ],
       "~/*": [
         "./*"
       ],
