@@ -1,8 +1,6 @@
-import {Pressable, StyleSheet, Text, View} from "react-native";
-import {Address} from "node:cluster";
+import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {useEffect, useState} from "react";
 import {Ionicons} from "@expo/vector-icons";
-import {Colors} from "@/constants/theme";
 import * as Clipboard from 'expo-clipboard'
 
 export type AddressViewProps = {
@@ -11,6 +9,7 @@ export type AddressViewProps = {
 
 export function AddressView({ address }: AddressViewProps) {
     const [displayedAddress, setDisplayedAddress] = useState("");
+    const [isCopied, setIsCopied] = useState(false);
 
     useEffect(() => {
         const parts = [];
@@ -30,11 +29,16 @@ export function AddressView({ address }: AddressViewProps) {
         <View style={styles.container}>
             <Text style={styles.text}>{displayedAddress}</Text>
 
-            <Pressable
-                onPress={() => void copyToClipboard(address)}
+            <TouchableOpacity
+                disabled={isCopied}
+                onPress={() => {
+                    void copyToClipboard(address)
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 1500);
+                }}
             >
-                <Ionicons name={"copy-outline"} size={24} color={styles.text.color} />
-            </Pressable>
+                <Ionicons name={isCopied ? "checkmark" : "copy-outline"} size={24} color={styles.text.color} />
+            </TouchableOpacity>
 
         </View>
     );

@@ -22,6 +22,7 @@ const MAPPING = {
     'shield.fill': 'privacy-tip',
     'trash.fill': 'delete',
     'key': 'shield',
+    'checkmark': 'check',
 } as IconMapping;
 
 /**

@@ -111,20 +111,22 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
         console.log("Restoring account from mnemonic");
         const mnemonicPhrase = joinMnemonicWords(mnemonic)
-        await setStringItem(OZ_ACCOUNT_MNEMONIC, mnemonicPhrase);
+        if (save) {
+            await setStringItem(OZ_ACCOUNT_MNEMONIC, mnemonicPhrase);
+        }
 
         // derive regular Starknet key pair for OZ Account Contract
         const args = {accountIndex: 0, addressIndex: 0}
         const accountContractKeyPairs = deriveStarknetKeyPairs(args, mnemonicPhrase, true)
 
-        // store setters
         // starknet account data
         const account = starknetAccountFromPrivateKey(accountContractKeyPairs.spendingKeyPair.privateSpendingKey, OZ_ACCOUNT_CLASS_HASH, provider);
+        set({starknetAccount: account});
 
         const classHash = await getAccountClassHash(provider, account);
         const deployed = classHash !== null;
         console.log("Account", account.address);
-        set({starknetAccount: account, isDeployed: deployed, isInitialized: true});
+        set({isDeployed: deployed, isInitialized: true});
 
         // tongo account data
         if (deployed) {
