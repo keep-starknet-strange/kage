@@ -1,4 +1,4 @@
-import { getStringItem, removeItem, setStringItem } from "@/utils/secureStorage";
+import { getStringItem, removeAll, removeItem, setStringItem } from "@/utils/secureStorage";
 import starknetAccountFromPrivateKey from "@/utils/starknetAccountFromPrivateKey";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import { ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine } from "@fatsolutions/tongo-sdk/src/types";
@@ -106,7 +106,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         console.log("Restoring account from mnemonic");
         const mnemonicPhrase = joinMnemonicWords(mnemonic)
         if (save) {
-            await setStringItem(OZ_ACCOUNT_MNEMONIC, mnemonicPhrase);
+            const saved = await setStringItem(OZ_ACCOUNT_MNEMONIC, mnemonicPhrase);
+            if (!saved) return
         }
 
         // derive regular Starknet key pair for OZ Account Contract
@@ -293,7 +294,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
             throw new Error("StarknetAccount not found. Nothing to remove...");
         }
 
-        await removeItem(OZ_ACCOUNT_MNEMONIC);
+        await removeAll();
         set({
             isInitialized: true,
             starknetAccount: null,
