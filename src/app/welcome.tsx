@@ -1,18 +1,21 @@
-import {Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
-import {generateMnemonicWords} from "@starkms/key-management";
+import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { generateMnemonicWords } from "@starkms/key-management";
 import * as Clipboard from "expo-clipboard";
-import {useAccountStore} from "@/stores/useAccountStore";
-import {useMnemonicStore} from "@/stores/useMnemonicStore";
-import {useMemo, useState} from "react";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
+import { useAccountStore } from "@/stores/useAccountStore";
+import { useMnemonicStore } from "@/stores/useMnemonicStore";
+import { useMemo, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PassphraseInput } from "@/components/passphrase-input";
 
 export default function WelcomeScreen() {
     const {
         restoreFromMnemonic,
     } = useAccountStore();
 
+
     const insets = useSafeAreaInsets();
-    const {setMnemonic, toWords, isValidMnemonic, clearMnemonic} = useMnemonicStore();
+    const [passphrase, setPassphrase] = useState<string | null>("");
+    const { setMnemonic, toWords, isValidMnemonic, clearMnemonic } = useMnemonicStore();
     const [restoreMnemonic, setRestoreMnemonic] = useState("");
     const words = useMemo(() => toWords(restoreMnemonic.trim()), [restoreMnemonic, toWords]);
     const wordCount = words.length;
@@ -20,6 +23,11 @@ export default function WelcomeScreen() {
     const isAllowedWordCount = allowedWordCounts.includes(wordCount);
     const isRestoreMnemonicValid = useMemo(() => isAllowedWordCount && isValidMnemonic(restoreMnemonic), [isAllowedWordCount, restoreMnemonic, isValidMnemonic]);
     const [isRestoring, setIsRestoring] = useState(false);
+
+
+    const handlePassphraseSet = (passphrase: string) => {
+        setPassphrase(passphrase);
+    };
 
     const handleCreateWallet = () => {
         const words = generateMnemonicWords();
@@ -49,14 +57,27 @@ export default function WelcomeScreen() {
 
     return (
         <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+
             <View style={styles.section}>
-                <Button onPress={handleCreateWallet} title={"Create a new (wallet)"}/>
+                <PassphraseInput 
+                    onPassphraseSet={handlePassphraseSet}
+                    placeholder="Enter a strong passphrase..."
+                    helperText="This passphrase will be used to encrypt your wallet"
+                />
+            </View>
+            
+            <View style={styles.section}>
+                <Button 
+                    onPress={handleCreateWallet} 
+                    title={"Create a new (wallet)"} 
+                    disabled={passphrase === null}
+                />
             </View>
 
             <View style={styles.dividerRow}>
-                <View style={styles.divider}/>
+                <View style={styles.divider} />
                 <Text style={styles.orText}>or</Text>
-                <View style={styles.divider}/>
+                <View style={styles.divider} />
             </View>
 
             <View style={styles.section}>
@@ -97,7 +118,7 @@ export default function WelcomeScreen() {
 
                 <Button
                     onPress={handleRestoreWallet}
-                    disabled={!isRestoreMnemonicValid || isRestoring}
+                    disabled={!isRestoreMnemonicValid || isRestoring || passphrase === null}
                     title={isRestoring ? "Restoring..." : "Restore (wallet)"}
                 />
             </View>
@@ -167,6 +188,6 @@ const styles = StyleSheet.create({
     helperText: {
         fontSize: 12,
     },
-    ok: {color: '#1f8b4c'},
-    warn: {color: '#c0392b'},
+    ok: { color: '#1f8b4c' },
+    warn: { color: '#c0392b' },
 });

@@ -4,10 +4,9 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from "react";
-import 'react-native-reanimated';
-import Keychain, { ACCESS_CONTROL, AUTHENTICATION_TYPE } from "react-native-keychain";
 import { Platform } from 'react-native';
-
+import Keychain, { ACCESS_CONTROL, AUTHENTICATION_TYPE } from "react-native-keychain";
+import 'react-native-reanimated';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {

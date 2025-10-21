@@ -2,7 +2,7 @@
 // Supports only the methods used by @fatsolutions/tongo-sdk: HKDF via importKey/deriveKey/exportKey
 
 import { hkdf } from '@noble/hashes/hkdf';
-import { sha256 } from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha2';
 
 type CryptoKeyLike = { __raw: Uint8Array };
 
