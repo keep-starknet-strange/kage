@@ -1,30 +1,44 @@
-import {StyleSheet, Text, View, ScrollView, Pressable} from 'react-native';
+import { useAccountStore } from "@/stores/useAccountStore";
 import * as Clipboard from 'expo-clipboard';
-import {useEffect, useMemo, useState} from 'react';
-import {useMnemonicStore} from '@/stores/useMnemonicStore';
-import {useAccountStore} from "@/stores/useAccountStore";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BackupScreen() {
-    const { readMnemonic } = useAccountStore()
     const insets = useSafeAreaInsets();
+    
+    const { readMnemonic } = useAccountStore()
     const [mnemonicWords, setMnemonicWords] = useState<string[]>([]);
+    const [showRetry, setShowRetry] = useState(false);
+    const [showLoading, setShowLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
     const hasMnemonic = useMemo(() => mnemonicWords.length > 0, [mnemonicWords]);
 
-    useEffect(() => {
-        const setup = async () => {
+    const fetchMnemonic = useCallback(async () => {
+        try {
+            setShowRetry(false);
+            setShowLoading(true);
             const mnemonicWords = await readMnemonic();
             setMnemonicWords(mnemonicWords);
-        };
-
-        void setup();
-
-        return () => {
-            setMnemonicWords([]);
+            setShowLoading(false);
+        } catch (e) {
+            console.error("Failed to read mnemonic", e);
+            setShowRetry(true);
+            setShowLoading(false);
         }
-    }, [readMnemonic, setMnemonicWords]);
+    }, [readMnemonic, setMnemonicWords, setShowRetry, setShowLoading]);
+
+    useFocusEffect(
+        useCallback(() => {
+            void fetchMnemonic();
+
+            return () => {
+                setMnemonicWords([]);
+            }
+        }, [fetchMnemonic, setMnemonicWords])
+    );
 
     const handleCopy = async () => {
         const phrase = mnemonicWords!.join(' ')
@@ -33,36 +47,55 @@ export default function BackupScreen() {
         setTimeout(() => setCopied(false), 1500);
     };
 
+    if (showLoading) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
+
     return (
         <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top }]}>
-            <View style={styles.block}>
-                <Text style={styles.title}>Backup Your Recovery Phrase</Text>
-                <Text style={styles.hint}>Never share these words with anyone.</Text>
-                {hasMnemonic && (
+            {hasMnemonic && (
+                <View style={styles.block}>
+                    <Text style={styles.title}>Backup Your Recovery Phrase</Text>
+                    <Text style={styles.hint}>Never share these words with anyone.</Text>
+
                     <View style={styles.inlineActions}>
                         <Pressable onPress={handleCopy} accessibilityRole="button">
                             <Text style={styles.link}>{copied ? 'Copied!' : 'Copy phrase'}</Text>
                         </Pressable>
                     </View>
-                )}
-            </View>
 
-            {hasMnemonic ? (
-                <View style={styles.wordsGrid}>
-                    {mnemonicWords!.map((w, i) => (
-                        <View key={`${w}-${i}`} style={styles.wordItem}>
-                            <Text style={styles.wordIndex}>{i + 1}.</Text>
-                            <Text style={styles.wordText}>{w}</Text>
-                        </View>
-                    ))}
-                </View>
-            ) : (
-                <View style={styles.block}>
-                    <Text style={styles.noMnemonic}>No mnemonic found in memory.</Text>
-                    <Text style={styles.noMnemonicSub}>Create or restore a wallet first.</Text>
+
+                    <View style={styles.wordsGrid}>
+                        {mnemonicWords!.map((w, i) => (
+                            <View key={`${w}-${i}`} style={styles.wordItem}>
+                                <Text style={styles.wordIndex}>{i + 1}.</Text>
+                                <Text style={styles.wordText}>{w}</Text>
+                            </View>
+                        ))}
+                    </View>
                 </View>
             )}
-        </ScrollView>
+
+            {!hasMnemonic && (
+                <View style={styles.block}>
+                    <Text style={styles.title}>Could not unlock mnemonic..</Text>
+                    <Text style={styles.noMnemonicSub}>Please provide authorization to unlock it.</Text>
+                </View>
+            )}
+
+            {showRetry && (
+                <Button
+                    title="Retry"
+                    onPress={() => {
+                        void readMnemonic();
+                    }}
+                />
+            )}
+        </ScrollView >
     );
 }
 

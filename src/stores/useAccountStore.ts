@@ -5,10 +5,11 @@ import { ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine } fr
 import { deriveStarknetKeyPairs, joinMnemonicWords, mnemonicToWords } from "@starkms/key-management";
 import { Account, CallData, RpcError, RpcProvider } from "starknet";
 import { create } from "zustand";
+import { useAppDependenciesStore } from "./appDependenciesStore";
+import { useAccessVaultStore } from "./accessVaultStore";
 
 const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564";
 const TONGO_STRK_CONTRACT_ADDRESS = "0x00b4cca30f0f641e01140c1c388f55641f1c3fe5515484e622b6cb91d8cee585";
-const OZ_ACCOUNT_MNEMONIC = "oz.account.mnemonic";
 
 export interface AccountState {
     readonly provider: RpcProvider;
@@ -21,7 +22,7 @@ export interface AccountState {
     initialize: () => Promise<void>;
 
     readMnemonic: () => Promise<string[]>;
-    restoreFromMnemonic: (mnemonic: string[], save: boolean) => Promise<void>;
+    restoreFromMnemonic: (mnemonic: string[], passphrase: string, save: boolean) => Promise<void>;
     deployStarknetAccount: () => Promise<void>;
 
     createTongoAccount: () => Promise<void>;
@@ -81,39 +82,64 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
     initialize: async () => {
         const {restoreFromMnemonic} = get();
-        const mnemonic = await getStringItem(OZ_ACCOUNT_MNEMONIC);
+        const {requestAccess} = useAccessVaultStore.getState();
+        const appDependencies = useAppDependenciesStore.getState();
+        const storage = appDependencies.keyValueStorage;
 
-        if (mnemonic) {
-            const words = mnemonicToWords(mnemonic);
-            await restoreFromMnemonic(words, false)
-        } else {
+
+        const passphraseSet = await storage.getOrDefault("device.passphrase.set", false);
+        set({isInitialized: true});
+        if (!passphraseSet) {
+            console.log("No seed phrase is set.");
+            return;
+        }
+
+        try {
+            const seedPhrase = await requestAccess()
+            
+            const words = mnemonicToWords(seedPhrase);
+            await restoreFromMnemonic(words, "", false)
+        } catch (e) {
+            console.error("Failed to access seed phrase", e);
             set({starknetAccount: null, isInitialized: true});
-            console.log("No Account from local storage");
         }
     },
 
     readMnemonic: async (): Promise<string[]> => {
-        const mnemonic = await getStringItem(OZ_ACCOUNT_MNEMONIC);
-        if (mnemonic) {
-            return mnemonicToWords(mnemonic);
-        } else {
-            return []
+        const {requestAccess} = useAccessVaultStore.getState();
+
+        try {
+            const mnemonic = await requestAccess();
+            if (mnemonic) {
+                return mnemonicToWords(mnemonic);
+            } else {
+                return []
+            }
+        } catch (e) {
+            console.error("Failed to access seed phrase", e);
+            throw e;
         }
     },
-    restoreFromMnemonic: async (mnemonic: string[], save: boolean) => {
+    restoreFromMnemonic: async (mnemonic: string[], passphrase: string, save: boolean) => {
         const {provider, associateTongoAccount} = get();
+        const storage = useAppDependenciesStore.getState().keyValueStorage;
 
-        console.log("Restoring account from mnemonic");
         const mnemonicPhrase = joinMnemonicWords(mnemonic)
         if (save) {
-            const saved = await setStringItem(OZ_ACCOUNT_MNEMONIC, mnemonicPhrase);
-            if (!saved) return
+            const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
+
+            const saved = await seedPhraseVault.setup(passphrase, mnemonicPhrase);
+            if (!saved) {
+                console.error("Failed to setup seed phrase vault");
+                return
+            }
+
+            await storage.set("device.passphrase.set", true);
         }
 
         // derive regular Starknet key pair for OZ Account Contract
         const args = {accountIndex: 0, addressIndex: 0}
         const accountContractKeyPairs = deriveStarknetKeyPairs(args, mnemonicPhrase, true)
-
         // starknet account data
         const account = starknetAccountFromPrivateKey(accountContractKeyPairs.spendingKeyPair.privateSpendingKey, OZ_ACCOUNT_CLASS_HASH, provider);
         set({starknetAccount: account});

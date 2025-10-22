@@ -7,7 +7,7 @@ import { randomBytes } from "../utils/Random"
 
 const KEY_LENGTH = 32
 const NONCE_LENGTH = 12
-const PBKDF2_ITERATIONS = 210_000
+const PBKDF2_ITERATIONS = 10
 const SALT_LENGTH = 32
 
 /**

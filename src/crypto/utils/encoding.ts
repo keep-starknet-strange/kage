@@ -19,7 +19,8 @@ export const bytesToString = (bytes: Uint8Array): string => {
  * Use this for encrypted data or any binary data that needs to be stored as a string.
  */
 export const bytesToBase64 = (bytes: Uint8Array): string => {
-  return Buffer.from(bytes).toString('base64')
+  // Buffer is not available in React Native. Use btoa for base64 encoding.
+  return globalThis.btoa(String.fromCharCode(...bytes));
 }
 
 /**
@@ -27,6 +28,12 @@ export const bytesToBase64 = (bytes: Uint8Array): string => {
  * Use this when retrieving encrypted data from storage.
  */
 export const base64ToBytes = (base64: string): Uint8Array => {
-  return new Uint8Array(Buffer.from(base64, 'base64'))
+  // Use atob and TextEncoder/TextDecoder for environments where Buffer is not available
+  const binaryString = globalThis.atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
 

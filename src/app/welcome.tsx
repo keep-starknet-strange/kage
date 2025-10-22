@@ -1,21 +1,22 @@
-import {Button, Modal, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
-import {generateMnemonicWords} from "@starkms/key-management";
+import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { generateMnemonicWords } from "@starkms/key-management";
 import * as Clipboard from "expo-clipboard";
-import {useAccountStore} from "@/stores/useAccountStore";
-import {useMnemonicStore} from "@/stores/useMnemonicStore";
-import {useMemo, useState} from "react";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {PassphraseInput} from "@/components/passphrase-input";
+import { useAccountStore } from "@/stores/useAccountStore";
+import { useMnemonicStore } from "@/stores/useMnemonicStore";
+import { useMemo, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { PassphraseInput } from "@/components/passphrase-input";
+import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 
 export default function WelcomeScreen() {
     const {
         restoreFromMnemonic,
     } = useAccountStore();
-
+    const { seedPhraseVault, keyValueStorage } = useAppDependenciesStore();
 
     const insets = useSafeAreaInsets();
     const [passphrase, setPassphrase] = useState<string | null>("");
-    const {setMnemonic, toWords, isValidMnemonic, clearMnemonic} = useMnemonicStore();
+    const { setMnemonic, toWords, isValidMnemonic, clearMnemonic } = useMnemonicStore();
     const [restoreMnemonic, setRestoreMnemonic] = useState("");
     const words = useMemo(() => toWords(restoreMnemonic.trim()), [restoreMnemonic, toWords]);
     const wordCount = words.length;
@@ -26,26 +27,28 @@ export default function WelcomeScreen() {
 
 
     const handleCreateWallet = () => {
+        if (!passphrase) return;
         const words = generateMnemonicWords();
 
-        void restoreFromMnemonic(words, true);
+        void restoreFromMnemonic(words, passphrase, true);
     };
 
     const handleRestoreWallet = async () => {
         if (!isRestoreMnemonicValid) return;
+        if (!passphrase) return;
         try {
             setIsRestoring(true);
             // Ensure no mnemonic remains in memory for restored wallets
             clearMnemonic();
             const parsed = toWords(restoreMnemonic);
-            await restoreFromMnemonic(parsed, true);
+            await restoreFromMnemonic(parsed, passphrase, true);
         } finally {
             setIsRestoring(false);
         }
     };
 
     return (
-        <View style={[styles.container, {paddingTop: insets.top, paddingBottom: insets.bottom}]}>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <View style={styles.section}>
                 {!passphrase && (
                     <PassphraseInput
@@ -57,7 +60,7 @@ export default function WelcomeScreen() {
                     />
                 )}
                 {passphrase && (
-                    <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                         <Text style={styles.sectionHint}>Passphrase is set ✓</Text>
 
                         <Pressable onPress={() => {
@@ -80,9 +83,9 @@ export default function WelcomeScreen() {
                     </View>
 
                     <View style={styles.dividerRow}>
-                        <View style={styles.divider}/>
+                        <View style={styles.divider} />
                         <Text style={styles.orText}>or</Text>
-                        <View style={styles.divider}/>
+                        <View style={styles.divider} />
                     </View>
 
                     <View style={styles.section}>
@@ -144,6 +147,17 @@ export default function WelcomeScreen() {
                     </View>
                 </>
             )}
+
+            <Button
+                title="Reset all data"
+                onPress={() => {
+                    void keyValueStorage.clear()
+                        .then(() => {
+                            void seedPhraseVault.reset();
+                        });
+
+                }}
+            />
         </View>
     );
 }
@@ -210,6 +224,6 @@ const styles = StyleSheet.create({
     helperText: {
         fontSize: 12,
     },
-    ok: {color: '#1f8b4c'},
-    warn: {color: '#c0392b'},
+    ok: { color: '#1f8b4c' },
+    warn: { color: '#c0392b' },
 });

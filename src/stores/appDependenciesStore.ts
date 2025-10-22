@@ -1,14 +1,17 @@
 import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
 import { EMIP3CryptoProvider } from "@/crypto/provider/EMIP3CryptoProvider";
-import EncryptedStorage from "@/storage/EncryptedStorage";
-import KeychainStorage from "@/storage/KeychainStorage";
+import EncryptedStorage from "@/storage/encrypted/EncryptedStorage";
+import KeychainStorage from "@/storage/encrypted/KeychainStorage";
 import { create } from "zustand";
 import SeedPhraseVault from "@/storage/SeedPhraseVault";
 import { Platform } from "react-native";
 import Constants from 'expo-constants';
+import KeyValueStorage from "@/storage/kv/KeyValueStorage";
+import AsyncKeyValueStorage from "@/storage/kv/AsyncKeyValueStorage";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
+    keyValueStorage: KeyValueStorage;
     cryptoProvider: CryptoProvider;
     seedPhraseVault: SeedPhraseVault;
 }
@@ -39,6 +42,7 @@ export const useAppDependenciesStore = create<AppDependencies>((set) => {
 
     return {
         encryptedStorage: encryptedStorage,
+        keyValueStorage: new AsyncKeyValueStorage(),
         cryptoProvider: cryptoProvider,
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
     }

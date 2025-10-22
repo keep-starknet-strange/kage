@@ -7,6 +7,8 @@ import React, { useEffect } from "react";
 import { Platform } from 'react-native';
 import Keychain, { ACCESS_CONTROL, AUTHENTICATION_TYPE } from "react-native-keychain";
 import 'react-native-reanimated';
+import AccessVaultModal from './access-vault-modal';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -17,7 +19,7 @@ export default function RootLayout() {
 
             // const genericPasswordServices = await Keychain.getAllGenericPasswordServices();
             // console.log("Generic password services", genericPasswordServices);
-            
+
             const canImplyAuth = await Keychain.canImplyAuthentication({
                 authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
             });
@@ -26,7 +28,7 @@ export default function RootLayout() {
             // - null: when none set
             const securityLevel = await Keychain.getSecurityLevel({
                 accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE
-            }); 
+            });
 
             // Results iOS
             // - null: when no biometrics
@@ -55,12 +57,12 @@ export default function RootLayout() {
 
         if (!isInitialized) {
             void initialize()
-            .then(() => {
-                keychainOps()
-            })
-            .then(() => {
-                SplashScreen.hide();
-            })
+                .then(() => {
+                    keychainOps()
+                })
+        } else {
+            console.log("SplashScreen.hide()");
+            SplashScreen.hide()
         }
     }, [isInitialized, initialize]);
 
@@ -78,6 +80,7 @@ export default function RootLayout() {
                 </Stack.Protected>
             </Stack>
 
+            <AccessVaultModal />
             <StatusBar style="auto" />
         </AppProviders>
     );
