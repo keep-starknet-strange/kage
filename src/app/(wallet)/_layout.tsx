@@ -27,6 +27,13 @@ export default function WalletLayout() {
                     tabBarIcon: ({color}) => <IconSymbol size={28} name="key" color={color}/>,
                 }}
             />
+            <Tabs.Screen
+                name="settings"
+                options={{
+                    title: 'Settings',
+                    tabBarIcon: ({color}) => <IconSymbol size={28} name="gearshape.fill" color={color}/>,
+                }}
+            />
         </Tabs>
     );
 }

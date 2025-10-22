@@ -80,6 +80,11 @@ export default class SeedPhraseVault {
         return true;
     }
 
+    async disableBiometrics(): Promise<void> {
+        await this.encryptedStorage.removeItem(KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY);
+        
+    }
+
     async getSeedPhraseWithPassphrase(passphrase: string): Promise<string | null> {
         const saltBase64 = await this.encryptedStorage.getItem(SALT_KEY);
         if (!saltBase64) {
