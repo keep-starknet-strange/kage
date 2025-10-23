@@ -4,7 +4,7 @@ import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AccessVaultModal() {
-    const { challenge, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
+    const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
     const [inputPassphrase, setInputPassphrase] = useState("");
     const [isInputVisible, setIsInputVisible] = useState(false);
     const insets = useSafeAreaInsets();
@@ -18,18 +18,28 @@ export default function AccessVaultModal() {
     }
 
     let innerContent = null;
-    if (challenge.prompt && challenge.prompt.type === "biometricsPrompt") {
+    if (prompt && prompt.validateWith === "biometrics") {
         innerContent = (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <Text style={styles.label}>Biometric Authentication</Text>
-                <Text style={styles.hint}>Please authenticate using Face ID or your fingerprint to unlock your wallet. Your biometric information is only used on your device to unlock your encrypted seed phrase.</Text>
+
+                {prompt.input == "seedphrase" && (
+                    <Text style={styles.hint}>Please authenticate using Face ID or your fingerprint to unlock your wallet. Your biometric information is only used on your device to unlock your encrypted seed phrase.</Text>
+                )}
             </View>
         );
-    } else if (challenge.prompt && challenge.prompt.type === "passphrasePrompt") { 
+    } else if (prompt && prompt.validateWith === "passphrase") { 
         innerContent = (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <Text style={styles.label}>Enter Passphrase</Text>
-                <Text style={styles.hint}>This is the passphrase you enetered in the welcome screen.</Text>
+
+                {prompt.input == "seedphrase" && (
+                    <Text style={styles.hint}>Please authenticate using your passphrase to unlock your wallet. Your passphrase is used to decrypt your encrypted seed phrase.</Text>
+                )}
+
+                <Text style={styles.hint}>{ 
+                    prompt.input == "seedphrase" ? "This will unlock your private key." : "Your passphrase is needed for enabling biometrics."
+                }</Text>
 
                 <View style={styles.inputContainer}>
                     <TextInput
@@ -65,7 +75,7 @@ export default function AccessVaultModal() {
     }
     return (
         <Modal
-            visible={challenge.prompt !== null}
+            visible={prompt !== null}
             animationType="slide"
             onRequestClose={onRequestClose}
 

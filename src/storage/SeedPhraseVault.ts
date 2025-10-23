@@ -14,7 +14,7 @@ export default class SeedPhraseVault {
     constructor(
         private readonly encryptedStorage: EncryptedStorage,
         private readonly cryptoProvider: CryptoProvider,
-    ) { }
+    ) {}
 
     async setup(passphrase: string, seedPhrase: string): Promise<boolean> {
         const passphraseBytes = stringToBytes(passphrase);
@@ -24,22 +24,19 @@ export default class SeedPhraseVault {
         const seedEncryptionKey = randomBytes(32);
         const seedPhraseBytes = stringToBytes(seedPhrase);
 
-        const encryptedSeedPhrase = await this.cryptoProvider.encrypt(seedPhraseBytes, seedEncryptionKey);
+        const encryptedSeedPhrase = await this.cryptoProvider.encrypt(seedPhraseBytes, seedEncryptionKey); 
         const encryptedSeedEncryptionKey = await this.cryptoProvider.encrypt(seedEncryptionKey, keyUser);
-
-        console.log("SALT", bytesToBase64(salt));
+        
         const saltSaved = await this.encryptedStorage.setItem(SALT_KEY, bytesToBase64(salt));
         if (!saltSaved) {
             console.error(`Failed to store ${SALT_KEY} in encrypted storage`);
             return false;
         }
-        console.log("ENC SEED PHRASE", bytesToBase64(encryptedSeedPhrase));
         const encryptedSeedPhraseSaved = this.encryptedStorage.setItem(ENCRYPTED_SEED_PHRASE, bytesToBase64(encryptedSeedPhrase));
         if (!encryptedSeedPhraseSaved) {
             console.error(`Failed to store ${ENCRYPTED_SEED_PHRASE} in encrypted storage`);
             return false;
         }
-        console.log("ENC SEED PHRASE KEY USER", bytesToBase64(encryptedSeedEncryptionKey));
         const encryptedSeedPhraseKeyUserSaved = await this.encryptedStorage.setItem(ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY, bytesToBase64(encryptedSeedEncryptionKey));
         if (!encryptedSeedPhraseKeyUserSaved) {
             console.error(`Failed to store ${ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY} in encrypted storage`);
@@ -50,6 +47,7 @@ export default class SeedPhraseVault {
     }
 
     async enableBiometrics(passphrase: string, prompt: AuthPrompt): Promise<boolean> {
+        console.log("Enabling Biometrics....", passphrase);
         const saltBase64 = await this.encryptedStorage.getItem(SALT_KEY);
         if (!saltBase64) {
             console.error(`${SALT_KEY} not found in encrypted storage`);
@@ -65,9 +63,8 @@ export default class SeedPhraseVault {
         }
         const encryptedSeedPhraseEncryptionKey = base64ToBytes(encryptedSeedPhraseEncryptionKeyBase64);
         const seedEncryptionKey = await this.cryptoProvider.decrypt(encryptedSeedPhraseEncryptionKey, keyUser);
-
         const stored = await this.encryptedStorage.setItem(
-            KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY,
+            KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY, 
             bytesToBase64(seedEncryptionKey),
             prompt
         );
@@ -90,23 +87,23 @@ export default class SeedPhraseVault {
             return null;
         }
         const salt = base64ToBytes(saltBase64);
-
+        
         const encryptedSeedPhraseBase64 = await this.encryptedStorage.getItem(ENCRYPTED_SEED_PHRASE);
         if (!encryptedSeedPhraseBase64) {
             console.error(`${ENCRYPTED_SEED_PHRASE} not found in encrypted storage`);
             return null;
         }
         const encryptedSeedPhrase = base64ToBytes(encryptedSeedPhraseBase64);
-
-        const encryptedSeedPhraseKeyUserBase64 = await this.encryptedStorage.getItem(ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY)
-        if (!encryptedSeedPhraseKeyUserBase64) {
+        
+        const encryptedSeedPhraseEncryptionKeyBase64 = await this.encryptedStorage.getItem(ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY)
+        if (!encryptedSeedPhraseEncryptionKeyBase64) {
             console.error(`${ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY} not found in keychain`);
             return null;
         }
-        const encryptedSeedPhraseKeyUser = base64ToBytes(encryptedSeedPhraseKeyUserBase64);
+        const encryptedSeedPhraseEncryptionKey = base64ToBytes(encryptedSeedPhraseEncryptionKeyBase64);
 
         const keyUser = await this.cryptoProvider.deriveKey(stringToBytes(passphrase), salt);
-        const seedEncryptionKey = await this.cryptoProvider.decrypt(encryptedSeedPhraseKeyUser, keyUser);
+        const seedEncryptionKey = await this.cryptoProvider.decrypt(encryptedSeedPhraseEncryptionKey, keyUser);        
         const seedPhraseBytes = await this.cryptoProvider.decrypt(encryptedSeedPhrase, seedEncryptionKey);
 
         return bytesToString(seedPhraseBytes);

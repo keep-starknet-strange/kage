@@ -14,8 +14,15 @@ export type AccessVaultChallenge = {
     prompt: PassphrasePrompt | BiometricsPrompt | null;
 }
 
+export type RequestAccessInput = "passphrase" | "seedphrase";
+
+export type RequestAccessPrompt = {
+    input: RequestAccessInput;
+    validateWith: "passphrase" | "biometrics";
+}
+
 export interface AccessVaultState {
-    challenge: AccessVaultChallenge;
+    prompt: RequestAccessPrompt | null;
 
     /**
      * Requests access to the vault and returns the user's seed phrase if access is granted.
@@ -31,30 +38,37 @@ export interface AccessVaultState {
      * 
      * @returns Promise<string> The user's decrypted seed phrase.
      */
-    requestAccess: () => Promise<string>;
-
-    readonly resolveSeedPhrasePromise: ((seedPhrase: string) => void) | null;
-    readonly rejectSeedPhrasePromise: ((reason?: string) => void) | null;
+    requestAccess: (input: RequestAccessInput) => Promise<string | null>;
+    
+    readonly passphrasePromise: {
+        resolve: (passphrase: string) => void;
+        reject: (reason?: string) => void;
+    } |  null;
 
     handlePassphraseSubmit: (passphrase: string) => Promise<void>;
     handlePassphraseReject: (reason?: string) => void;
 }
 
 export const useAccessVaultStore = create<AccessVaultState>((set) => ({
-    challenge: {
-        prompt: null,
-    },
-    resolveSeedPhrasePromise: null,
-    rejectSeedPhrasePromise: null,
+    prompt: null,
+    passphrasePromise: null,
 
-    requestAccess: async () => {
+    requestAccess: async (input: RequestAccessInput) => {    
+        if (input === "passphrase") {
+            return await new Promise<string>((resolve, reject) => {
+                set({
+                    prompt: { input, validateWith: "passphrase" },
+                    passphrasePromise: { resolve, reject },
+                })
+            });
+        }
+
         const appDependencies = useAppDependenciesStore.getState();
         const storage = appDependencies.keyValueStorage;
         const seedPhraseVault = appDependencies.seedPhraseVault;
 
         // Could decide what factor to request access.
         // For now, only one seed phrase is stored.
-
         let useBiometrics = await storage.getOrDefault("device.biometrics.enabled", false)
         if (useBiometrics) {
             const biometricsAvailable = await Keychain.getSupportedBiometryType() !== null;
@@ -66,9 +80,11 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
         }
 
         if (useBiometrics) {
-            set({ challenge: { prompt: { type: "biometricsPrompt" } } });
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics({});
-            set({challenge: { prompt: null } });
+            set({ prompt: { input, validateWith: "biometrics" } });
+            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics({
+                title: "Access Seed Phrase",
+            });
+            set({ prompt: null });
 
             if (seedPhrase) {
                 return seedPhrase;
@@ -76,50 +92,35 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                 throw new Error("Failed to get seed phrase with biometrics");
             }
         } else {
-            return new Promise((resolve, reject) => {
+            let passphrase = await new Promise<string>((resolve, reject) => {
                 set({
-                    challenge: { prompt: { type: "passphrasePrompt" } },
-                    resolveSeedPhrasePromise: resolve,
-                    rejectSeedPhrasePromise: reject,
+                    prompt: { input, validateWith: "passphrase" },
+                    passphrasePromise: { resolve, reject },
                 })
             })
-        }
 
+            const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
+            const seedPhrase = await seedPhraseVault.getSeedPhraseWithPassphrase(passphrase);
+            return seedPhrase;
+        }
     },
 
     handlePassphraseSubmit: async (passphrase: string) => {
-        const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
-        const seedPhrase = await seedPhraseVault.getSeedPhraseWithPassphrase(passphrase);
-        
         set((state) => {
-            if (state.resolveSeedPhrasePromise && state.rejectSeedPhrasePromise) {
-                if (seedPhrase) {
-                    state.resolveSeedPhrasePromise(seedPhrase);
-                } else {
-                    state.rejectSeedPhrasePromise("Failed to get seed phrase with passphrase");
-                }
-            }
+            state.passphrasePromise?.resolve(passphrase);
             return {
-                challenge: {
-                    prompt: null
-                },
-                resolvePassphreasePromise: null,
-                rejectPassphreasePromise: null,
+                prompt: null,
+                requestAccessPromise: null,
             }
         })
     },
 
     handlePassphraseReject: (reason?: string) => {
         set((state) => {
-            if (state.rejectSeedPhrasePromise) {
-                state.rejectSeedPhrasePromise(reason);
-            }
+            state.passphrasePromise?.reject(reason);
             return {
-                challenge: {
-                    prompt: null
-                },
-                resolvePassphreasePromise: null,
-                rejectPassphreasePromise: null,
+                prompt: null,
+                requestAccessPromise: null,
             }
         })
     },

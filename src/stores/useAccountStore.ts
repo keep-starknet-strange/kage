@@ -95,8 +95,14 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         }
 
         try {
-            const seedPhrase = await requestAccess()
+            const seedPhrase = await requestAccess("seedphrase")
             
+            if (!seedPhrase) {
+                console.error("Failed to access seed phrase");
+                set({starknetAccount: null, isInitialized: true});
+                return;
+            }
+
             const words = mnemonicToWords(seedPhrase);
             await restoreFromMnemonic(words, "", false)
         } catch (e) {
@@ -109,7 +115,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         const {requestAccess} = useAccessVaultStore.getState();
 
         try {
-            const mnemonic = await requestAccess();
+            const mnemonic = await requestAccess("seedphrase");
             if (mnemonic) {
                 return mnemonicToWords(mnemonic);
             } else {
@@ -175,8 +181,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
     createTongoAccount: async () => {
         const {associateTongoAccount} = get();
-        const mnemonic = await getStringItem(OZ_ACCOUNT_MNEMONIC);
+        const {requestAccess} = useAccessVaultStore.getState();
 
+        const mnemonic = await requestAccess("seedphrase");
         if (!mnemonic) throw new Error("No mnemonic stored");
 
         await associateTongoAccount(mnemonic);
