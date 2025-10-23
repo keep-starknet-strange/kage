@@ -2,6 +2,7 @@ import EncryptedStorage, { AuthPrompt } from "@/storage/encrypted/EncryptedStora
 import { base64ToBytes, bytesToBase64, bytesToString, stringToBytes } from "@/crypto/utils/encoding";
 import { randomBytes } from "@noble/hashes/utils";
 import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
+import { joinMnemonicWords } from "@starkms/key-management";
 
 const SALT_KEY = "salt";
 const ENCRYPTED_SEED_PHRASE = "encrypted_seed_phrase";
@@ -16,13 +17,13 @@ export default class SeedPhraseVault {
         private readonly cryptoProvider: CryptoProvider,
     ) {}
 
-    async setup(passphrase: string, seedPhrase: string): Promise<boolean> {
+    async setup(passphrase: string, seedPhraseWords: string[]): Promise<boolean> {
         const passphraseBytes = stringToBytes(passphrase);
         const salt = randomBytes(32);
 
         const keyUser = await this.cryptoProvider.deriveKey(passphraseBytes, salt);
         const seedEncryptionKey = randomBytes(32);
-        const seedPhraseBytes = stringToBytes(seedPhrase);
+        const seedPhraseBytes = stringToBytes(joinMnemonicWords(seedPhraseWords));
 
         const encryptedSeedPhrase = await this.cryptoProvider.encrypt(seedPhraseBytes, seedEncryptionKey); 
         const encryptedSeedEncryptionKey = await this.cryptoProvider.encrypt(seedEncryptionKey, keyUser);

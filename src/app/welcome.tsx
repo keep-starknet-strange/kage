@@ -28,6 +28,7 @@ export default function WelcomeScreen() {
         const trimmed = restoreMnemonicInput.trim();
         const words = mnemonicToWords(trimmed);
         
+        setWordCount(words.length);
         setIsAllowedWordCount(allowedWordCounts.includes(words.length));
         setIsMnemonicValid(validateMnemonic(trimmed, wordlist));
     }, [restoreMnemonicInput, mnemonicToWords, setIsAllowedWordCount, setIsMnemonicValid]);

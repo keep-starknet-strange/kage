@@ -1,50 +1,57 @@
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import Keychain from "react-native-keychain";
+import { mnemonicToWords } from "@starkms/key-management";
+import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
 
-export type PassphrasePrompt = {
-    type: "passphrasePrompt";
+export type AuthorizationType = "passphrase" | "biometrics";
+
+interface RequestSchema {
+    "seedphrase": {
+        output: string[] // Seed phrase words
+    };
+
+    "passphrase": {
+        output: string // Passphrase
+    };
 }
-
-export type BiometricsPrompt = {
-    type: "biometricsPrompt";
-}
-
-export type AccessVaultChallenge = {
-    prompt: PassphrasePrompt | BiometricsPrompt | null;
-}
-
-export type RequestAccessInput = "passphrase" | "seedphrase";
 
 export type RequestAccessPrompt = {
-    input: RequestAccessInput;
-    validateWith: "passphrase" | "biometrics";
+    input: keyof RequestSchema;
+    validateWith: AuthorizationType;
 }
 
 export interface AccessVaultState {
     prompt: RequestAccessPrompt | null;
 
     /**
-     * Requests access to the vault and returns the user's seed phrase if access is granted.
-     * 
-     * This method will determine which authentication factor to prompt the user for—
-     * either biometrics (if enabled and available) or a passphrase prompt.
-     * 
-     * Remarks:
-     * - Only one seed phrase is currently stored; future versions may support accessing multiple factors by ID.
-     * - If biometrics have been disabled or are unavailable, falls back to passphrase prompt.
-     * - Triggers the appropriate UI prompt by updating `challenge.prompt` in the store state.
-     * - Returns a promise that resolves to the unlocked seed phrase, or rejects if authentication fails.
-     * 
-     * @returns Promise<string> The user's decrypted seed phrase.
-     */
-    requestAccess: (input: RequestAccessInput) => Promise<string | null>;
+     /**
+      * Requests access to the vault and returns either the user's passphrase or their seed phrase,
+      * depending on the type of input requested.
+      * 
+      * This method can prompt the user for a passphrase, or for seed phrase access via biometrics (if enabled)
+      * or a fallback passphrase prompt as appropriate. An optional `prompt` parameter may be provided to customize
+      * the UI prompt (e.g., title or message) shown to the user during authentication.
+      * 
+      * Remarks:
+      * - Only one seed phrase is currently stored; future versions may support accessing multiple factors by ID.
+      * - If biometrics are disabled or unavailable, the method will fall back to a passphrase prompt for seed phrase access.
+      * - Triggers the appropriate UI prompt by updating `prompt` in the store state.
+      * - Returns a promise that resolves to either the unlocked seed phrase (as a string array), or the user's passphrase (as a string),
+      *   depending on the input specified.
+      * - The promise is rejected if authentication fails or is cancelled.
+      * 
+      * @param input The type of credential to request ("passphrase" or "seedphrase").
+      * @param [prompt] Optional prompt to customize the authentication UI (e.g., title/message).
+      * @returns Promise<string | string[]> The user's passphrase, or the decrypted seed phrase as an array of words.
+      */
+    requestAccess: <I extends keyof RequestSchema>(input: I, prompt?: AuthPrompt) => Promise<RequestSchema[I]["output"]>;
     
+    // Promises for async passphrase input
     readonly passphrasePromise: {
         resolve: (passphrase: string) => void;
         reject: (reason?: string) => void;
     } |  null;
-
     handlePassphraseSubmit: (passphrase: string) => Promise<void>;
     handlePassphraseReject: (reason?: string) => void;
 }
@@ -53,7 +60,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
     prompt: null,
     passphrasePromise: null,
 
-    requestAccess: async (input: RequestAccessInput) => {    
+    requestAccess: async <I extends keyof RequestSchema>(input: I, authPrompt?: AuthPrompt) => {    
         if (input === "passphrase") {
             return await new Promise<string>((resolve, reject) => {
                 set({
@@ -81,13 +88,11 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
         if (useBiometrics) {
             set({ prompt: { input, validateWith: "biometrics" } });
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics({
-                title: "Access Seed Phrase",
-            });
+            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" });
             set({ prompt: null });
 
             if (seedPhrase) {
-                return seedPhrase;
+                return mnemonicToWords(seedPhrase);
             } else {
                 throw new Error("Failed to get seed phrase with biometrics");
             }
@@ -101,7 +106,12 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
             const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
             const seedPhrase = await seedPhraseVault.getSeedPhraseWithPassphrase(passphrase);
-            return seedPhrase;
+
+            if (seedPhrase) {
+                return mnemonicToWords(seedPhrase);
+            } else {
+                throw new Error("Failed to get seed phrase with passphrase");
+            }
         }
     },
 

@@ -2,7 +2,7 @@ import { removeAll } from "@/utils/secureStorage";
 import starknetAccountFromPrivateKey from "@/utils/starknetAccountFromPrivateKey";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import { ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine } from "@fatsolutions/tongo-sdk/src/types";
-import { deriveStarknetKeyPairs, joinMnemonicWords, mnemonicToWords } from "@starkms/key-management";
+import { deriveStarknetKeyPairs, joinMnemonicWords } from "@starkms/key-management";
 import { Account, CallData, RpcError, RpcProvider } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
@@ -26,7 +26,7 @@ export interface AccountState {
     deployStarknetAccount: () => Promise<void>;
 
     createTongoAccount: () => Promise<void>;
-    associateTongoAccount: (mnemonic: string) => Promise<void>;
+    associateTongoAccount: (mnemonicWords: string[]) => Promise<void>;
     fund: (amount: bigint) => Promise<void>;
     transfer: (amount: bigint, recipientAddress: string) => Promise<void>;
     rollover: () => Promise<void>;
@@ -95,16 +95,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         }
 
         try {
-            const seedPhrase = await requestAccess("seedphrase")
-            
-            if (!seedPhrase) {
-                console.error("Failed to access seed phrase");
-                set({starknetAccount: null, isInitialized: true});
-                return;
-            }
-
-            const words = mnemonicToWords(seedPhrase);
-            await restoreFromMnemonic(words, "", false)
+            const seedPhraseWords = await requestAccess("seedphrase")
+        
+            await restoreFromMnemonic(seedPhraseWords, "", false)
         } catch (e) {
             console.error("Failed to access seed phrase", e);
             set({starknetAccount: null, isInitialized: true});
@@ -115,26 +108,20 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         const {requestAccess} = useAccessVaultStore.getState();
 
         try {
-            const mnemonic = await requestAccess("seedphrase");
-            if (mnemonic) {
-                return mnemonicToWords(mnemonic);
-            } else {
-                return []
-            }
+            return await requestAccess("seedphrase");
         } catch (e) {
             console.error("Failed to access seed phrase", e);
             throw e;
         }
     },
-    restoreFromMnemonic: async (mnemonic: string[], passphrase: string, save: boolean) => {
+    restoreFromMnemonic: async (mnemonicWords: string[], passphrase: string, save: boolean) => {
         const {provider, associateTongoAccount} = get();
         const storage = useAppDependenciesStore.getState().keyValueStorage;
 
-        const mnemonicPhrase = joinMnemonicWords(mnemonic)
         if (save) {
             const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
 
-            const saved = await seedPhraseVault.setup(passphrase, mnemonicPhrase);
+            const saved = await seedPhraseVault.setup(passphrase, mnemonicWords);
             if (!saved) {
                 console.error("Failed to setup seed phrase vault");
                 return
@@ -145,7 +132,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
         // derive regular Starknet key pair for OZ Account Contract
         const args = {accountIndex: 0, addressIndex: 0}
-        const accountContractKeyPairs = deriveStarknetKeyPairs(args, mnemonicPhrase, true)
+        const accountContractKeyPairs = deriveStarknetKeyPairs(args, joinMnemonicWords(mnemonicWords), true)
         // starknet account data
         const account = starknetAccountFromPrivateKey(accountContractKeyPairs.spendingKeyPair.privateSpendingKey, OZ_ACCOUNT_CLASS_HASH, provider);
         set({starknetAccount: account});
@@ -157,7 +144,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
         // tongo account data
         if (deployed) {
-            await associateTongoAccount(mnemonicPhrase)
+            await associateTongoAccount(mnemonicWords)
         }
     },
     deployStarknetAccount: async () => {
@@ -183,17 +170,16 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         const {associateTongoAccount} = get();
         const {requestAccess} = useAccessVaultStore.getState();
 
-        const mnemonic = await requestAccess("seedphrase");
-        if (!mnemonic) throw new Error("No mnemonic stored");
+        const mnemonicWords = await requestAccess("seedphrase");
 
-        await associateTongoAccount(mnemonic);
+        await associateTongoAccount(mnemonicWords);
     },
-    associateTongoAccount: async (mnemonic: string) => {
+    associateTongoAccount: async (mnemonicWords: string[]) => {
         const {provider, refreshBalance} = get();
 
         // Currently constant index
         const argsTongo = {accountIndex: 0, addressIndex: 0, coinType: 5454}
-        const tongoKeyPairs = deriveStarknetKeyPairs(argsTongo, mnemonic, false)
+        const tongoKeyPairs = deriveStarknetKeyPairs(argsTongo, joinMnemonicWords(mnemonicWords), false)
 
         const tongoAccount = new TongoAccount(tongoKeyPairs.spendingKeyPair.privateSpendingKey, TONGO_STRK_CONTRACT_ADDRESS, provider);
         console.log("Tongo Account: ", tongoAccount.tongoAddress());
