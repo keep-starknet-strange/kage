@@ -1,5 +1,5 @@
 import {ScrollView} from 'react-native';
-import {useAccountStore} from "@/stores/useAccountStore";
+import {useAccountStore} from "@/stores/accountStore";
 import AccountView from "@/components/account-view";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 

@@ -1,30 +1,37 @@
-import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { generateMnemonicWords } from "@starkms/key-management";
-import * as Clipboard from "expo-clipboard";
-import { useAccountStore } from "@/stores/useAccountStore";
-import { useMnemonicStore } from "@/stores/useMnemonicStore";
-import { useMemo, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PassphraseInput } from "@/components/passphrase-input";
+import { useAccountStore } from "@/stores/accountStore";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
+import { generateMnemonicWords, mnemonicToWords, validateMnemonic, wordlist } from "@starkms/key-management";
+import * as Clipboard from "expo-clipboard";
+import { useEffect, useState } from "react";
+import { Button, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {
     const {
         restoreFromMnemonic,
     } = useAccountStore();
-    const { seedPhraseVault, keyValueStorage } = useAppDependenciesStore();
-
     const insets = useSafeAreaInsets();
+    const { seedPhraseVault, keyValueStorage } = useAppDependenciesStore();
     const [passphrase, setPassphrase] = useState<string | null>("");
-    const { setMnemonic, toWords, isValidMnemonic, clearMnemonic } = useMnemonicStore();
-    const [restoreMnemonic, setRestoreMnemonic] = useState("");
-    const words = useMemo(() => toWords(restoreMnemonic.trim()), [restoreMnemonic, toWords]);
-    const wordCount = words.length;
-    const allowedWordCounts = [12, 24];
-    const isAllowedWordCount = allowedWordCounts.includes(wordCount);
-    const isRestoreMnemonicValid = useMemo(() => isAllowedWordCount && isValidMnemonic(restoreMnemonic), [isAllowedWordCount, restoreMnemonic, isValidMnemonic]);
+    
     const [isRestoring, setIsRestoring] = useState(false);
+    const [restoreMnemonicInput, setRestoreMnemonic] = useState("");
+    const [wordCount, setWordCount] = useState(0);
+    const [isAllowedWordCount, setIsAllowedWordCount] = useState(false);
+    const [isMnemonicValid, setIsMnemonicValid] = useState(false);
 
+
+    useEffect(() => {
+        const allowedWordCounts = [12, 24];
+
+        const trimmed = restoreMnemonicInput.trim();
+        const words = mnemonicToWords(trimmed);
+        
+        setIsAllowedWordCount(allowedWordCounts.includes(words.length));
+        setIsMnemonicValid(validateMnemonic(trimmed, wordlist));
+    }, [restoreMnemonicInput, mnemonicToWords, setIsAllowedWordCount, setIsMnemonicValid]);
+    
 
     const handleCreateWallet = () => {
         if (!passphrase) return;
@@ -34,14 +41,14 @@ export default function WelcomeScreen() {
     };
 
     const handleRestoreWallet = async () => {
-        if (!isRestoreMnemonicValid) return;
+        if (!isMnemonicValid) return;
         if (!passphrase) return;
         try {
             setIsRestoring(true);
-            // Ensure no mnemonic remains in memory for restored wallets
-            clearMnemonic();
-            const parsed = toWords(restoreMnemonic);
-            await restoreFromMnemonic(parsed, passphrase, true);
+            
+            const words = mnemonicToWords(restoreMnemonicInput.trim());
+            setRestoreMnemonic("")
+            await restoreFromMnemonic(words, passphrase, true);
         } finally {
             setIsRestoring(false);
         }
@@ -94,7 +101,7 @@ export default function WelcomeScreen() {
 
                         <TextInput
                             style={styles.mnemonicInput}
-                            value={restoreMnemonic}
+                            value={restoreMnemonicInput}
                             placeholder={"twelve or twenty four words..."}
                             onChangeText={setRestoreMnemonic}
                             multiline
@@ -118,7 +125,7 @@ export default function WelcomeScreen() {
                             >
                                 <Text style={styles.link}>Paste</Text>
                             </Pressable>
-                            {restoreMnemonic.length > 0 && (
+                            {restoreMnemonicInput.length > 0 && (
                                 <Pressable
                                     onPress={() => {
                                         setRestoreMnemonic("")
@@ -133,15 +140,15 @@ export default function WelcomeScreen() {
                         <View style={styles.validationRow}>
                             <Text
                                 style={[styles.helperText, isAllowedWordCount ? styles.ok : styles.warn]}>Words: {wordCount} {isAllowedWordCount ? '' : `(use 12 or 24)`}</Text>
-                            {restoreMnemonic.length > 0 && (
+                            {restoreMnemonicInput.length > 0 && (
                                 <Text
-                                    style={[styles.helperText, isRestoreMnemonicValid ? styles.ok : styles.warn]}>{isRestoreMnemonicValid ? 'Looks good' : 'Invalid phrase'}</Text>
+                                    style={[styles.helperText, isMnemonicValid ? styles.ok : styles.warn]}>{isMnemonicValid ? 'Looks good' : 'Invalid phrase'}</Text>
                             )}
                         </View>
 
                         <Button
                             onPress={handleRestoreWallet}
-                            disabled={!isRestoreMnemonicValid || isRestoring || passphrase === null}
+                            disabled={!isMnemonicValid || isRestoring || passphrase === null}
                             title={isRestoring ? "Restoring..." : "Restore (wallet)"}
                         />
                     </View>

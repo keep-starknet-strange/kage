@@ -1,7 +1,7 @@
-import { useAccountStore } from "@/stores/useAccountStore";
+import { useAccountStore } from "@/stores/accountStore";
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

@@ -1,4 +1,4 @@
-import { BiometricsPrompt, PassphrasePrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
+import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useState } from "react";
 import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

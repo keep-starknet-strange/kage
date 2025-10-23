@@ -1,14 +1,14 @@
-import {Account} from "@fatsolutions/tongo-sdk";
-import {ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle} from "react-native";
-import {AddressView} from "@/components/address-view";
+import { AddressView } from "@/components/address-view";
 import BalanceInput from "@/components/balance-input";
-import toSafeBigint from "@/utils/toSafeBigint";
+import { ProgressButton } from "@/components/progress-button";
 import TongoAddressInput from "@/components/tongo-address-input";
-import {useState} from "react";
-import {IconSymbol} from "@/components/ui/icon-symbol";
-import {useAccountStore} from "@/stores/useAccountStore";
-import {ProgressButton} from "@/components/progress-button";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useAccountStore } from "@/stores/accountStore";
 import formattedBalance from "@/utils/formattedBalance";
+import toSafeBigint from "@/utils/toSafeBigint";
+import { Account } from "@fatsolutions/tongo-sdk";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 
 export type AccountStateViewProps = {
     style?: StyleProp<ViewStyle>,

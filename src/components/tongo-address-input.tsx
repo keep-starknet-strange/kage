@@ -1,6 +1,6 @@
-import {Button, StyleProp, StyleSheet, TextInput, TextStyle, View, ViewStyle} from "react-native";
-import {useEffect, useState} from "react";
-import {pubKeyBase58ToAffine, TongoAddress} from "@fatsolutions/tongo-sdk/src/types";
+import { pubKeyBase58ToAffine } from "@fatsolutions/tongo-sdk/src/types";
+import { useEffect, useState } from "react";
+import { Button, StyleSheet, TextInput, View } from "react-native";
 
 export type TongoAddressInputProps = {
     placeholder: string;

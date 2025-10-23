@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, Switch, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Keychain, { BIOMETRY_TYPE } from "react-native-keychain";
-import { useFocusEffect } from "expo-router";
-import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
+import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { StyleSheet, Switch, Text, View } from "react-native";
+import Keychain, { BIOMETRY_TYPE } from "react-native-keychain";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
     const insets = useSafeAreaInsets();
@@ -46,6 +46,7 @@ export default function SettingsScreen() {
         if (!enabled) {
             await keyValueStorage.set("device.biometrics.enabled", false);
             await seedPhraseVault.disableBiometrics();
+            setIsBiometricsEnabled(false);
         } else {
             try {
                 const passphrase = await requestAccess("passphrase");

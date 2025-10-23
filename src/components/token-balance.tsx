@@ -1,9 +1,9 @@
-import {ActivityIndicator, Pressable, Text, View} from "react-native"
-import {useAccountStore} from "@/stores/useAccountStore";
-import {Abi, Contract, num, Provider, uint256} from "starknet";
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {IconSymbol} from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useAccountStore } from "@/stores/accountStore";
 import formattedBalance from "@/utils/formattedBalance";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Abi, Contract, Provider, uint256 } from "starknet";
 
 export interface TokenBalanceProps {
     token: string,

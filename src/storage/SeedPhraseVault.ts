@@ -47,7 +47,6 @@ export default class SeedPhraseVault {
     }
 
     async enableBiometrics(passphrase: string, prompt: AuthPrompt): Promise<boolean> {
-        console.log("Enabling Biometrics....", passphrase);
         const saltBase64 = await this.encryptedStorage.getItem(SALT_KEY);
         if (!saltBase64) {
             console.error(`${SALT_KEY} not found in encrypted storage`);

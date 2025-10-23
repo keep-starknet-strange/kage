@@ -1,12 +1,12 @@
-import { getStringItem, removeAll, removeItem, setStringItem } from "@/utils/secureStorage";
+import { removeAll } from "@/utils/secureStorage";
 import starknetAccountFromPrivateKey from "@/utils/starknetAccountFromPrivateKey";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import { ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine } from "@fatsolutions/tongo-sdk/src/types";
 import { deriveStarknetKeyPairs, joinMnemonicWords, mnemonicToWords } from "@starkms/key-management";
 import { Account, CallData, RpcError, RpcProvider } from "starknet";
 import { create } from "zustand";
-import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useAccessVaultStore } from "./accessVaultStore";
+import { useAppDependenciesStore } from "./appDependenciesStore";
 
 const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564";
 const TONGO_STRK_CONTRACT_ADDRESS = "0x00b4cca30f0f641e01140c1c388f55641f1c3fe5515484e622b6cb91d8cee585";

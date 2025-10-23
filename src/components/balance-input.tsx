@@ -1,6 +1,6 @@
-import {Button, StyleSheet, Text, TextInput, View} from "react-native";
-import {useState} from "react";
-import {ProgressButton} from "@/components/progress-button";
+import { ProgressButton } from "@/components/progress-button";
+import { useState } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 export type BalanceInputProps = {
     placeholder?: string;
