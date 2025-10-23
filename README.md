@@ -48,7 +48,6 @@ Make sure to [setup your environment first](https://docs.expo.dev/get-started/se
 # If not, run
 npm ci
 
-# Start expo and later choose the simulator/emulator of your preference
-npx expo start --clear
-
+# Compile the app natively
+npx expo run:ios
 ```
