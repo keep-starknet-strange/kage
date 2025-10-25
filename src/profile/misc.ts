@@ -1,0 +1,1 @@
+export type NetworkId = "SN_MAIN" | "SN_SEPOLIA" | string;

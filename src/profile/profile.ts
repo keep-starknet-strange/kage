@@ -1,4 +1,29 @@
 import { DeviceType } from "expo-device";
+import KeySource from "./keys/keySource";
+import { Header } from "./header";
+import Settings from "./settings/settings";
+import { Type } from "class-transformer";
+
+export class Profile1 {
+    @Type(() => Header)
+    readonly header: Header;
+
+    @Type(() => KeySource)
+    readonly keySources: readonly KeySource[];
+
+    @Type(() => Settings)
+    readonly settings: Settings;
+
+    constructor(
+        header: Header,
+        keySources: KeySource[],
+        settings: Settings
+    ) {
+        this.header = header;
+        this.keySources = keySources;
+        this.settings = settings;
+    }
+}
 
 export type Profile = {
     /**

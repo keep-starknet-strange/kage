@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { Profile } from "@/profile/profile";
 import { generateMnemonicWords } from "@starkms/key-management";
+import { Header } from "@/profile/header";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
@@ -54,8 +55,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
 
         
     },
-    update: async (profile: Profile) => {
-        
+    update: async (profile: Profile) => {        
         set({ profileState: profile });
     }
 }));
