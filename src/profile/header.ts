@@ -1,8 +1,8 @@
-import uuid from 'react-native-uuid';
-import * as ExpoDevice from 'expo-device';
 import { Expose, Type } from 'class-transformer';
+import * as ExpoDevice from 'expo-device';
+import uuid from 'react-native-uuid';
 
-export class Header {
+export default class Header {
     readonly version: ProfileVersion = ProfileVersion.V1;
 
     @Expose({ name: 'id' })

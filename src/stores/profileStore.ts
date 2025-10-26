@@ -1,9 +1,8 @@
+import Profile from "@/profile/profile";
 import { ProfileState } from "@/profile/profileState";
+import { generateMnemonicWords } from "@starkms/key-management";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
-import { Profile } from "@/profile/profile";
-import { generateMnemonicWords } from "@starkms/key-management";
-import { Header } from "@/profile/header";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
@@ -42,20 +41,22 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
     create: async (passphrase: string) => {
         const { profileState } = get();
         const { seedPhraseVault } = useAppDependenciesStore.getState();
-        
+
         if (!ProfileState.canCreateProfile(profileState)) {
             throw new Error(`Profile state cannot be created: ${profileState}`);
         }
-        
+
         const seedPhraseWords = generateMnemonicWords();
         const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
         if (!created) {
             throw new Error("Failed to create seed phrase");
         }
 
-        
+        const profile = Profile.createFromSeedPhrase(seedPhraseWords);
+        set({ profileState: profile });
     },
-    update: async (profile: Profile) => {        
+
+    update: async (profile: Profile) => {
         set({ profileState: profile });
     }
 }));

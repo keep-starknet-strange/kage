@@ -12,6 +12,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@ethersproject/shims": "^5.8.0",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.2",
     "@fatsolutions/tongo-sdk": "^1.2.0",
@@ -23,6 +24,7 @@
     "@react-navigation/native": "^7.1.8",
     "@starkms/key-management": "^0.0.2",
     "class-transformer": "^0.5.1",
+    "ethers": "^6.15.0",
     "expo": "54.0.19",
     "expo-clipboard": "~8.0.7",
     "expo-constants": "~18.0.9",

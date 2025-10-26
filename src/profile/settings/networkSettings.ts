@@ -18,15 +18,15 @@ export default class NetworkSettings {
         if (this.definitions
             .filter(definition => definition.chainId === "SN_MAIN" || definition.chainId === "SN_SEPOLIA")
             .length < 2) {
-                throw new Error("NetworkSettings must at least contain SN_MAIN and SN_SEPOLIA definitions.");
-            }
+            throw new Error("NetworkSettings must at least contain SN_MAIN and SN_SEPOLIA definitions.");
+        }
     }
 
     addNetwork(definition: NetworkDerfinition): NetworkSettings {
         if (this.definitions.some(def => def.chainId === definition.chainId)) {
             throw new Error(`NetworkSettings already contains a definition for chain ${definition.chainId}.`);
         }
-        
+
         return new NetworkSettings(
             this.current,
             [...this.definitions, definition]
@@ -37,13 +37,22 @@ export default class NetworkSettings {
         if (!this.definitions.some(def => def.chainId === network)) {
             throw new Error(`NetworkSettings does not contain a definition for chain ${network}.`);
         }
-        
+
         return new NetworkSettings(
             network,
             this.definitions
         );
     }
-    
+
+    currentNetworkDefinition(): NetworkDerfinition {
+        const currentDefinition = this.definitions.find((definition) => definition.chainId == this.current)
+        if (!currentDefinition) {
+            throw new Error(`Network ${this.current} is not yet defined.`)
+        }
+
+        return currentDefinition;
+    }
+
     static default(): NetworkSettings {
         return new NetworkSettings(
             "SN_SEPOLIA",

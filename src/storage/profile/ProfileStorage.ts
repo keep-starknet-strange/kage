@@ -1,16 +1,17 @@
-import { Profile } from '@/profile/profile';
-import { File, Directory, Paths } from 'expo-file-system';
+import Profile from '@/profile/profile';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { File, Paths } from 'expo-file-system';
 
 export default class ProfileStorage {
     private readonly profileFile: File = new File(Paths.bundle, "profile.json");
 
     async storeProfile(profile: Profile): Promise<void> {
-        const profileString = JSON.stringify(profile);
+        const profilePlain = instanceToPlain(profile);
+        const profileString = JSON.stringify(profilePlain);
 
         if (!this.profileFile.exists) {
             this.profileFile.create();
         }
-
 
         this.profileFile.write(profileString);
     }
@@ -21,14 +22,9 @@ export default class ProfileStorage {
         }
 
         const rawProfileJson = await this.profileFile.text();
-        if (rawProfileJson === null || rawProfileJson.trim().length === 0) {
-            return null;
-        }
-        // TODO add possible validation with zod
+        const profilePlain: Object = JSON.parse(rawProfileJson);
 
-        const type = typeof Profile;
-        const profile = JSON.parse(rawProfileJson) as Profile;
-        return profile;
+        return plainToInstance(Profile, profilePlain);
     }
 
     async deleteProfile(): Promise<void> {

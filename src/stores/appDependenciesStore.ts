@@ -40,8 +40,6 @@ export const useAppDependenciesStore = create<AppDependencies>((set) => {
     const encryptedStorage = new KeychainStorage(getApplicationId());
     const cryptoProvider = new EMIP3CryptoProvider();
 
-    console.log("App Dependencies Initialized");
-
     return {
         encryptedStorage: encryptedStorage,
         keyValueStorage: new AsyncKeyValueStorage(),
