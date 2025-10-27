@@ -1,13 +1,12 @@
+import { ProfileState } from '@/profile/profileState';
 import { AppProviders } from '@/providers/AppProviders';
-import { useAccountStore } from "@/stores/accountStore";
+import { useProfileStore } from '@/stores/profileStore';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
-import { useProfileStore } from '@/stores/profileStore';
-import { ProfileState } from '@/profile/profileState';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,6 +19,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (!ProfileState.isInitialized(profileState)) {
+            console.log("initialize");
             void initialize().then(() => {
                 SplashScreen.hide()
             })

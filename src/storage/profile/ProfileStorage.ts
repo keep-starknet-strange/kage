@@ -3,7 +3,7 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { File, Paths } from 'expo-file-system';
 
 export default class ProfileStorage {
-    private readonly profileFile: File = new File(Paths.bundle, "profile.json");
+    private readonly profileFile: File = new File(Paths.cache, "profile.json");
 
     async storeProfile(profile: Profile): Promise<void> {
         const profilePlain = instanceToPlain(profile);
@@ -23,7 +23,6 @@ export default class ProfileStorage {
 
         const rawProfileJson = await this.profileFile.text();
         const profilePlain: Object = JSON.parse(rawProfileJson);
-
         return plainToInstance(Profile, profilePlain);
     }
 

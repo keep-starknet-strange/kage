@@ -15,11 +15,11 @@ export default class NetworkSettings {
         this.current = current;
         this.definitions = definitions;
 
-        if (this.definitions
-            .filter(definition => definition.chainId === "SN_MAIN" || definition.chainId === "SN_SEPOLIA")
-            .length < 2) {
-            throw new Error("NetworkSettings must at least contain SN_MAIN and SN_SEPOLIA definitions.");
-        }
+        // if (this.definitions
+        //     .filter(definition => definition.chainId === "SN_MAIN" || definition.chainId === "SN_SEPOLIA")
+        //     .length < 2) {
+        //     throw new Error("NetworkSettings must at least contain SN_MAIN and SN_SEPOLIA definitions.");
+        // }
     }
 
     addNetwork(definition: NetworkDerfinition): NetworkSettings {
@@ -44,7 +44,7 @@ export default class NetworkSettings {
         );
     }
 
-    currentNetworkDefinition(): NetworkDerfinition {
+    get currentNetworkDefinition(): NetworkDerfinition {
         const currentDefinition = this.definitions.find((definition) => definition.chainId == this.current)
         if (!currentDefinition) {
             throw new Error(`Network ${this.current} is not yet defined.`)

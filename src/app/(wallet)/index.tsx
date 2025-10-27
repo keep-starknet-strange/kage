@@ -1,7 +1,6 @@
-import {ScrollView} from 'react-native';
-import {useAccountStore} from "@/stores/accountStore";
-import AccountView from "@/components/account-view";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
+import { useAccountStore } from "@/stores/accountStore";
+import { ScrollView, Text } from 'react-native';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
     const {
@@ -12,7 +11,7 @@ export default function HomeScreen() {
     if (starknetAccount) {
         return (
             <ScrollView style={{flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom}}>
-                <AccountView starknetAccount={starknetAccount}/>
+                <Text>Accounts</Text>
             </ScrollView>
         );
     }

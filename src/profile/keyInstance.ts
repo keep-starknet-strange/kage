@@ -14,14 +14,15 @@ export abstract class KeyInstance {
 }
 
 export default class HDKeyInstance extends KeyInstance {
-    readonly derivationPath: string;
+    readonly index: number;
+    // TODO Teddy: can store derivation path instead of jusst index later
 
     constructor(
         keySourceId: string,
         publicKey: string,
-        derivationPath: string
-    ) {
+        index: number
+    ) { 
         super(keySourceId, publicKey)
-        this.derivationPath = derivationPath;
+        this.index = index;
     }
 }
