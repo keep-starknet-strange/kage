@@ -1,14 +1,12 @@
-import {Account} from "starknet";
-import {Button, Pressable, Text, View} from "react-native";
-import {useEffect, useState} from "react";
-import {AddressView} from "@/components/address-view";
-import {IconSymbol} from "@/components/ui/icon-symbol";
-import {useAccountStore} from "@/stores/useAccountStore";
-import {useMnemonicStore} from "@/stores/useMnemonicStore";
-import TongoAccountView from "@/components/tongo-account-view";
-import {ProgressButton} from "@/components/progress-button";
-import {useRouter} from "expo-router";
+import { AddressView } from "@/components/address-view";
+import { ProgressButton } from "@/components/progress-button";
 import TokenBalance from "@/components/token-balance";
+import TongoAccountView from "@/components/tongo-account-view";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useAccountStore } from "@/stores/accountStore";
+import { useEffect, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { Account } from "starknet";
 
 export type AccountViewProps = {
     starknetAccount: Account;

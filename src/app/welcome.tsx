@@ -1,106 +1,181 @@
-import {Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
-import {generateMnemonicWords} from "@starkms/key-management";
+import { PassphraseInput } from "@/components/passphrase-input";
+import { useAccountStore } from "@/stores/accountStore";
+import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
+import { generateMnemonicWords, mnemonicToWords, validateMnemonic, wordlist } from "@starkms/key-management";
 import * as Clipboard from "expo-clipboard";
-import {useAccountStore} from "@/stores/useAccountStore";
-import {useMnemonicStore} from "@/stores/useMnemonicStore";
-import {useMemo, useState} from "react";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
+import { Button, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {
     const {
         restoreFromMnemonic,
     } = useAccountStore();
-
     const insets = useSafeAreaInsets();
-    const {setMnemonic, toWords, isValidMnemonic, clearMnemonic} = useMnemonicStore();
-    const [restoreMnemonic, setRestoreMnemonic] = useState("");
-    const words = useMemo(() => toWords(restoreMnemonic.trim()), [restoreMnemonic, toWords]);
-    const wordCount = words.length;
-    const allowedWordCounts = [12, 24];
-    const isAllowedWordCount = allowedWordCounts.includes(wordCount);
-    const isRestoreMnemonicValid = useMemo(() => isAllowedWordCount && isValidMnemonic(restoreMnemonic), [isAllowedWordCount, restoreMnemonic, isValidMnemonic]);
+    const { seedPhraseVault, keyValueStorage } = useAppDependenciesStore();
+    const [passphrase, setPassphrase] = useState<string | null>("");
+    
     const [isRestoring, setIsRestoring] = useState(false);
+    const [restoreMnemonicInput, setRestoreMnemonic] = useState("");
+    const [wordCount, setWordCount] = useState(0);
+    const [isAllowedWordCount, setIsAllowedWordCount] = useState(false);
+    const [isMnemonicValid, setIsMnemonicValid] = useState(false);
+
+
+    useEffect(() => {
+        const allowedWordCounts = [12, 24];
+
+        const trimmed = restoreMnemonicInput.trim();
+        const words = mnemonicToWords(trimmed);
+        
+        setWordCount(words.length);
+        setIsAllowedWordCount(allowedWordCounts.includes(words.length));
+        setIsMnemonicValid(validateMnemonic(trimmed, wordlist));
+    }, [restoreMnemonicInput, mnemonicToWords, setIsAllowedWordCount, setIsMnemonicValid]);
+    
 
     const handleCreateWallet = () => {
+        if (!passphrase) return;
         const words = generateMnemonicWords();
-        setMnemonic(words);
-        void restoreFromMnemonic(words, true);
+
+        void restoreFromMnemonic(words, passphrase, true);
     };
 
     const handleRestoreWallet = async () => {
-        if (!isRestoreMnemonicValid) return;
+        if (!isMnemonicValid) return;
+        if (!passphrase) return;
         try {
             setIsRestoring(true);
-            // Ensure no mnemonic remains in memory for restored wallets
-            clearMnemonic();
-            const parsed = toWords(restoreMnemonic);
-            await restoreFromMnemonic(parsed, true);
+            
+            const words = mnemonicToWords(restoreMnemonicInput.trim());
+            setRestoreMnemonic("")
+            await restoreFromMnemonic(words, passphrase, true);
         } finally {
             setIsRestoring(false);
         }
     };
 
-    const handlePaste = async () => {
-        const text = await Clipboard.getStringAsync();
-        if (text) setRestoreMnemonic(text);
-    };
-
-    const handleClear = () => setRestoreMnemonic("");
-
     return (
         <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <View style={styles.section}>
-                <Button onPress={handleCreateWallet} title={"Create a new (wallet)"}/>
-            </View>
+                {!passphrase && (
+                    <PassphraseInput
+                        onPassphraseSet={(passphrase) => {
+                            setPassphrase(passphrase)
+                        }}
+                        placeholder="Enter a strong passphrase..."
+                        helperText="This passphrase will be used to encrypt your wallet"
+                    />
+                )}
+                {passphrase && (
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <Text style={styles.sectionHint}>Passphrase is set ✓</Text>
 
-            <View style={styles.dividerRow}>
-                <View style={styles.divider}/>
-                <Text style={styles.orText}>or</Text>
-                <View style={styles.divider}/>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Restore from recovery phrase</Text>
-                <Text style={styles.sectionHint}>Paste your 12 or 24 words. Separate by spaces.</Text>
-
-                <TextInput
-                    style={styles.mnemonicInput}
-                    value={restoreMnemonic}
-                    placeholder={"twelve or twenty four words..."}
-                    onChangeText={setRestoreMnemonic}
-                    multiline
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    textAlignVertical="top"
-                    returnKeyType="done"
-                    onSubmitEditing={handleRestoreWallet}
-                />
-                <View style={styles.inlineActions}>
-                    <Pressable onPress={handlePaste} accessibilityRole="button">
-                        <Text style={styles.link}>Paste</Text>
-                    </Pressable>
-                    {restoreMnemonic.length > 0 && (
-                        <Pressable onPress={handleClear} accessibilityRole="button">
+                        <Pressable onPress={() => {
+                            setPassphrase(null)
+                        }} accessibilityRole="button">
                             <Text style={styles.link}>Clear</Text>
                         </Pressable>
-                    )}
-                </View>
-
-                <View style={styles.validationRow}>
-                    <Text
-                        style={[styles.helperText, isAllowedWordCount ? styles.ok : styles.warn]}>Words: {wordCount} {isAllowedWordCount ? '' : `(use 12 or 24)`}</Text>
-                    {restoreMnemonic.length > 0 && (
-                        <Text
-                            style={[styles.helperText, isRestoreMnemonicValid ? styles.ok : styles.warn]}>{isRestoreMnemonicValid ? 'Looks good' : 'Invalid phrase'}</Text>
-                    )}
-                </View>
-
-                <Button
-                    onPress={handleRestoreWallet}
-                    disabled={!isRestoreMnemonicValid || isRestoring}
-                    title={isRestoring ? "Restoring..." : "Restore (wallet)"}
-                />
+                    </View>
+                )}
             </View>
+
+            {passphrase && (
+                <>
+                    <View style={styles.section}>
+                        <Button
+                            onPress={handleCreateWallet}
+                            title={"Create a new (wallet)"}
+                            disabled={passphrase == null}
+                        />
+                    </View>
+
+                    <View style={styles.dividerRow}>
+                        <View style={styles.divider} />
+                        <Text style={styles.orText}>or</Text>
+                        <View style={styles.divider} />
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Restore from recovery phrase</Text>
+                        <Text style={styles.sectionHint}>Paste your 12 or 24 words. Separate by spaces.</Text>
+
+                        <TextInput
+                            style={styles.mnemonicInput}
+                            value={restoreMnemonicInput}
+                            placeholder={"twelve or twenty four words..."}
+                            onChangeText={setRestoreMnemonic}
+                            multiline
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            textAlignVertical="top"
+                            returnKeyType="done"
+                            onSubmitEditing={handleRestoreWallet}
+                        />
+                        <View style={styles.inlineActions}>
+                            <Pressable
+                                onPress={() => {
+                                    const handlePaste = async () => {
+                                        try {
+                                            const hasText = await Clipboard.hasStringAsync();
+                                            if (!hasText) {
+                                                return;
+                                            }
+                                            const text = await Clipboard.getStringAsync();
+                                            if (text) setRestoreMnemonic(text);
+                                        } catch (e) {
+                                            // Some iOS simulator versions log pasteboard errors for non-text items.
+                                            // Gracefully ignore and avoid spamming logs.
+                                            console.warn('Paste failed or clipboard not text:', e);
+                                        }
+                                    };
+
+                                    void handlePaste();
+                                }}
+                                accessibilityRole="button"
+                            >
+                                <Text style={styles.link}>Paste</Text>
+                            </Pressable>
+                            {restoreMnemonicInput.length > 0 && (
+                                <Pressable
+                                    onPress={() => {
+                                        setRestoreMnemonic("")
+                                    }}
+                                    accessibilityRole="button"
+                                >
+                                    <Text style={styles.link}>Clear</Text>
+                                </Pressable>
+                            )}
+                        </View>
+
+                        <View style={styles.validationRow}>
+                            <Text
+                                style={[styles.helperText, isAllowedWordCount ? styles.ok : styles.warn]}>Words: {wordCount} {isAllowedWordCount ? '' : `(use 12 or 24)`}</Text>
+                            {restoreMnemonicInput.length > 0 && (
+                                <Text
+                                    style={[styles.helperText, isMnemonicValid ? styles.ok : styles.warn]}>{isMnemonicValid ? 'Looks good' : 'Invalid phrase'}</Text>
+                            )}
+                        </View>
+
+                        <Button
+                            onPress={handleRestoreWallet}
+                            disabled={!isMnemonicValid || isRestoring || passphrase === null}
+                            title={isRestoring ? "Restoring..." : "Restore (wallet)"}
+                        />
+                    </View>
+                </>
+            )}
+
+            <Button
+                title="Reset all data"
+                onPress={() => {
+                    void keyValueStorage.clear()
+                        .then(() => {
+                            void seedPhraseVault.reset();
+                        });
+
+                }}
+            />
         </View>
     );
 }
@@ -167,6 +242,6 @@ const styles = StyleSheet.create({
     helperText: {
         fontSize: 12,
     },
-    ok: {color: '#1f8b4c'},
-    warn: {color: '#c0392b'},
+    ok: { color: '#1f8b4c' },
+    warn: { color: '#c0392b' },
 });

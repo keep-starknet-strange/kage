@@ -1,52 +1,82 @@
-import * as SecureStore from 'expo-secure-store';
+import Keychain, { ACCESS_CONTROL, ACCESSIBLE } from "react-native-keychain";
 
 // Cross-platform string storage with SecureStore on native and localStorage on web.
 export async function getStringItem(key: string): Promise<string | null> {
-  try {
-    if (await SecureStore.isAvailableAsync()) {
-      return await SecureStore.getItemAsync(key);
+  const isSecured = await isConsideredSecured()
+    if (!isSecured) {
+      console.warn("Cannot get due to no passcode set (at least)")
+      return null;
     }
-  } catch {}
 
-  const ls = typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : undefined;
-  if (ls) {
-    try {
-      return ls.getItem(key);
-    } catch {}
+  try {
+    const cred = await Keychain.getGenericPassword(
+      {
+        authenticationPrompt: {
+          title: "Auth title",
+          cancel: "Cancel"
+        },
+        accessControl: ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+        service: key,
+      }
+    )
+
+    if (cred) {
+      console.log("Get str outcome", cred.username, cred.password)
+      return cred.password
+    } else {
+
+      console.log("Get str outcome", cred)
+      return null
+    }
+  } catch (e) {
+    console.warn(e)
+    return null
   }
-  return null;
 }
 
-export async function setStringItem(key: string, value: string): Promise<void> {
+export async function setStringItem(key: string, value: string): Promise<boolean> {
   try {
-    if (await SecureStore.isAvailableAsync()) {
-      await SecureStore.setItemAsync(key, value);
-      return;
-    }
-  } catch {}
+    const isSecured = await isConsideredSecured()
+    if (!isSecured) {
+      console.warn("Cannot save due to no passcode set (at least)")
+      return false;
+    };
 
-  const ls = typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : undefined;
-  if (ls) {
-    try {
-      ls.setItem(key, value);
-      return;
-    } catch {}
+    const result = await Keychain.setGenericPassword(
+      key,
+      value,
+      {
+        authenticationPrompt: {
+          title: "Auth title",
+          cancel: "Cancel"
+        },
+        accessible: ACCESSIBLE.WHEN_PASSCODE_SET_THIS_DEVICE_ONLY,
+        // Works only when biometrics are set https://github.com/oblador/react-native-keychain/issues/509
+        accessControl: ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE, 
+        service: key,
+      },
+    );
+
+    console.log(`Set item ${key} is ${result}`)
+    return true;
+  } catch (e) {
+    console.warn(e)
+    return false;
   }
 }
 
 export async function removeItem(key: string): Promise<void> {
-  try {
-    if (await SecureStore.isAvailableAsync()) {
-      await SecureStore.deleteItemAsync(key);
-      return;
-    }
-  } catch {}
+  const res = await Keychain.resetInternetCredentials({ service: key });
+  console.log(`Reset ${res}`)
+}
 
-  const ls = typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : undefined;
-  if (ls) {
-    try {
-      ls.removeItem(key);
-      return;
-    } catch {}
-  }
+export async function removeAll(): Promise<void> {
+  const res = await Keychain.resetGenericPassword();
+  console.log(`Reset ${res}`)
+}
+
+
+// At the very least passcode is set
+async function isConsideredSecured(): Promise<boolean> {
+  return await Keychain.isPasscodeAuthAvailable();
 }

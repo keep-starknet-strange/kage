@@ -23,6 +23,7 @@ const MAPPING = {
     'trash.fill': 'delete',
     'key': 'shield',
     'checkmark': 'check',
+    'gearshape.fill': 'settings',
 } as IconMapping;
 
 /**

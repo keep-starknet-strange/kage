@@ -10,7 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.micbakos.kage"
+      "bundleIdentifier": "com.starknet.kage",
+      "appleTeamId": "4M48KC5QKH",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "We use Face ID to secure your data"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +22,8 @@
         "backgroundColor": "#0B0F10"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.starknet.kage"
     },
     "web": {
       "favicon": "./favicon_kit/favicon.ico"
