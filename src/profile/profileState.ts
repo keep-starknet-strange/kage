@@ -9,6 +9,10 @@ export type ProfileStateError = {
 
 export namespace ProfileState {
 
+    export function isInitialized(state: ProfileState): boolean {
+        return state !== "idle";
+    }
+
     export function canChangeProfileState(state: ProfileState): boolean {
         return !isProfile(state) && state !== "retrieving";
     }
