@@ -13,7 +13,7 @@ const FALLBACK_PBKDF2_ITERATIONS = 10_000
 const SALT_LENGTH = 32
 
 // Debug logging to help figure out which PBKDF2 engine is used and how long it takes
-const PBKDF2_DEBUG = true
+const PBKDF2_DEBUG = false
 
 // Timer function
 function nowMs(): number {
