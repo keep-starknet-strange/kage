@@ -15,6 +15,7 @@ export default class NetworkSettings {
         this.current = current;
         this.definitions = definitions;
 
+        // TODO for some reason class-transformer does not provide those definitions when deserializing JSON.
         // if (this.definitions
         //     .filter(definition => definition.chainId === "SN_MAIN" || definition.chainId === "SN_SEPOLIA")
         //     .length < 2) {

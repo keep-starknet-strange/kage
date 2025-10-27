@@ -35,7 +35,6 @@ export default class Network {
     ): Network {
         const keySourceId = KeySourceId.from(seedPhraseWords);
         const newIndex = this.nextAccountIndex(keySourceId);
-        console.log("newIndex", newIndex);
 
         const keyPairs = deriveStarknetKeyPairs({
             accountIndex: 0,
