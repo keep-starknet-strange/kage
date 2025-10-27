@@ -116,8 +116,18 @@ export default function WelcomeScreen() {
                             <Pressable
                                 onPress={() => {
                                     const handlePaste = async () => {
-                                        const text = await Clipboard.getStringAsync();
-                                        if (text) setRestoreMnemonic(text);
+                                        try {
+                                            const hasText = await Clipboard.hasStringAsync();
+                                            if (!hasText) {
+                                                return;
+                                            }
+                                            const text = await Clipboard.getStringAsync();
+                                            if (text) setRestoreMnemonic(text);
+                                        } catch (e) {
+                                            // Some iOS simulator versions log pasteboard errors for non-text items.
+                                            // Gracefully ignore and avoid spamming logs.
+                                            console.warn('Paste failed or clipboard not text:', e);
+                                        }
                                     };
 
                                     void handlePaste();

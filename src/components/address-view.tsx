@@ -22,7 +22,11 @@ export function AddressView({ address }: AddressViewProps) {
     }, [address, setDisplayedAddress]);
 
     const copyToClipboard = async (text: string) => {
-        await Clipboard.setStringAsync(text);
+        try {
+            await Clipboard.setStringAsync(text);
+        } catch (e) {
+            console.warn('Copy to clipboard failed:', e)
+        }
     };
 
     return (

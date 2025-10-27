@@ -42,9 +42,13 @@ export default function BackupScreen() {
 
     const handleCopy = async () => {
         const phrase = mnemonicWords!.join(' ')
-        await Clipboard.setStringAsync(phrase);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
+        try {
+            await Clipboard.setStringAsync(phrase)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1500)
+        } catch (e) {
+            console.warn('Copy to clipboard failed:', e)
+        }
     };
 
     if (showLoading) {
