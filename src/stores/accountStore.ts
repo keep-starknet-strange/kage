@@ -11,6 +11,17 @@ import { useAppDependenciesStore } from "./appDependenciesStore";
 const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564";
 const TONGO_STRK_CONTRACT_ADDRESS = "0x00b4cca30f0f641e01140c1c388f55641f1c3fe5515484e622b6cb91d8cee585";
 
+
+/**
+ * WARNING: Deprecated Store
+ * 
+ * This account store was used in the first proof-of-concept (POC) version of the project.
+ * It may not reflect the current architecture, security model, or intended features.
+ * 
+ * Consider using the new account handling stores and flows if you are working on 
+ * newer functionality, as this file is likely to be phased out or heavily refactored.
+ */
+
 export interface AccountState {
     readonly provider: RpcProvider;
     isInitialized: boolean;

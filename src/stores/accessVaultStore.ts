@@ -3,17 +3,23 @@ import { useAppDependenciesStore } from "./appDependenciesStore";
 import Keychain from "react-native-keychain";
 import { mnemonicToWords } from "@starkms/key-management";
 import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
+import { KeySourceId } from "@/profile/keys/keySource";
 
 export type AuthorizationType = "passphrase" | "biometrics";
 
-interface RequestSchema {
-    "seedphrase": {
-        output: string[] // Seed phrase words
-    };
+export type SeedPhraseRequest = {
+    keySourceId: KeySourceId;
+    output: string[] // Seed phrase words
+};
 
-    "passphrase": {
-        output: string // Passphrase
-    };
+export type PassphraseRequest = {
+    output: string // Passphrase
+};
+
+interface RequestSchema {
+    seedphrase: SeedPhraseRequest;
+
+    passphrase: PassphraseRequest;
 }
 
 export type RequestAccessPrompt = {
@@ -70,6 +76,8 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
             });
         }
 
+        const {keySourceId} = input;
+
         const appDependencies = useAppDependenciesStore.getState();
         const storage = appDependencies.keyValueStorage;
         const seedPhraseVault = appDependencies.seedPhraseVault;
@@ -88,7 +96,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
         if (useBiometrics) {
             set({ prompt: { input, validateWith: "biometrics" } });
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" });
+            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, keySourceId);
             set({ prompt: null });
 
             if (seedPhrase) {

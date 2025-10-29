@@ -10,6 +10,7 @@ export interface ProfileStoreState {
     initialize: () => Promise<void>;
     create: (passphrase: string, accountName: string) => Promise<void>;
     update: (profile: Profile) => Promise<void>;
+    restore: (passphrase: string, seedPhraseWords: string[]) => Promise<void>;
     delete: () => Promise<void>;
 }
 
@@ -50,6 +51,26 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const seedPhraseWords = generateMnemonicWords();
         const profile = Profile.createFromSeedPhrase(seedPhraseWords);
         const updatedProfile = profile.addAccountOnCurrentNetwork(accountName, seedPhraseWords);
+        await profileStorage.storeProfile(updatedProfile);
+        
+        const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
+        if (!created) {
+            throw new Error("Failed to store seed phrase in vault");
+        }
+
+        set({ profileState: updatedProfile });
+    },
+
+    restore: async (passphrase: string, seedPhraseWords: string[]) => {
+        const { profileState } = get();
+        const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
+
+        if (!ProfileState.canCreateProfile(profileState)) {
+            throw new Error(`Profile state cannot be created: ${profileState}`);
+        }
+
+        const profile = Profile.createFromSeedPhrase(seedPhraseWords);
+        const updatedProfile = profile.addAccountOnCurrentNetwork("Restored Account 1", seedPhraseWords);
         await profileStorage.storeProfile(updatedProfile);
         
         const created = seedPhraseVault.setup(passphrase, seedPhraseWords);

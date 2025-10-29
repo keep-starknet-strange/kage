@@ -8,6 +8,7 @@ export default function OnboaringLayout() {
             <Stack.Screen name='index' options={{ headerShown: false }} />
             <Stack.Screen name='set-passphrase' />
             <Stack.Screen name='create-first-account' />
+            <Stack.Screen name='restore' />
         </Stack>
     );
 }

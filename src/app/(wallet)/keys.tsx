@@ -1,4 +1,4 @@
-import { useAccountStore } from "@/stores/accountStore";
+import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from 'react';
@@ -7,8 +7,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BackupScreen() {
     const insets = useSafeAreaInsets();
-    
-    const { readMnemonic } = useAccountStore()
+
+    const {requestAccess} = useAccessVaultStore();
     const [mnemonicWords, setMnemonicWords] = useState<string[]>([]);
     const [showRetry, setShowRetry] = useState(false);
     const [showLoading, setShowLoading] = useState(false);
@@ -20,7 +20,9 @@ export default function BackupScreen() {
         try {
             setShowRetry(false);
             setShowLoading(true);
-            const mnemonicWords = await readMnemonic();
+
+            const mnemonicWords = await requestAccess("seedphrase");
+            
             setMnemonicWords(mnemonicWords);
             setShowLoading(false);
         } catch (e) {
@@ -28,7 +30,7 @@ export default function BackupScreen() {
             setShowRetry(true);
             setShowLoading(false);
         }
-    }, [readMnemonic, setMnemonicWords, setShowRetry, setShowLoading]);
+    }, [requestAccess, setMnemonicWords, setShowRetry, setShowLoading]);
 
     useFocusEffect(
         useCallback(() => {

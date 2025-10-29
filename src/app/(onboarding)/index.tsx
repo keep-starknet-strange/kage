@@ -35,8 +35,7 @@ export default function WelcomeScreen() {
                     <SecondaryButton
                         title="Restore wallet"
                         onPress={() => {
-                            // TODO: Navigate to restore wallet screen
-                            // router.navigate("set-passphrase");
+                            router.navigate("restore");
                         }}
                     />
                 </View>
