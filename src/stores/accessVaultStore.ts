@@ -3,21 +3,28 @@ import { useAppDependenciesStore } from "./appDependenciesStore";
 import Keychain from "react-native-keychain";
 import { mnemonicToWords } from "@starkms/key-management";
 import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
+import { KeySourceId } from "@/profile/keys/keySource";
 
 export type AuthorizationType = "passphrase" | "biometrics";
 
-interface RequestSchema {
-    "seedphrase": {
-        output: string[] // Seed phrase words
-    };
-
-    "passphrase": {
-        output: string // Passphrase
-    };
+export type SeedPhraseInput = {
+    requestFor: "seedphrase";
+    keySourceId: KeySourceId;
 }
 
+export type PassphraseInput = {
+    requestFor: "passphrase";
+}
+
+export type Input = SeedPhraseInput | PassphraseInput;
+
+export type Output<I extends Input> =
+    I extends SeedPhraseInput ? string[] :
+    I extends PassphraseInput ? string :
+    never;
+
 export type RequestAccessPrompt = {
-    input: keyof RequestSchema;
+    input: Input;
     validateWith: AuthorizationType;
 }
 
@@ -25,7 +32,6 @@ export interface AccessVaultState {
     prompt: RequestAccessPrompt | null;
 
     /**
-     /**
       * Requests access to the vault and returns either the user's passphrase or their seed phrase,
       * depending on the type of input requested.
       * 
@@ -45,13 +51,13 @@ export interface AccessVaultState {
       * @param [prompt] Optional prompt to customize the authentication UI (e.g., title/message).
       * @returns Promise<string | string[]> The user's passphrase, or the decrypted seed phrase as an array of words.
       */
-    requestAccess: <I extends keyof RequestSchema>(input: I, prompt?: AuthPrompt) => Promise<RequestSchema[I]["output"]>;
-    
+    requestAccess: <I extends Input>(input: I, prompt?: AuthPrompt) => Promise<Output<I>>;
+
     // Promises for async passphrase input
     readonly passphrasePromise: {
         resolve: (passphrase: string) => void;
         reject: (reason?: string) => void;
-    } |  null;
+    } | null;
     handlePassphraseSubmit: (passphrase: string) => Promise<void>;
     handlePassphraseReject: (reason?: string) => void;
 }
@@ -60,15 +66,17 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
     prompt: null,
     passphrasePromise: null,
 
-    requestAccess: async <I extends keyof RequestSchema>(input: I, authPrompt?: AuthPrompt) => {    
-        if (input === "passphrase") {
+    requestAccess: async <I extends Input>(input: I, authPrompt?: AuthPrompt): Promise<Output<I>> => {
+        if (input.requestFor === "passphrase") {
             return await new Promise<string>((resolve, reject) => {
                 set({
                     prompt: { input, validateWith: "passphrase" },
                     passphrasePromise: { resolve, reject },
                 })
-            });
+            }) as Output<I>;
         }
+
+        const { keySourceId } = input;
 
         const appDependencies = useAppDependenciesStore.getState();
         const storage = appDependencies.keyValueStorage;
@@ -88,11 +96,11 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
         if (useBiometrics) {
             set({ prompt: { input, validateWith: "biometrics" } });
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" });
+            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, keySourceId);
             set({ prompt: null });
 
             if (seedPhrase) {
-                return mnemonicToWords(seedPhrase);
+                return mnemonicToWords(seedPhrase) as Output<I>;
             } else {
                 throw new Error("Failed to get seed phrase with biometrics");
             }
@@ -105,10 +113,10 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
             })
 
             const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithPassphrase(passphrase);
+            const seedPhrase = await seedPhraseVault.getSeedPhraseWithPassphrase(passphrase, keySourceId);
 
             if (seedPhrase) {
-                return mnemonicToWords(seedPhrase);
+                return mnemonicToWords(seedPhrase) as Output<I>;
             } else {
                 throw new Error("Failed to get seed phrase with passphrase");
             }

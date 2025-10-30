@@ -1,49 +1,116 @@
-import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {useEffect, useState} from "react";
-import {Ionicons} from "@expo/vector-icons";
-import * as Clipboard from 'expo-clipboard'
+import { StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from 'expo-clipboard';
+import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 
 export type AddressViewProps = {
     address: string;
+    variant?: 'default' | 'compact';
 }
 
-export function AddressView({ address }: AddressViewProps) {
-    const [displayedAddress, setDisplayedAddress] = useState("");
+export function AddressView({ address, variant = 'default' }: AddressViewProps) {
     const [isCopied, setIsCopied] = useState(false);
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        const parts = [];
-        if (address.length > 10) {
-            parts.push(address.substring(0, 5));
-            parts.push(address.substring(address.length - 6, address.length));
+    const displayedAddress = useMemo(() => {
+        if (address.length <= 10) return address;
+        
+        if (variant === 'compact') {
+            return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
         }
+        
+        return `${address.substring(0, 10)}...${address.substring(address.length - 8)}`;
+    }, [address, variant]);
 
-        setDisplayedAddress(parts.join("..."));
-    }, [address, setDisplayedAddress]);
-
-    const copyToClipboard = async (text: string) => {
+    const copyToClipboard = async () => {
         try {
-            await Clipboard.setStringAsync(text);
+            await Clipboard.setStringAsync(address);
+            
+            // Animate button press
+            Animated.sequence([
+                Animated.timing(scaleAnim, {
+                    toValue: 0.9,
+                    duration: 100,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(scaleAnim, {
+                    toValue: 1,
+                    duration: 100,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+
+            // Fade in success indicator
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true,
+            }).start();
+
+            setIsCopied(true);
+            
+            setTimeout(() => {
+                // Fade out success indicator
+                Animated.timing(fadeAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }).start();
+                
+                setIsCopied(false);
+            }, 1500);
         } catch (e) {
-            console.warn('Copy to clipboard failed:', e)
+            console.warn('Copy to clipboard failed:', e);
         }
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>{displayedAddress}</Text>
+            <View style={styles.addressContainer}>
+                <Text style={styles.addressText} numberOfLines={1}>
+                    {displayedAddress}
+                </Text>
+            </View>
 
             <TouchableOpacity
+                activeOpacity={0.7}
                 disabled={isCopied}
-                onPress={() => {
-                    void copyToClipboard(address)
-                    setIsCopied(true);
-                    setTimeout(() => setIsCopied(false), 1500);
-                }}
+                onPress={copyToClipboard}
+                style={styles.copyButton}
             >
-                <Ionicons name={isCopied ? "checkmark" : "copy-outline"} size={24} color={styles.text.color} />
+                <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                    {isCopied ? (
+                        <View style={styles.iconContainer}>
+                            <Ionicons 
+                                name="checkmark-circle" 
+                                size={20} 
+                                color={colorTokens['status.success']} 
+                            />
+                        </View>
+                    ) : (
+                        <View style={styles.iconContainer}>
+                            <Ionicons 
+                                name="copy-outline" 
+                                size={18} 
+                                color={colorTokens['text.secondary']} 
+                            />
+                        </View>
+                    )}
+                </Animated.View>
             </TouchableOpacity>
 
+            {isCopied && (
+                <Animated.View 
+                    style={[
+                        styles.copiedIndicator,
+                        { opacity: fadeAnim }
+                    ]}
+                >
+                    <Text style={styles.copiedText}>Copied!</Text>
+                </Animated.View>
+            )}
         </View>
     );
 }
@@ -51,12 +118,56 @@ export function AddressView({ address }: AddressViewProps) {
 const styles = StyleSheet.create({
     container: {
         flexDirection: "row",
-        backgroundColor: "#a19f9f",
+        backgroundColor: colorTokens['bg.sunken'],
         alignItems: "center",
-        justifyContent: "space-between",
-        padding: 8,
+        justifyContent: "space-around",
+        paddingVertical: spaceTokens[0], // 8px
+        paddingHorizontal: spaceTokens[1], // 12px
+        borderRadius: radiusTokens.sm,
+        borderWidth: 1,
+        borderColor: colorTokens['border.subtle'],
+        position: 'relative',
     },
-    text: {
-        color: "white",
-    }
-})
+    addressContainer: {
+        flex: 1,
+        marginRight: spaceTokens[1], // 8px
+    },
+    addressText: {
+        fontFamily: 'monospace',
+        fontSize: 13,
+        color: colorTokens['text.secondary'],
+        fontWeight: '500',
+    },
+    copyButton: {
+        padding: spaceTokens[0], // 4px
+        borderRadius: radiusTokens.xs,
+        backgroundColor: colorTokens['bg.elevated'],
+        borderWidth: 1,
+        borderColor: colorTokens['border.subtle'],
+    },
+    iconContainer: {
+        width: 20,
+        height: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    copiedIndicator: {
+        position: 'absolute',
+        top: -32,
+        right: 0,
+        backgroundColor: colorTokens['status.success'],
+        paddingHorizontal: spaceTokens[2], // 12px
+        paddingVertical: spaceTokens[1], // 8px
+        borderRadius: radiusTokens.sm,
+        shadowColor: colorTokens['shadow.primary'],
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    copiedText: {
+        color: colorTokens['text.inverted'],
+        fontSize: 12,
+        fontWeight: '600',
+    },
+});

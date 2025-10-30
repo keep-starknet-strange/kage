@@ -1,11 +1,11 @@
 import EncryptedStorage, { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
 import { base64ToBytes, bytesToBase64, bytesToString, stringToBytes } from "@/crypto/utils/encoding";
-import { randomBytes } from "@noble/hashes/utils";
 import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
 import { joinMnemonicWords } from "@starkms/key-management";
+import { randomBytes } from "@/crypto/utils/Random";
+import { KeySourceId } from "@/profile/keys/keySource";
 
 const SALT_KEY = "salt";
-const ENCRYPTED_SEED_PHRASE = "encrypted_seed_phrase";
 const ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY = "encrypted_seed_phrase_encryption_key";
 const KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY = "keychain_seed_phrase_encryption_key";
 
@@ -28,19 +28,31 @@ export default class SeedPhraseVault {
         const encryptedSeedPhrase = await this.cryptoProvider.encrypt(seedPhraseBytes, seedEncryptionKey); 
         const encryptedSeedEncryptionKey = await this.cryptoProvider.encrypt(seedEncryptionKey, keyUser);
         
-        const saltSaved = await this.encryptedStorage.setItem(SALT_KEY, bytesToBase64(salt));
+        const keySourceId = KeySourceId.from(seedPhraseWords);
+        const saltSaved = await this.encryptedStorage.setItem(
+            SALT_KEY, 
+            bytesToBase64(salt)
+        );
         if (!saltSaved) {
-            console.error(`Failed to store ${SALT_KEY} in encrypted storage`);
+            console.error(`Failed to store salt in encrypted storage for ${keySourceId}`);
             return false;
         }
-        const encryptedSeedPhraseSaved = this.encryptedStorage.setItem(ENCRYPTED_SEED_PHRASE, bytesToBase64(encryptedSeedPhrase));
-        if (!encryptedSeedPhraseSaved) {
-            console.error(`Failed to store ${ENCRYPTED_SEED_PHRASE} in encrypted storage`);
-            return false;
-        }
-        const encryptedSeedPhraseKeyUserSaved = await this.encryptedStorage.setItem(ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY, bytesToBase64(encryptedSeedEncryptionKey));
+
+        const encryptedSeedPhraseKeyUserSaved = await this.encryptedStorage.setItem(
+            ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY, 
+            bytesToBase64(encryptedSeedEncryptionKey)
+        );
         if (!encryptedSeedPhraseKeyUserSaved) {
-            console.error(`Failed to store ${ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY} in encrypted storage`);
+            console.error(`Failed to store encrypted seed phrase encryption key in encrypted storage for ${keySourceId}`);
+            return false;
+        }
+
+        const encryptedSeedPhraseSaved = this.encryptedStorage.setItem(
+            this.encryptedSeedPhraseIdentifier(keySourceId), 
+            bytesToBase64(encryptedSeedPhrase)
+        );
+        if (!encryptedSeedPhraseSaved) {
+            console.error(`Failed to store encrypted seed phrase in encrypted storage for ${keySourceId}`);
             return false;
         }
 
@@ -80,7 +92,7 @@ export default class SeedPhraseVault {
         await this.encryptedStorage.removeItem(KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY);
     }
 
-    async getSeedPhraseWithPassphrase(passphrase: string): Promise<string | null> {
+    async getSeedPhraseWithPassphrase(passphrase: string, keySourceId: KeySourceId): Promise<string | null> {
         const saltBase64 = await this.encryptedStorage.getItem(SALT_KEY);
         if (!saltBase64) {
             console.error(`${SALT_KEY} not found in encrypted storage`);
@@ -88,9 +100,9 @@ export default class SeedPhraseVault {
         }
         const salt = base64ToBytes(saltBase64);
         
-        const encryptedSeedPhraseBase64 = await this.encryptedStorage.getItem(ENCRYPTED_SEED_PHRASE);
+        const encryptedSeedPhraseBase64 = await this.encryptedStorage.getItem(this.encryptedSeedPhraseIdentifier(keySourceId));
         if (!encryptedSeedPhraseBase64) {
-            console.error(`${ENCRYPTED_SEED_PHRASE} not found in encrypted storage`);
+            console.error(`Encrypted seed phrase not found in encrypted storage for ${keySourceId}`);
             return null;
         }
         const encryptedSeedPhrase = base64ToBytes(encryptedSeedPhraseBase64);
@@ -109,10 +121,10 @@ export default class SeedPhraseVault {
         return bytesToString(seedPhraseBytes);
     }
 
-    async getSeedPhraseWithBiometrics(prompt: AuthPrompt): Promise<string | null> {
-        const encryptedSeedPhraseBase64 = await this.encryptedStorage.getItem(ENCRYPTED_SEED_PHRASE);
+    async getSeedPhraseWithBiometrics(prompt: AuthPrompt, keySourceId: KeySourceId): Promise<string | null> {
+        const encryptedSeedPhraseBase64 = await this.encryptedStorage.getItem(this.encryptedSeedPhraseIdentifier(keySourceId));
         if (!encryptedSeedPhraseBase64) {
-            console.error(`${ENCRYPTED_SEED_PHRASE} not found in encrypted storage`);
+            console.error(`Encrypted seed phrase not found in encrypted storage for ${keySourceId}`);
             return null;
         }
         const encryptedSeedPhrase = base64ToBytes(encryptedSeedPhraseBase64);
@@ -131,10 +143,16 @@ export default class SeedPhraseVault {
         return bytesToString(seedPhraseBytes);
     }
 
-    async reset(): Promise<void> {
+    async reset(keySourceIds: KeySourceId[]): Promise<void> {
         await this.encryptedStorage.removeItem(SALT_KEY);
-        await this.encryptedStorage.removeItem(ENCRYPTED_SEED_PHRASE);
         await this.encryptedStorage.removeItem(ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY);
         await this.encryptedStorage.removeItem(KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY);
+        for (const keySourceId of keySourceIds) {
+            await this.encryptedStorage.removeItem(this.encryptedSeedPhraseIdentifier(keySourceId));
+        }
+    }
+
+    private encryptedSeedPhraseIdentifier(keySourceId: KeySourceId): string {
+        return `encrypted_seed_phrase.${keySourceId}`;
     }
 }

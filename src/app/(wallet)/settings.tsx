@@ -5,15 +5,19 @@ import { useCallback, useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import Keychain, { BIOMETRY_TYPE } from "react-native-keychain";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { DangerButton } from "@/components/ui/danger-button";
+import { useProfileStore } from "@/stores/profileStore";
 
 export default function SettingsScreen() {
     const insets = useSafeAreaInsets();
     const { keyValueStorage, seedPhraseVault } = useAppDependenciesStore();
     const { requestAccess } = useAccessVaultStore();
+    const { delete: deleteProfile } = useProfileStore();
+
     const [isResolvingBiometrics, setIsResolvingBiometrics] = useState(false);
     const [supportedBiometryType, setSupportedBiometryType] = useState<BIOMETRY_TYPE | null>(null);
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
-
+    const [isDeletingProfile, setIsDeletingProfile] = useState(false);
 
     const resolveBiometricsStatus = useCallback(() => {
         setIsResolvingBiometrics(true);
@@ -68,6 +72,17 @@ export default function SettingsScreen() {
         }
     }
 
+    const handleDeleteWallet = async () => {
+        setIsDeletingProfile(true);
+        try {
+            await deleteProfile();
+        } catch (e) {
+            console.error("Failed to delete profile", e);
+        } finally {
+            setIsDeletingProfile(false);
+        }
+    }
+
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <Text style={styles.title}>Settings</Text>
@@ -93,6 +108,13 @@ export default function SettingsScreen() {
                     disabled={isResolvingBiometrics || !supportedBiometryType}
                 />
 
+            </View>
+
+            <View style={styles.dangerZone}>
+                <DangerButton
+                    title="Delete Wallet"
+                    onPress={handleDeleteWallet}
+                />
             </View>
         </View>
     );
@@ -140,5 +162,11 @@ const styles = StyleSheet.create({
     error: {
         fontSize: 14,
         color: 'red',
+    },
+    dangerZone: {
+        marginTop: 32,
+        paddingTop: 24,
+        borderTopWidth: 1,
+        borderTopColor: '#E4E6EF',
     }
 });
