@@ -6,7 +6,7 @@ import { useAppDependenciesStore } from "./appDependenciesStore";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
-
+    
     initialize: () => Promise<void>;
     create: (passphrase: string, accountName: string) => Promise<void>;
     update: (profile: Profile) => Promise<void>;
@@ -98,5 +98,5 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         await seedPhraseVault.reset(profileState.keySources.map(keySource => keySource.id));
 
         set({ profileState: null });
-    }
+    },
 }));

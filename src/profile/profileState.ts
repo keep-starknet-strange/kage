@@ -40,4 +40,12 @@ export namespace ProfileState {
     export function isOnboarded(state: ProfileState): boolean {
         return isProfile(state) && state.networks.length > 0;
     }
+
+    export function getProfileOrNull(state: ProfileState): Profile | null {
+        if (!isProfile(state)) {
+            return null;
+        }
+
+        return state;
+    }
 }

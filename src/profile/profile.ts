@@ -44,6 +44,10 @@ export default class Profile {
         return this.currentNetworkWithDefinition.network;
     }
 
+    getKeySourceById(id: KeySourceId): KeySource | null {
+        return this.keySources.find(keySource => keySource.id === id) ?? null;
+    }
+
     addAccountOnCurrentNetwork(accountName: string, seedPhraseWords: string[]): Profile {
         const { network, networkDefinition } = this.currentNetworkWithDefinition;
 
