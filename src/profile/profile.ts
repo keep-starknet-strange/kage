@@ -4,6 +4,7 @@ import KeySource, { KeySourceId } from "./keys/keySource";
 import Network from "./network";
 import NetworkDerfinition from "./settings/networkDefinition";
 import Settings from "./settings/settings";
+import Account from "./account";
 
 export default class Profile {
     @Type(() => Header)
@@ -44,8 +45,16 @@ export default class Profile {
         return this.currentNetworkWithDefinition.network;
     }
 
+    get accountsOnCurrentNetwork(): readonly Account[] {
+        return this.currentNetwork.accounts;
+    }
+
     getKeySourceById(id: KeySourceId): KeySource | null {
         return this.keySources.find(keySource => keySource.id === id) ?? null;
+    }
+
+    getAccountOnCurrentNetwork(address: string): Account | null {
+        return this.accountsOnCurrentNetwork.find(account => account.address === address) ?? null;
     }
 
     addAccountOnCurrentNetwork(accountName: string, seedPhraseWords: string[]): Profile {

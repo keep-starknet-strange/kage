@@ -1,15 +1,21 @@
-import { FlatList, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useProfileStore } from '@/stores/profileStore';
-import { ProfileState } from '@/profile/profileState';
-import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AddressView } from '@/components/address-view';
 import { NetworkBadge } from '@/components/ui/network-badge';
-import { useMemo } from 'react';
+import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
+import { ProfileState } from '@/profile/profileState';
+import NetworkDerfinition from '@/profile/settings/networkDefinition';
+import { useAppDependenciesStore } from '@/stores/appDependenciesStore';
+import { BalanceRepository } from '@/stores/balance/balanceRepository';
+import TokenBalance from '@/stores/balance/tokenBalance';
+import { useProfileStore } from '@/stores/profileStore';
+import { useCallback, useMemo } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
     const { profileState } = useProfileStore();
 
     // Get accounts from the current network
@@ -18,6 +24,16 @@ export default function HomeScreen() {
             ? profileState.currentNetwork.accounts 
             : [];
     }, [profileState]);
+
+    const getBalances = useCallback(async () => {
+        const { balanceRepository } = useAppDependenciesStore.getState();
+        const balances: Map<string, TokenBalance[]> = await balanceRepository.getBalances(accounts);
+
+        balances.get(accounts[0].address)?.forEach((b) => {
+            console.log(b.formattedBalance());
+        });
+
+    }, [accounts]);
 
     // Calculate total balance (placeholder for now - you can implement actual balance calculation)
     const totalBalance = "0.00";
@@ -45,10 +61,16 @@ export default function HomeScreen() {
     );
 
     const renderAccountCard = ({ item: account }: { item: Account }) => (
-        <View style={styles.accountCard}>
+        <TouchableOpacity 
+            style={styles.accountCard}
+            activeOpacity={0.7}
+            onPress={() => {
+                router.push(`/account/${account.address}`);
+            }}
+        >
             <Text style={styles.accountName}>{account.name}</Text>
             <AddressView address={account.address} variant='compact'/>
-        </View>
+        </TouchableOpacity>
     );
 
     const renderEmpty = () => (
@@ -63,7 +85,9 @@ export default function HomeScreen() {
             activeOpacity={0.7}
             onPress={() => {
                 // TODO: Navigate to create account screen
-                console.log('Create new account');
+                //console.log('Create new account');
+
+                void getBalances();
             }}
         >
             <Text style={styles.createAccountButtonText}>Add a new public account</Text>
