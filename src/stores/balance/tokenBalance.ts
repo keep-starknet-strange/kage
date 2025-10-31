@@ -1,8 +1,8 @@
 import Token from "./token";
 
-abstract class TokenBalance {
+export abstract class TokenBalance {
     readonly token: Token;
-    readonly spendableBalance: bigint;
+    protected readonly spendableBalance: bigint;
 
     constructor(token: Token, balance: bigint) {
         this.token = token;
@@ -44,14 +44,36 @@ export class PublicTokenBalance extends TokenBalance {
 }
 
 export class PrivateTokenBalance extends TokenBalance {
+    private isUnlocked: boolean;
     private pendingBalance: bigint;
 
-    constructor(token: Token, balance: bigint, pendingBalance: bigint) {
+    constructor(token: Token, balance: bigint, pendingBalance: bigint, isUnlocked: boolean) {
         super(token, balance);
+        this.isUnlocked = isUnlocked;
         this.pendingBalance = pendingBalance;
     }
 
     formattedPendingBalance(compressed: boolean = false): string {
-        return this.formattedBalance(compressed, this.pendingBalance);
+        if (!this.isUnlocked) {
+            return "LOCKED";
+        }
+
+        return super.formattedBalance(compressed, this.pendingBalance);
+    }
+
+    formattedBalance(compressed: boolean = false): string {
+        if (!this.isUnlocked) {
+            return "LOCKED";
+        }
+
+        return super.formattedBalance(compressed, this.spendableBalance);
+    }
+
+    static locked(token: Token): PrivateTokenBalance {
+        return new PrivateTokenBalance(token, 0n, 0n, false);
+    }
+
+    static unlocked(token: Token, balance: bigint, pendingBalance: bigint): PrivateTokenBalance {
+        return new PrivateTokenBalance(token, balance, pendingBalance, true);
     }
 }

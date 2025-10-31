@@ -2,22 +2,27 @@ import { AddressView } from '@/components/address-view';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { ProfileState } from '@/profile/profileState';
 import { useAppDependenciesStore } from '@/stores/appDependenciesStore';
-import TokenBalance from '@/stores/balance/tokenBalance';
+import { PublicTokenBalance, PrivateTokenBalance } from '@/stores/balance/tokenBalance';
 import { useProfileStore } from '@/stores/profileStore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AccountAddress } from '@/profile/account';
+import { useBalanceStore } from '@/stores/balance/balanceStore';
 
 type TabType = 'public' | 'private';
 
 export default function AccountDetailScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
-    const { accountAddress } = useLocalSearchParams<{ accountAddress: string }>();
+    const { accountAddress } = useLocalSearchParams<{ accountAddress: AccountAddress }>();
     const { profileState } = useProfileStore();
-    const [balances, setBalances] = useState<TokenBalance[]>([]);
+    const { requestRefresh } = useBalanceStore();
+    const publicBalances = useBalanceStore(state => state.publicBalances.get(accountAddress) ?? []);
+    const privateBalances = useBalanceStore(state => state.privateBalances.get(accountAddress) ?? []);
+
     const [isLoadingBalances, setIsLoadingBalances] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('public');
 
@@ -33,31 +38,28 @@ export default function AccountDetailScreen() {
     const totalBalance = useMemo(() => {
         // TODO: Implement actual USD conversion based on token prices
         return "0.00";
-    }, [balances]);
+    }, [publicBalances]);
 
     // Dynamic balance label based on active tab
     const balanceLabel = activeTab === 'public' ? 'Public Balance' : 'Private Balance';
 
     // Fetch balances for this account
-    const fetchBalances = useCallback(async () => {
+    const fetchPublicBalances = useCallback(async () => {
         if (!account) return;
 
         setIsLoadingBalances(true);
         try {
-            const { publicBalanceRepository } = useAppDependenciesStore.getState();
-            const balancesMap = await publicBalanceRepository.getBalances([account]);
-            const accountBalances = balancesMap.get(account.address) ?? [];
-            setBalances(accountBalances);
+            await requestRefresh([account]);
         } catch (error) {
             console.error('Error fetching balances:', error);
         } finally {
             setIsLoadingBalances(false);
         }
-    }, [account]);
+    }, [account, requestRefresh]);
 
     useEffect(() => {
-        void fetchBalances();
-    }, [fetchBalances]);
+        void fetchPublicBalances();
+    }, [fetchPublicBalances]);
 
     // If account not found, show error
     if (!account) {
@@ -125,9 +127,9 @@ export default function AccountDetailScreen() {
             <View style={[styles.tabsContainer, { paddingBottom: insets.bottom }]}>
                 {activeTab === 'public' && (
                     <PublicTab
-                        balances={balances}
+                        balances={publicBalances}
                         isLoading={isLoadingBalances}
-                        onRefresh={fetchBalances}
+                        onRefresh={fetchPublicBalances}
                     />
                 )}
                 {activeTab === 'private' && <PrivateTab />}
@@ -142,11 +144,11 @@ function PublicTab({
     isLoading,
     onRefresh
 }: {
-    balances: TokenBalance[];
+    balances: PublicTokenBalance[];
     isLoading: boolean;
     onRefresh: () => void;
 }) {
-    const renderTokenItem = ({ item }: { item: TokenBalance }) => (
+    const renderTokenItem = ({ item }: { item: PublicTokenBalance }) => (
         <View style={styles.tokenCard}>
             <View style={styles.tokenInfo}>
                 <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
@@ -156,7 +158,7 @@ function PublicTab({
             </View>
             <View style={styles.tokenBalance}>
                 <Text style={styles.tokenBalanceAmount}>
-                    {item.formattedBalance(true)}
+                    {item.formattedSpendableBalance(true)}
                 </Text>
             </View>
         </View>

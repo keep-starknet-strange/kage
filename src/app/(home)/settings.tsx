@@ -53,7 +53,7 @@ export default function SettingsScreen() {
             setIsBiometricsEnabled(false);
         } else {
             try {
-                const passphrase = await requestAccess("passphrase");
+                const passphrase = await requestAccess({ requestFor: "passphrase" });
 
                 if (passphrase) {
                     const enabeld = await seedPhraseVault.enableBiometrics(passphrase, {

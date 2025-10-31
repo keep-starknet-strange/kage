@@ -3,15 +3,11 @@ import { NetworkBadge } from '@/components/ui/network-badge';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
-import NetworkDerfinition from '@/profile/settings/networkDefinition';
-import { useAppDependenciesStore } from '@/stores/appDependenciesStore';
-import { BalanceRepository } from '@/stores/balance/balanceRepository';
-import TokenBalance from '@/stores/balance/tokenBalance';
 import { useProfileStore } from '@/stores/profileStore';
-import { useCallback, useMemo } from 'react';
+import { useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
     const insets = useSafeAreaInsets();
@@ -24,16 +20,6 @@ export default function HomeScreen() {
             ? profileState.currentNetwork.accounts 
             : [];
     }, [profileState]);
-
-    const getBalances = useCallback(async () => {
-        const { balanceRepository } = useAppDependenciesStore.getState();
-        const balances: Map<string, TokenBalance[]> = await balanceRepository.getBalances(accounts);
-
-        balances.get(accounts[0].address)?.forEach((b) => {
-            console.log(b.formattedBalance());
-        });
-
-    }, [accounts]);
 
     // Calculate total balance (placeholder for now - you can implement actual balance calculation)
     const totalBalance = "0.00";
@@ -86,8 +72,6 @@ export default function HomeScreen() {
             onPress={() => {
                 // TODO: Navigate to create account screen
                 //console.log('Create new account');
-
-                void getBalances();
             }}
         >
             <Text style={styles.createAccountButtonText}>Add a new public account</Text>

@@ -8,11 +8,15 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
+import { useBalanceStore } from '@/stores/balance/balanceStore';
+import Account from '@/profile/account';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     const { profileState, initialize } = useProfileStore();
+    const { changeNetwork } = useBalanceStore();
+
     const currentNetworkDefinition = useProfileStore(state => {
         if (!ProfileState.isProfile(state.profileState)) {
             return null;
@@ -37,10 +41,13 @@ export default function RootLayout() {
     useEffect(() => {
         if (currentNetworkDefinition) {
             console.log("Network changed to", currentNetworkDefinition.chainId);
-            const { balanceRepository } = useAppDependenciesStore.getState();
-            balanceRepository.setNetwork(currentNetworkDefinition);
+
+            const profileState = useProfileStore.getState().profileState;
+            if (ProfileState.isProfile(profileState)) {
+                changeNetwork(currentNetworkDefinition, profileState.accountsOnCurrentNetwork as Account[]);
+            }
         }
-    }, [currentNetworkDefinition?.chainId ?? ""]);
+    }, [currentNetworkDefinition?.chainId ?? "", changeNetwork]);
 
     return (
         <AppProviders>

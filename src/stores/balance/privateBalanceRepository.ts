@@ -1,67 +1,45 @@
-import { Account as TongoToken } from "@fatsolutions/tongo-sdk";
-import BalanceRepository from "./BalanceRepository";
-import Account from "@/profile/account";
-import { PrivateTokenBalance } from "./tokenBalance";
-import { KeySourceId } from "@/profile/keys/keySource";
+import Account, { AccountAddress } from "@/profile/account";
 import HDKeyInstance from "@/profile/keyInstance";
-import { RequestAccessFn } from "../accessVaultStore";
-import { deriveStarknetKeyPairs, joinMnemonicWords, pathHash } from "@starkms/key-management";
-import { RpcProvider } from "starknet";
+import { KeySourceId } from "@/profile/keys/keySource";
 import NetworkDerfinition from "@/profile/settings/networkDefinition";
+import { Account as TongoToken } from "@fatsolutions/tongo-sdk";
+import { deriveStarknetKeyPairs, joinMnemonicWords, pathHash } from "@starkms/key-management";
+import { RequestAccessFn } from "../accessVaultStore";
+import BalanceRepository from "./balanceRepository";
+import Token from "./token";
+import { PrivateTokenBalance } from "./tokenBalance";
 
 export default class PrivateBalanceRepository extends BalanceRepository {
 
     // Keeps tongo accounts in memory. Current solution until we figure out how to avoid
     // keeping private keys in memory when using tongo sdk.
-    private tongoCache: Map<string, Map<string, TongoToken>> = new Map();
-    private provider: RpcProvider;
-
-    constructor() {
-        super();
-
-        this.provider = new RpcProvider({ nodeUrl: NetworkDerfinition.mainnet().rpcUrl.toString() });
-    }
+    private tongoCache: Map<string, TongoToken> = new Map();
 
     setNetwork(network: NetworkDerfinition) {
         super.setNetwork(network);
-        this.provider = new RpcProvider({ nodeUrl: network.rpcUrl.toString() });
+        this.tongoCache.clear();
     }
 
-    async getBalances(accounts: readonly Account[]): Promise<Map<string, PrivateTokenBalance[]>> {
-        for (const account of accounts) {
-            if (account.networkId !== this.currentNetwork) {
-                throw new Error(`Balance repository is set to ${this.currentNetwork} but account ${account.address} is on ${account.networkId}`);
-            }
-
-            const accountTokens = this.tongoCache.get(account.address);
-            if (!accountTokens) {
-                throw new Error(`Balances for account ${account.address} are not unlocked.`);
-            }
-            
-        }
-
+    async getBalances(accounts: Account[], forTokens: Token[]): Promise<Map<AccountAddress, PrivateTokenBalance[]>> {
         const promises = accounts.map((account) => {
             if (account.networkId !== this.currentNetwork) {
                 throw new Error(`Balance repository is set to ${this.currentNetwork} but account ${account.address} is on ${account.networkId}`);
             }
 
-            const accountTokens = this.tongoCache.get(account.address);
-            if (!accountTokens) {
-                throw new Error(`Balances for account ${account.address} are not unlocked.`);
-            }
+            return accounts.map((account) => {
+                return forTokens.map((token) => {
+                    const tongoToken = this.tongoCache.get(this.cacheKey(account, token));
 
-            return Array.from(accountTokens.entries()).map(([tokenAddress, tongoToken]) => {
-                const token = this.tokenDefinitionsOnCurrentNetwork.get(tokenAddress); 
-                if (!token) {
-                    throw new Error(`Token ${tokenAddress} not found on current network ${this.currentNetwork}`);
-                }
+                    const promise = tongoToken ? tongoToken.state()
+                        .then((balance) => PrivateTokenBalance.unlocked(token, balance.balance, balance.pending)) : Promise.resolve(PrivateTokenBalance.locked(token));
 
-                return {
-                    account: account.address,
-                    token: token,
-                    balancePromise: tongoToken.state()
-                };
-            });
+                    return {
+                        account: account.address,
+                        token: token.contractAddress,
+                        balancePromise: promise
+                    };
+                });
+            }).flat();
         }).flat();
 
         const allBalances = await Promise.all(promises.map((promise) => promise.balancePromise));
@@ -70,22 +48,16 @@ export default class PrivateBalanceRepository extends BalanceRepository {
 
         allBalances.forEach((balance, index) => {
             const accountAddress = promises[index].account;
-            const tokenAddress = promises[index].token;
             const tokenBalances = results.get(accountAddress) ?? [];
-            const token = this.tokenDefinitionsOnCurrentNetwork.get(tokenAddress);
-
-            if (!token) {
-                throw new Error(`Token ${tokenAddress} not found on current network ${this.currentNetwork}`);
-            }
-
-            tokenBalances.push(new PublicTokenBalance(token, balance));
+            tokenBalances.push(balance);
+            
             results.set(accountAddress, tokenBalances);
         });
 
         return results;
     }
 
-    async unlock(forAccounts: readonly Account[], requestAccess: RequestAccessFn) {
+    async unlock(forAccounts: readonly Account[], forTokens: Token[], requestAccess: RequestAccessFn) {
         const keySourcesToUnlock = new Set<KeySourceId>();
 
         for (const account of forAccounts) {
@@ -102,7 +74,7 @@ export default class PrivateBalanceRepository extends BalanceRepository {
                 if (account.keyInstance instanceof HDKeyInstance && account.keyInstance.keySourceId === keySourceId) {
                     const accountIndex = account.keyInstance.index;
 
-                    for (const token of this.tokenDefinitionsOnCurrentNetwork.values()) {
+                    for (const token of forTokens) {
                         const tongoIndex = pathHash(`${account.address}.${token.contractAddress}.${token.tongoAddress}`);
                         const tongoKeyPairs = deriveStarknetKeyPairs({
                             accountIndex: accountIndex,
@@ -111,22 +83,18 @@ export default class PrivateBalanceRepository extends BalanceRepository {
 
                         const tongoToken = new TongoToken(tongoKeyPairs.spendingKeyPair.privateSpendingKey, token.tongoAddress, this.provider);
 
-                        const accountTokens = this.tongoCache.get(account.address) ?? new Map();
-                        accountTokens.set(token.contractAddress, tongoToken);
-                        this.tongoCache.set(account.address, accountTokens);
+                        this.tongoCache.set(this.cacheKey(account, token), tongoToken);
                     }
                 }
             }
         }
     }
 
-    lock(forAccounts: readonly Account[]) {
-        for (const account of forAccounts) {
-            this.tongoCache.delete(account.address);
-        }
-    }
-
     lockAll() {
         this.tongoCache.clear();
+    }
+
+    private cacheKey(account: Account, token: Token): string {
+        return `${account.address}.${token.contractAddress}.${token.tongoAddress}`;
     }
 }

@@ -5,9 +5,11 @@ import { RpcProvider, Account as StarknetAccount } from "starknet";
 import { AccountSigner } from "./accountSigner";
 import { AccessVaultState } from "@/stores/accessVaultStore";
 
+export type AccountAddress = string;
+
 export default class Account {
 
-    readonly address: string;
+    readonly address: AccountAddress;
     readonly name: string
     readonly networkId: NetworkId;
 
@@ -22,7 +24,7 @@ export default class Account {
     readonly keyInstance: KeyInstance;
 
     constructor(
-        address: string,
+        address: AccountAddress,
         name: string,
         networkId: NetworkId,
         keyInstance: KeyInstance

@@ -23,7 +23,7 @@ export default function AccessVaultModal() {
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <Text style={styles.label}>Biometric Authentication</Text>
 
-                {prompt.input == "seedphrase" && (
+                {prompt.input.requestFor == "seedphrase" && (
                     <Text style={styles.hint}>Please authenticate using Face ID or your fingerprint to unlock your wallet. Your biometric information is only used on your device to unlock your encrypted seed phrase.</Text>
                 )}
             </View>
@@ -33,12 +33,12 @@ export default function AccessVaultModal() {
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <Text style={styles.label}>Enter Passphrase</Text>
 
-                {prompt.input == "seedphrase" && (
+                {prompt.input.requestFor == "seedphrase" && (
                     <Text style={styles.hint}>Please authenticate using your passphrase to unlock your wallet. Your passphrase is used to decrypt your encrypted seed phrase.</Text>
                 )}
 
                 <Text style={styles.hint}>{ 
-                    prompt.input == "seedphrase" ? "This will unlock your private key." : "Your passphrase is needed for enabling biometrics."
+                    prompt.input.requestFor == "seedphrase" ? "This will unlock your private key." : "Your passphrase is needed for enabling biometrics."
                 }</Text>
 
                 <View style={styles.inputContainer}>
