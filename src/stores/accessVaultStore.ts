@@ -28,6 +28,8 @@ export type RequestAccessPrompt = {
     validateWith: AuthorizationType;
 }
 
+export type RequestAccessFn = <I extends Input>(input: I, prompt?: AuthPrompt) => Promise<Output<I>>;
+
 export interface AccessVaultState {
     prompt: RequestAccessPrompt | null;
 
@@ -51,7 +53,7 @@ export interface AccessVaultState {
       * @param [prompt] Optional prompt to customize the authentication UI (e.g., title/message).
       * @returns Promise<string | string[]> The user's passphrase, or the decrypted seed phrase as an array of words.
       */
-    requestAccess: <I extends Input>(input: I, prompt?: AuthPrompt) => Promise<Output<I>>;
+    requestAccess: RequestAccessFn;
 
     // Promises for async passphrase input
     readonly passphrasePromise: {

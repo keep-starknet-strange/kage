@@ -44,8 +44,8 @@ export default function AccountDetailScreen() {
 
         setIsLoadingBalances(true);
         try {
-            const { balanceRepository } = useAppDependenciesStore.getState();
-            const balancesMap = await balanceRepository.getBalances([account]);
+            const { publicBalanceRepository } = useAppDependenciesStore.getState();
+            const balancesMap = await publicBalanceRepository.getBalances([account]);
             const accountBalances = balancesMap.get(account.address) ?? [];
             setBalances(accountBalances);
         } catch (error) {
