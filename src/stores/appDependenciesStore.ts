@@ -9,6 +9,7 @@ import Constants from 'expo-constants';
 import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import AsyncKeyValueStorage from "@/storage/kv/AsyncKeyValueStorage";
 import ProfileStorage from "@/storage/profile/ProfileStorage";
+import { BalanceRepository } from "./balance/balanceRepository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -16,6 +17,7 @@ export interface AppDependencies {
     cryptoProvider: CryptoProvider;
     profileStorage: ProfileStorage;
     seedPhraseVault: SeedPhraseVault;
+    balanceRepository: BalanceRepository;
 }
 
 function getApplicationId(): string {
@@ -46,5 +48,6 @@ export const useAppDependenciesStore = create<AppDependencies>((set) => {
         cryptoProvider: cryptoProvider,
         profileStorage: new ProfileStorage(),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
+        balanceRepository: new BalanceRepository(),
     }
 });

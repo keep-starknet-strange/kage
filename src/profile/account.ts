@@ -1,6 +1,9 @@
 import { Type } from "class-transformer";
-import { NetworkId } from "./misc";
 import HDKeyInstance, { KeyInstance } from "./keyInstance";
+import { NetworkId } from "./misc";
+import { RpcProvider, Account as StarknetAccount } from "starknet";
+import { AccountSigner } from "./accountSigner";
+import { AccessVaultState } from "@/stores/accessVaultStore";
 
 export default class Account {
 
@@ -28,5 +31,13 @@ export default class Account {
         this.name = name;
         this.networkId = networkId;
         this.keyInstance = keyInstance;
+    }
+
+    toStarknetAccount(vault: AccessVaultState, provider: RpcProvider): StarknetAccount {
+        return new StarknetAccount({
+            provider: provider,
+            address: this.address,
+            signer: new AccountSigner(this, vault),
+        });
     }
 }

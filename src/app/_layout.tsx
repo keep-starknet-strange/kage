@@ -1,5 +1,6 @@
 import { ProfileState } from '@/profile/profileState';
 import { AppProviders } from '@/providers/AppProviders';
+import { useAppDependenciesStore } from '@/stores/appDependenciesStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,6 +13,12 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     const { profileState, initialize } = useProfileStore();
+    const currentNetworkDefinition = useProfileStore(state => {
+        if (!ProfileState.isProfile(state.profileState)) {
+            return null;
+        }
+        return state.profileState.currentNetworkWithDefinition.networkDefinition;
+    });
 
     const isOnboarded = useMemo(() => {
         return ProfileState.isOnboarded(profileState)
@@ -26,6 +33,15 @@ export default function RootLayout() {
         }
     }, [profileState, initialize]);
 
+
+    useEffect(() => {
+        if (currentNetworkDefinition) {
+            console.log("Network changed to", currentNetworkDefinition.chainId);
+            const { balanceRepository } = useAppDependenciesStore.getState();
+            balanceRepository.setNetwork(currentNetworkDefinition);
+        }
+    }, [currentNetworkDefinition?.chainId ?? ""]);
+
     return (
         <AppProviders>
             <Stack>
@@ -34,7 +50,8 @@ export default function RootLayout() {
                 </Stack.Protected>
 
                 <Stack.Protected guard={isOnboarded}>
-                    <Stack.Screen name="(wallet)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(home)" options={{ headerShown: false }} />
+                    <Stack.Screen name="account/[accountAddress]" options={{ headerShown: false }} />
                 </Stack.Protected>
             </Stack>
 
