@@ -2,14 +2,14 @@ import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
 import { EMIP3CryptoProvider } from "@/crypto/provider/EMIP3CryptoProvider";
 import EncryptedStorage from "@/storage/encrypted/EncryptedStorage";
 import KeychainStorage from "@/storage/encrypted/KeychainStorage";
-import { create } from "zustand";
-import SeedPhraseVault from "@/storage/SeedPhraseVault";
-import { Platform } from "react-native";
-import Constants from 'expo-constants';
-import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import AsyncKeyValueStorage from "@/storage/kv/AsyncKeyValueStorage";
+import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import ProfileStorage from "@/storage/profile/ProfileStorage";
-import { BalanceRepository } from "./balance/balanceRepository";
+import SeedPhraseVault from "@/storage/SeedPhraseVault";
+import Constants from 'expo-constants';
+import { Platform } from "react-native";
+import { create } from "zustand";
+import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -17,7 +17,7 @@ export interface AppDependencies {
     cryptoProvider: CryptoProvider;
     profileStorage: ProfileStorage;
     seedPhraseVault: SeedPhraseVault;
-    balanceRepository: BalanceRepository;
+    publicBalanceRepository: PublicBalanceRepository;
 }
 
 function getApplicationId(): string {
@@ -48,6 +48,6 @@ export const useAppDependenciesStore = create<AppDependencies>((set) => {
         cryptoProvider: cryptoProvider,
         profileStorage: new ProfileStorage(),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
-        balanceRepository: new BalanceRepository(),
+        balanceRepository: new PublicBalanceRepository(),
     }
 });
