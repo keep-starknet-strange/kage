@@ -10,6 +10,7 @@ import Constants from 'expo-constants';
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
+import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -18,6 +19,7 @@ export interface AppDependencies {
     profileStorage: ProfileStorage;
     seedPhraseVault: SeedPhraseVault;
     publicBalanceRepository: PublicBalanceRepository;
+    privateBalanceRepository: PrivateBalanceRepository;
 }
 
 function getApplicationId(): string {
@@ -38,7 +40,7 @@ function getApplicationId(): string {
     }
 }
 
-export const useAppDependenciesStore = create<AppDependencies>((set) => {
+export const useAppDependenciesStore = create<AppDependencies>(() => {
     const encryptedStorage = new KeychainStorage(getApplicationId());
     const cryptoProvider = new EMIP3CryptoProvider();
 
@@ -48,6 +50,7 @@ export const useAppDependenciesStore = create<AppDependencies>((set) => {
         cryptoProvider: cryptoProvider,
         profileStorage: new ProfileStorage(),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
-        balanceRepository: new PublicBalanceRepository(),
+        publicBalanceRepository: new PublicBalanceRepository(),
+        privateBalanceRepository: new PrivateBalanceRepository(),
     }
 });

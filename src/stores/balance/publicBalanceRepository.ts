@@ -1,31 +1,19 @@
-import Account from "@/profile/account";
-import NetworkDerfinition from "@/profile/settings/networkDefinition";
-import { Call, RpcProvider, uint256 } from "starknet";
-import BalanceRepository from "./BalanceRepository";
+import Account, { AccountAddress } from "@/profile/account";
+import { Call, uint256 } from "starknet";
+import BalanceRepository from "./balanceRepository";
+import Token from "./token";
 import { PublicTokenBalance } from "./tokenBalance";
 
 export class PublicBalanceRepository extends BalanceRepository {
 
-    private provider: RpcProvider;
-    
-    constructor() {
-        super();
-
-        this.provider = new RpcProvider({ nodeUrl: NetworkDerfinition.mainnet().rpcUrl.toString(), batch: 0 });
-    }
-
-    setNetwork(network: NetworkDerfinition) {
-        super.setNetwork(network);
-        this.provider = new RpcProvider({ nodeUrl: network.rpcUrl.toString(), batch: 0 });
-    }
-
-    async getBalances(accounts: readonly Account[]): Promise<Map<string, PublicTokenBalance[]>> {
+    async getBalances(accounts: Account[], forTokens: Token[]): Promise<Map<AccountAddress, PublicTokenBalance[]>> {
+        const tokensWithAddresses = new Map(forTokens.map((token) => [token.contractAddress, token]));
         const promises = accounts.map((account) => {
             if (account.networkId !== this.currentNetwork) {
                 throw new Error(`Balance repository is set to ${this.currentNetwork} but account ${account.address} is on ${account.networkId}`);
             }
 
-            return Array.from(this.tokenDefinitionsOnCurrentNetwork.keys()).map((token) => {
+            return Array.from(tokensWithAddresses.keys()).map((token) => {
                 return {
                     account: account.address,
                     token: token,
@@ -36,13 +24,13 @@ export class PublicBalanceRepository extends BalanceRepository {
 
         const allBalances = await Promise.all(promises.map((promise) => promise.balancePromise));
 
-        const results = new Map<string, PublicTokenBalance[]>();
+        const results = new Map<AccountAddress, PublicTokenBalance[]>();
 
         allBalances.forEach((balance, index) => {
             const accountAddress = promises[index].account;
             const tokenAddress = promises[index].token;
             const tokenBalances = results.get(accountAddress) ?? [];
-            const token = this.tokenDefinitionsOnCurrentNetwork.get(tokenAddress);
+            const token = tokensWithAddresses.get(tokenAddress);
 
             if (!token) {
                 throw new Error(`Token ${tokenAddress} not found on current network ${this.currentNetwork}`);
@@ -55,7 +43,7 @@ export class PublicBalanceRepository extends BalanceRepository {
         return results;
     }
 
-    private async balanceOf(accountAddress: string, tokenAddress: string): Promise<bigint> {
+    private async balanceOf(accountAddress: AccountAddress, tokenAddress: string): Promise<bigint> {
         const call: Call = {
             contractAddress: tokenAddress,
             entrypoint: "balance_of",

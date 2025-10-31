@@ -1,11 +1,12 @@
-import { StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { AccountAddress } from "@/profile/account";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
-import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { useMemo, useRef, useState } from "react";
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export type AddressViewProps = {
-    address: string;
+    address: AccountAddress;
     variant?: 'default' | 'compact';
 }
 
