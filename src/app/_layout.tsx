@@ -10,6 +10,7 @@ import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
 import Account from '@/profile/account';
+import NetworkBanner from '@/components/ui/network-banner';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -63,7 +64,7 @@ export default function RootLayout() {
             </Stack>
 
             <AccessVaultModal />
-            <StatusBar style="auto" />
+            <NetworkBanner network={currentNetworkDefinition} />
         </AppProviders>
     );
 }

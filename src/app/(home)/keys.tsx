@@ -1,14 +1,14 @@
 import { ProfileState } from "@/profile/profileState";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useProfileStore } from "@/stores/profileStore";
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BackupScreen() {
-    const insets = useSafeAreaInsets();
+    const { insets } = useDynamicSafeAreaInsets();
 
     const {requestAccess} = useAccessVaultStore();
     const {profileState} = useProfileStore();

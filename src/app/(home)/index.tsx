@@ -1,17 +1,16 @@
 import { AddressView } from '@/components/address-view';
 import { BalanceCard } from '@/components/ui/balance-card';
-import { NetworkBadge } from '@/components/ui/network-badge';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
+import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
 import { useProfileStore } from '@/stores/profileStore';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
-    const insets = useSafeAreaInsets();
+    const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const { profileState } = useProfileStore();
 
@@ -24,15 +23,6 @@ export default function HomeScreen() {
 
     const renderHeader = () => (
         <>
-            {/* Network Badge */}
-            <NetworkBadge 
-                style={styles.networkBadgeMargin}
-                onPress={() => {
-                    // TODO: Open network selector or settings
-                    console.log('Network badge pressed');
-                }}
-            />
-
             {/* Total Balance Section */}
             <BalanceCard 
                 type="total"

@@ -5,18 +5,18 @@ import { PrimaryButton } from '@/components/ui/primary-button';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
+import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
 import { PrivateTokenBalance, PublicTokenBalance } from '@/stores/balance/tokenBalance';
 import { useProfileStore } from '@/stores/profileStore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type TabType = 'public' | 'private';
 
 export default function AccountDetailScreen() {
-    const insets = useSafeAreaInsets();
+    const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const { accountAddress } = useLocalSearchParams<{ accountAddress: AccountAddress }>();
     const { profileState } = useProfileStore();

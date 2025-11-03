@@ -4,12 +4,12 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import Keychain, { BIOMETRY_TYPE } from "react-native-keychain";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DangerButton } from "@/components/ui/danger-button";
 import { useProfileStore } from "@/stores/profileStore";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 
 export default function SettingsScreen() {
-    const insets = useSafeAreaInsets();
+    const { insets } = useDynamicSafeAreaInsets();
     const { keyValueStorage, seedPhraseVault } = useAppDependenciesStore();
     const { requestAccess } = useAccessVaultStore();
     const { delete: deleteProfile } = useProfileStore();

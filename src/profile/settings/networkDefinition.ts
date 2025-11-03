@@ -26,6 +26,10 @@ export default class NetworkDerfinition {
         this.blockExplorerUrl = blockExplorerUrl;
     }
 
+    get isTestNetwork(): boolean {
+        return this.chainId !== "SN_MAIN";
+    }
+
     static sepolia(rpcUrlString: string = process.env.EXPO_PUBLIC_RPC_SN_SEPOLIA || ""): NetworkDerfinition {
         return new NetworkDerfinition(
             new URL(rpcUrlString),

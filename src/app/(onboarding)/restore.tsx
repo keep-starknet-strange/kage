@@ -1,17 +1,17 @@
-import { useNavigation, useRouter } from "expo-router";
-import { useLayoutEffect, useState, useEffect } from "react";
-import { Text, View, TextInput, Pressable, StyleSheet, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { appTheme } from "@/design/theme";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { appTheme } from "@/design/theme";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { useProfileStore } from "@/stores/profileStore";
 import { mnemonicToWords, validateMnemonic, wordlist } from "@starkms/key-management";
 import * as Clipboard from "expo-clipboard";
-import { useProfileStore } from "@/stores/profileStore";
+import { useNavigation, useRouter } from "expo-router";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function RestoreScreen() {
     const router = useRouter();
     const navigation = useNavigation();
-    const insets = useSafeAreaInsets();
+    const { insets } = useDynamicSafeAreaInsets();
     const { restore } = useProfileStore();
 
     const [passphrase, setPassphrase] = useState("");
