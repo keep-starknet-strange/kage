@@ -43,6 +43,13 @@ Features of POC:
 This project is built with React Native & Expo.
 Make sure to [setup your environment first](https://docs.expo.dev/get-started/set-up-your-environment/).
 
+1. First create an `.env` file in the root of the project with the following content:
+```
+EXPO_PUBLIC_RPC_SN_SEPOLIA="https://..."
+EXPO_PUBLIC_RPC_SN_MAIN="https://..."
+```
+
+2. Then build/run with
 ```bash
 # Make sure that your node modules are up-to-date
 # If not, run

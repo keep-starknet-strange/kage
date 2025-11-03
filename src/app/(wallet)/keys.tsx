@@ -1,4 +1,6 @@
-import { useAccountStore } from "@/stores/accountStore";
+import { ProfileState } from "@/profile/profileState";
+import { useAccessVaultStore } from "@/stores/accessVaultStore";
+import { useProfileStore } from "@/stores/profileStore";
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from 'react';
@@ -7,20 +9,31 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BackupScreen() {
     const insets = useSafeAreaInsets();
-    
-    const { readMnemonic } = useAccountStore()
+
+    const {requestAccess} = useAccessVaultStore();
+    const {profileState} = useProfileStore();
     const [mnemonicWords, setMnemonicWords] = useState<string[]>([]);
     const [showRetry, setShowRetry] = useState(false);
     const [showLoading, setShowLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
     const hasMnemonic = useMemo(() => mnemonicWords.length > 0, [mnemonicWords]);
+    const keySourceId = useMemo(() => {
+        const profile = ProfileState.getProfileOrNull(profileState);
+        return profile?.keySources[0]?.id ?? null
+    }, [profileState]);
 
     const fetchMnemonic = useCallback(async () => {
+        if (!keySourceId) {
+            throw new Error("Key source ID is not set");
+        }
+
         try {
             setShowRetry(false);
             setShowLoading(true);
-            const mnemonicWords = await readMnemonic();
+
+            const mnemonicWords = await requestAccess({ requestFor: "seedphrase", keySourceId });
+            
             setMnemonicWords(mnemonicWords);
             setShowLoading(false);
         } catch (e) {
@@ -28,7 +41,7 @@ export default function BackupScreen() {
             setShowRetry(true);
             setShowLoading(false);
         }
-    }, [readMnemonic, setMnemonicWords, setShowRetry, setShowLoading]);
+    }, [requestAccess, setMnemonicWords, setShowRetry, setShowLoading, keySourceId]);
 
     useFocusEffect(
         useCallback(() => {
@@ -95,7 +108,7 @@ export default function BackupScreen() {
                 <Button
                     title="Retry"
                     onPress={() => {
-                        void readMnemonic();
+                        fetchMnemonic();
                     }}
                 />
             )}
