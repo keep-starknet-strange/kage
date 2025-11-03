@@ -108,6 +108,9 @@ export default function AccountDetailScreen() {
                 type={activeTab}
                 account={account}
                 style={styles.balanceCard}
+                onFundPress={() => {}}
+                onTransferPress={() => {}}
+                onWithdrawPress={() => {}}
             />
 
             {/* Tab Bar */}
@@ -273,7 +276,7 @@ function PrivateTab({
         <View style={[styles.tabHeader]}>
             <Text style={styles.tabHeaderText}>Your Tokens</Text>
             <Pressable onPress={() => onLock()} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <IconSymbol name="lock" size={18} color={colorTokens['brand.accent']} />
+                <IconSymbol name="lock.open.fill" size={18} color={colorTokens['brand.accent']} />
                 <Text style={{ color: colorTokens['brand.accent'], fontWeight: '600', fontSize: 16, marginLeft: 4 }}>Lock</Text>
             </Pressable>
         </View>

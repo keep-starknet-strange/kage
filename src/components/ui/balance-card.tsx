@@ -2,6 +2,8 @@ import { appTheme } from '@/design/theme';
 import Account from '@/profile/account';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import ActionButton from './action-buttons';
+import { useBalanceStore } from '@/stores/balance/balanceStore';
+import { IconSymbol } from './icon-symbol';
 
 export interface PublicBalanceProps {
     type: 'public';
@@ -13,6 +15,9 @@ export interface PrivateBalanceProps {
     type: 'private';
     account: Account;
     style?: StyleProp<ViewStyle>;
+    onFundPress: () => void;
+    onTransferPress: () => void;
+    onWithdrawPress: () => void;
 }
 
 export interface TotalBalanceProps {
@@ -25,6 +30,11 @@ export type BalanceCardProps = PublicBalanceProps | PrivateBalanceProps | TotalB
 
 export const BalanceCard = (props: BalanceCardProps) => {
     const { type, style } = props;
+    const isUnlocked = useBalanceStore(state => {
+        if (type !== 'private') { return null }
+
+        return state.unlockedPrivateBalances.has(props.account.address);
+    });
 
     // Automatically determine label based on type
     const label =
@@ -32,7 +42,7 @@ export const BalanceCard = (props: BalanceCardProps) => {
             type === 'private' ? 'Private Balance' :
                 'Total Balance';
 
-    const actions = type !== 'total' ? (
+    const actions = (type === 'private') ? (
         <View style={styles.actionsContainer}>
             <ActionButton
                 icon="plus.circle.fill"
@@ -58,9 +68,20 @@ export const BalanceCard = (props: BalanceCardProps) => {
     return (
         <View style={[styles.container, style]}>
             <Text style={styles.label}>{label}</Text>
-            <Text style={styles.amount}>
-                {"$ "}{"0.00"} {/* TODO: Add actual fiat balance */}
-            </Text>
+            <View style={styles.amountRow}>
+                <Text style={styles.amount}>
+                    {"$ "}{"0.00"} {/* TODO: Add actual fiat balance */}
+                </Text>
+                {isUnlocked !== null && (
+                    <IconSymbol
+                        name={isUnlocked ? "lock.open.fill" : "lock.fill"}
+                        size={24}
+                        color={appTheme.colors.textMuted}
+                        style={styles.lockIcon}
+                    />
+                )}
+            </View>
+
             {actions}
         </View>
     );
@@ -87,11 +108,21 @@ const styles = StyleSheet.create({
         marginBottom: appTheme.spacing[1],
         fontWeight: '500',
     },
+    amountRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: appTheme.spacing[2],
+    },
     amount: {
         fontSize: 48,
         fontWeight: '700',
         color: appTheme.colors.text,
         letterSpacing: -0.5,
+    },
+    lockIcon: {
+        position: 'absolute',
+        alignSelf: 'center',
+        right: -appTheme.spacing[5],
     },
     actionsContainer: {
         flexDirection: 'row',

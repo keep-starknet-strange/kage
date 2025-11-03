@@ -27,6 +27,8 @@ const MAPPING = {
     'plus.circle.fill': 'add-circle',
     'arrow.right.circle.fill': 'arrow-circle-right',
     'arrow.down.circle.fill': 'arrow-circle-down',
+    'lock.fill': 'lock',
+    'lock.open.fill': 'lock-open',
 } as IconMapping;
 
 /**
