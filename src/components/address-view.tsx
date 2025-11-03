@@ -1,5 +1,6 @@
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from "@/profile/account";
+import formattedAddress from '@/utils/formattedAddress';
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from "react";
@@ -16,13 +17,7 @@ export function AddressView({ address, variant = 'default' }: AddressViewProps) 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
     const displayedAddress = useMemo(() => {
-        if (address.length <= 10) return address;
-        
-        if (variant === 'compact') {
-            return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-        }
-        
-        return `${address.substring(0, 10)}...${address.substring(address.length - 8)}`;
+        return formattedAddress(address, variant);
     }, [address, variant]);
 
     const copyToClipboard = async () => {

@@ -1,16 +1,16 @@
 import { AddressView } from '@/components/address-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { PrimaryButton } from '@/components/ui/primary-button';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
-import { useAppDependenciesStore } from '@/stores/appDependenciesStore';
-import { PublicTokenBalance, PrivateTokenBalance } from '@/stores/balance/tokenBalance';
+import { useBalanceStore } from '@/stores/balance/balanceStore';
+import { PrivateTokenBalance, PublicTokenBalance } from '@/stores/balance/tokenBalance';
 import { useProfileStore } from '@/stores/profileStore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AccountAddress } from '@/profile/account';
-import { useBalanceStore } from '@/stores/balance/balanceStore';
 
 type TabType = 'public' | 'private';
 
@@ -19,9 +19,10 @@ export default function AccountDetailScreen() {
     const router = useRouter();
     const { accountAddress } = useLocalSearchParams<{ accountAddress: AccountAddress }>();
     const { profileState } = useProfileStore();
-    const { requestRefresh } = useBalanceStore();
+    const { requestRefresh, unlockPrivateBalances, lockPrivateBalances } = useBalanceStore();
     const publicBalances = useBalanceStore(state => state.publicBalances.get(accountAddress) ?? []);
     const privateBalances = useBalanceStore(state => state.privateBalances.get(accountAddress) ?? []);
+    const isPrivateBalancesUnlocked = useBalanceStore(state => state.unlockedPrivateBalances.has(accountAddress));
 
     const [isLoadingBalances, setIsLoadingBalances] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('public');
@@ -44,7 +45,7 @@ export default function AccountDetailScreen() {
     const balanceLabel = activeTab === 'public' ? 'Public Balance' : 'Private Balance';
 
     // Fetch balances for this account
-    const fetchPublicBalances = useCallback(async () => {
+    const fetchBalances = useCallback(async () => {
         if (!account) return;
 
         setIsLoadingBalances(true);
@@ -57,9 +58,22 @@ export default function AccountDetailScreen() {
         }
     }, [account, requestRefresh]);
 
+    const handleUnlockPrivateBalances = useCallback(async () => {
+        if (!account) return;
+
+        setIsLoadingBalances(true);
+        try {
+            await unlockPrivateBalances([account]);
+        } catch (error) {
+            console.error('Error unlocking private balances:', error);
+        } finally {
+            setIsLoadingBalances(false);
+        }
+    }, [account, unlockPrivateBalances]);
+
     useEffect(() => {
-        void fetchPublicBalances();
-    }, [fetchPublicBalances]);
+        void fetchBalances();
+    }, [fetchBalances]);
 
     // If account not found, show error
     if (!account) {
@@ -129,10 +143,31 @@ export default function AccountDetailScreen() {
                     <PublicTab
                         balances={publicBalances}
                         isLoading={isLoadingBalances}
-                        onRefresh={fetchPublicBalances}
+                        onRefresh={fetchBalances}
                     />
                 )}
-                {activeTab === 'private' && <PrivateTab />}
+                {activeTab === 'private' && (
+                    isPrivateBalancesUnlocked ? (
+                        <PrivateTab
+                            balances={privateBalances}
+                            isLoading={isLoadingBalances}
+                            onRefresh={fetchBalances}
+                            onLock={() => lockPrivateBalances([account])}
+                        />
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <IconSymbol name="lock.fill" size={48} color={colorTokens['text.muted']} />
+                            <Text style={styles.emptyStateText}>Private balances are locked</Text>
+
+                            <PrimaryButton
+                                style={styles.unlockButton}
+                                title="Unlock"
+                                loading={isLoadingBalances}
+                                onPress={handleUnlockPrivateBalances}
+                            />
+                        </View>
+                    )
+                )}
             </View>
         </View>
     );
@@ -148,21 +183,23 @@ function PublicTab({
     isLoading: boolean;
     onRefresh: () => void;
 }) {
-    const renderTokenItem = ({ item }: { item: PublicTokenBalance }) => (
-        <View style={styles.tokenCard}>
-            <View style={styles.tokenInfo}>
-                <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
-                <Text style={styles.tokenAddress} numberOfLines={1}>
-                    {item.token.contractAddress}
-                </Text>
+    const renderTokenItem = ({ item }: { item: PublicTokenBalance }) => {
+        return (
+            <View style={styles.tokenCard}>
+                <View style={styles.tokenInfo}>
+                    <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
+                    <Text style={styles.tokenAddress} numberOfLines={1}>
+                        {item.token.formattedContractAddress}
+                    </Text>
+                </View>
+                <View style={styles.tokenBalance}>
+                    <Text style={styles.tokenBalanceAmount}>
+                        {item.formattedSpendableBalance(true)}
+                    </Text>
+                </View>
             </View>
-            <View style={styles.tokenBalance}>
-                <Text style={styles.tokenBalanceAmount}>
-                    {item.formattedSpendableBalance(true)}
-                </Text>
-            </View>
-        </View>
-    );
+        )
+    };
 
     const renderEmpty = () => (
         <View style={styles.emptyState}>
@@ -203,17 +240,74 @@ function PublicTab({
 }
 
 // Private Tab Component
-function PrivateTab() {
-    return (
-        <View style={styles.tabContent}>
-            <View style={styles.emptyState}>
-                <IconSymbol name="lock.fill" size={48} color={colorTokens['text.muted']} />
-                <Text style={styles.emptyStateText}>Private tokens coming soon</Text>
-                <Text style={styles.emptyStateSubtext}>
-                    Private token balances will be displayed here
-                </Text>
+function PrivateTab({
+    balances,
+    isLoading,
+    onRefresh,
+    onLock
+}: {
+    balances: PrivateTokenBalance[];
+    isLoading: boolean;
+    onRefresh: () => void;
+    onLock: () => void;
+}) {
+    const renderTokenItem = ({ item }: { item: PrivateTokenBalance }) => {
+        return (
+            <View style={styles.tokenCard}>
+                <View style={styles.tokenInfo}>
+                    <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
+                    <Text style={styles.tokenAddress} numberOfLines={1}>
+                        {item.token.formattedTongoAddress}
+                    </Text>
+                </View>
+                <View style={styles.tokenBalance}>
+                    <Text style={styles.tokenBalanceAmount}>
+                        {item.formattedSpendableBalance(true)}
+                    </Text>
+                </View>
             </View>
+        )
+    };
+
+    const renderEmpty = () => (
+        <View style={styles.emptyState}>
+            <IconSymbol name="tray" size={48} color={colorTokens['text.muted']} />
+            <Text style={styles.emptyStateText}>No tokens found</Text>
         </View>
+    );
+
+    const renderHeader = () => (
+        <View style={[styles.tabHeader]}>
+            <Text style={styles.tabHeaderText}>Your Tokens</Text>
+            <Pressable onPress={() => onLock()} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <IconSymbol name="lock" size={18} color={colorTokens['brand.accent']} />
+                <Text style={{ color: colorTokens['brand.accent'], fontWeight: '600', fontSize: 16, marginLeft: 4 }}>Lock</Text>
+            </Pressable>
+        </View>
+    );
+
+    if (isLoading && balances.length === 0) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colorTokens['brand.accent']} />
+                <Text style={styles.loadingText}>Loading balances...</Text>
+            </View>
+        );
+    }
+
+    return (
+        <FlatList
+            style={styles.tabContent}
+            contentContainerStyle={styles.tabContentContainer}
+            data={balances}
+            renderItem={renderTokenItem}
+            keyExtractor={(item) => item.token.contractAddress}
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={renderEmpty}
+            ItemSeparatorComponent={() => <View style={styles.tokenSeparator} />}
+            refreshing={isLoading}
+            onRefresh={onRefresh}
+        />
     );
 }
 
@@ -409,6 +503,19 @@ const styles = StyleSheet.create({
         borderRadius: radiusTokens.md,
     },
     backButtonText: {
+        color: colorTokens['text.inverted'],
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    unlockButton: {
+        marginTop: spaceTokens[4],
+        paddingVertical: spaceTokens[3],
+        paddingHorizontal: spaceTokens[6],
+        backgroundColor: colorTokens['brand.accent'],
+        borderRadius: radiusTokens.md,
+        alignItems: 'center',
+    },
+    unlockButtonText: {
         color: colorTokens['text.inverted'],
         fontSize: 16,
         fontWeight: '600',

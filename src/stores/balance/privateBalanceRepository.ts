@@ -90,6 +90,15 @@ export default class PrivateBalanceRepository extends BalanceRepository {
         }
     }
 
+
+    async lock(forAccounts: readonly Account[], forTokens: Token[]) {
+        for (const account of forAccounts) {
+            for (const token of forTokens) {
+                this.tongoCache.delete(this.cacheKey(account, token));
+            }
+        }
+    }
+
     lockAll() {
         this.tongoCache.clear();
     }

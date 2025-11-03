@@ -1,9 +1,14 @@
+import formattedAddress from "@/utils/formattedAddress";
+
 export default class Token {
 
     readonly contractAddress: string;
     readonly tongoAddress: string;
     readonly symbol: string;
     readonly decimals: number;
+
+    private _formattedContractAddress: string | null = null;
+    private _formattedTongoAddress: string | null = null;
 
     constructor(
         contractAddress: string,
@@ -15,5 +20,13 @@ export default class Token {
         this.tongoAddress = tongoAddress;
         this.symbol = symbol;
         this.decimals = decimals;
+    }
+
+    get formattedContractAddress(): string {
+        return this._formattedContractAddress || (this._formattedContractAddress = formattedAddress(this.contractAddress, 'compact'));
+    }
+
+    get formattedTongoAddress(): string {
+        return this._formattedTongoAddress || (this._formattedTongoAddress = formattedAddress(this.tongoAddress, 'compact'));
     }
 }
