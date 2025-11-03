@@ -1,12 +1,9 @@
-import 'react-native-get-random-values';
-import "@ethersproject/shims" // Might be deleted when getId is moved to kms (delete shims, and ethers)
+import { Platform } from 'react-native';
 
-// Quick-crypto is used for native crypto operations
-import { install } from 'react-native-quick-crypto';
-install();
+if (Platform.OS === 'web') {
+  require('./polyfills/web');
+} else if (Platform.OS === 'ios' || Platform.OS === 'android') {
+  require('./polyfills/mobile');
+}
 
-// Fallback minimal HKDF/PBKDF2 polyfill — kept after quick-crypto so it doesn't override
-import './polyfills/webcrypto';
-import 'reflect-metadata';
-
-import 'expo-router/entry'
+import 'expo-router/entry';

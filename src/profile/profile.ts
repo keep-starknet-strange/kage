@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import Header from "./header";
+import Header from "./header/header";
 import KeySource, { KeySourceId } from "./keys/keySource";
 import Network from "./network";
 import NetworkDerfinition from "./settings/networkDefinition";

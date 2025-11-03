@@ -3,11 +3,12 @@ const { getDefaultConfig } = require('expo/metro-config');
 const config = getDefaultConfig(__dirname);
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === 'ethers') {
+  if (moduleName === 'ethers' && (platform === 'ios' || platform === 'android')) {
     return context.resolveRequest(context, 'ethers/lib.esm/index.js', platform);
   }
 
-  if (moduleName === 'crypto') {
+  if (moduleName === 'crypto' && (platform === 'ios' || platform === 'android')) {
+      console.log('METROOOOO platform', platform);
     // when importing crypto, resolve to react-native-quick-crypto
     return context.resolveRequest(
       context,

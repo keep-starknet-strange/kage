@@ -1,13 +1,15 @@
-// Minimal WebCrypto SubtleCrypto polyfill for React Native (Expo)
-// Originally supported only HKDF and has been extended to add PBKDF2 support so that
-// code paths expecting SubtleCrypto PBKDF2 don't throw. 
-// Note! this PBKDF2 implementation runs on the JS thread using @noble/hashes and is not a
-// native acceleration. This functionality is treated as a functional fallback and
-// does not meet our desired performance.
-
 import { hkdf } from '@noble/hashes/hkdf.js'
 import { sha256, sha512 } from '@noble/hashes/sha2.js'
 import { pbkdf2Async } from '@noble/hashes/pbkdf2.js'
+import 'react-native-get-random-values';
+
+// Needed for get-id functionality to work.
+import "@ethersproject/shims";
+import "reflect-metadata";
+
+// Install react-native-quick-crypto
+import { install } from 'react-native-quick-crypto';
+install();
 
 type CryptoKeyLike = { __raw: Uint8Array };
 

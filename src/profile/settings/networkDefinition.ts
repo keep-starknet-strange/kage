@@ -1,5 +1,5 @@
-import { Expose, Transform, Type } from "class-transformer";
-import { NetworkId } from "../misc";
+import {Expose, Transform, Type} from "class-transformer";
+import {NetworkId} from "../misc";
 
 export default class NetworkDerfinition {
     @Type(() => URL)

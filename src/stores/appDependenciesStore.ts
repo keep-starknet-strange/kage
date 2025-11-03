@@ -11,6 +11,8 @@ import { Platform } from "react-native";
 import { create } from "zustand";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
 import PrivateBalanceRepository from "./balance/privateBalanceRepository";
+import MobileProfileStorage from "@/storage/profile/MobileProfileStorage";
+import WebProfileStorage from "@/storage/profile/WebProfileStorage";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -48,7 +50,7 @@ export const useAppDependenciesStore = create<AppDependencies>(() => {
         encryptedStorage: encryptedStorage,
         keyValueStorage: new AsyncKeyValueStorage(),
         cryptoProvider: cryptoProvider,
-        profileStorage: new ProfileStorage(),
+        profileStorage: Platform.OS === "ios" || Platform.OS === "android" ? new MobileProfileStorage() : new WebProfileStorage(),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
         publicBalanceRepository: new PublicBalanceRepository(),
         privateBalanceRepository: new PrivateBalanceRepository(),

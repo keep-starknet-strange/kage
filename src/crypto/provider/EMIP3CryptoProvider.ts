@@ -1,6 +1,6 @@
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js"
 import { concatBytes } from "@noble/hashes/utils.js"
-import QuickCrypto from 'react-native-quick-crypto'
+// import QuickCrypto from 'react-native-quick-crypto'
 import { CryptoProvider } from './CryptoProvider'
 import { randomBytes } from "../utils/Random"
 
@@ -36,8 +36,8 @@ export class EMIP3CryptoProvider implements CryptoProvider {
     salt: Uint8Array | Uint16Array,
   ): Promise<Uint8Array> {
     const saltAsUint8Array = new Uint8Array(salt)
-    const nativeOut = QuickCrypto.pbkdf2Sync(passphrase as any, saltAsUint8Array as any, PBKDF2_ITERATIONS, KEY_LENGTH, 'sha512') as any
-    return toUint8(nativeOut)
+    // const nativeOut = QuickCrypto.pbkdf2Sync(passphrase as any, saltAsUint8Array as any, PBKDF2_ITERATIONS, KEY_LENGTH, 'sha512') as any
+    return toUint8("")
   }
 
   async encrypt(

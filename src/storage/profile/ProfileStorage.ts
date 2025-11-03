@@ -1,32 +1,29 @@
 import Profile from '@/profile/profile';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { File, Paths } from 'expo-file-system';
 
-export default class ProfileStorage {
-    private readonly profileFile: File = new File(Paths.cache, "profile.json");
-
+export default abstract class ProfileStorage {
     async storeProfile(profile: Profile): Promise<void> {
         const profilePlain = instanceToPlain(profile);
         const profileString = JSON.stringify(profilePlain);
-
-        if (!this.profileFile.exists) {
-            this.profileFile.create();
-        }
-
-        this.profileFile.write(profileString);
+        await this.saveJson(profileString);
     }
 
     async readProfile(): Promise<Profile | null> {
-        if (!this.profileFile.exists) {
+        const rawProfileJson = await this.readJson();
+        if (rawProfileJson === null) {
             return null;
         }
-
-        const rawProfileJson = await this.profileFile.text();
+        
         const profilePlain: Object = JSON.parse(rawProfileJson);
         return plainToInstance(Profile, profilePlain);
     }
 
     async deleteProfile(): Promise<void> {
-        this.profileFile.delete();
+        await this.deleteJson();
     }
+
+    protected abstract saveJson(json: string): Promise<void>;
+    protected abstract readJson(): Promise<string | null>;
+    protected abstract deleteJson(): Promise<void>;
 }
+
