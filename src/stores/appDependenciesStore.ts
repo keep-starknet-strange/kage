@@ -2,7 +2,6 @@ import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
 import { EMIP3CryptoProvider } from "@/crypto/provider/EMIP3CryptoProvider";
 import EncryptedStorage from "@/storage/encrypted/EncryptedStorage";
 import KeychainStorage from "@/storage/encrypted/KeychainStorage";
-import AsyncKeyValueStorage from "@/storage/kv/AsyncKeyValueStorage";
 import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import ProfileStorage from "@/storage/profile/ProfileStorage";
 import SeedPhraseVault from "@/storage/SeedPhraseVault";
@@ -13,6 +12,10 @@ import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
 import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 import MobileProfileStorage from "@/storage/profile/MobileProfileStorage";
 import WebProfileStorage from "@/storage/profile/WebProfileStorage";
+import WebKeyValueStorage from "@/storage/kv/WebKeyValueStorage";
+import MobileKeyValueStorage from "@/storage/kv/MobileKeyValueStorage";
+import { MobilePKDFPerformer } from "@/crypto/pbkdf/MobilePBKDFPerformer";
+import { WebPKDFPerformer } from "@/crypto/pbkdf/WebPBKDFPerformer";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -44,11 +47,13 @@ function getApplicationId(): string {
 
 export const useAppDependenciesStore = create<AppDependencies>(() => {
     const encryptedStorage = new KeychainStorage(getApplicationId());
-    const cryptoProvider = new EMIP3CryptoProvider();
+    const cryptoProvider = new EMIP3CryptoProvider(
+        Platform.OS === "ios" || Platform.OS === "android" ? new MobilePKDFPerformer() : new WebPKDFPerformer()
+    );
 
     return {
         encryptedStorage: encryptedStorage,
-        keyValueStorage: new AsyncKeyValueStorage(),
+        keyValueStorage: Platform.OS === "ios" || Platform.OS === "android" ? new MobileKeyValueStorage() : new WebKeyValueStorage(),
         cryptoProvider: cryptoProvider,
         profileStorage: Platform.OS === "ios" || Platform.OS === "android" ? new MobileProfileStorage() : new WebProfileStorage(),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),

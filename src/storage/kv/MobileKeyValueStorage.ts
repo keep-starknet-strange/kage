@@ -3,10 +3,10 @@ import KeyValueStorage from './KeyValueStorage';
 import { KeyValueSchema } from './KeyValueSchema';
 
 /**
- * AsyncKeyValueStorage implements KeyValueStorage using react-native-async-storage.
+ * MobileKeyValueStorage implements KeyValueStorage using react-native-async-storage.
  * Stores all values as strings.
  */
-export default class AsyncKeyValueStorage implements KeyValueStorage {
+export default class MobileKeyValueStorage implements KeyValueStorage {
     /**
      * Retrieves the value associated with the given key.
      * @param key The key whose value to retrieve.
@@ -70,7 +70,7 @@ export default class AsyncKeyValueStorage implements KeyValueStorage {
         try {
             await AsyncStorage.setItem(key, serializedValue);
         } catch (e) {
-            console.error(`AsyncKeyValueStorage.setItem error:`, e);
+            console.error(`MobileKeyValueStorage.setItem error:`, e);
         }
     }
 
@@ -82,7 +82,7 @@ export default class AsyncKeyValueStorage implements KeyValueStorage {
         try {
             await AsyncStorage.removeItem(key);
         } catch (e) {
-            console.error(`AsyncKeyValueStorage.removeItem error:`, e);
+            console.error(`MobileKeyValueStorage.removeItem error:`, e);
         }
     }
 
@@ -93,7 +93,7 @@ export default class AsyncKeyValueStorage implements KeyValueStorage {
         try {
             await AsyncStorage.clear();
         } catch (e) {
-            console.error(`AsyncKeyValueStorage.clear error:`, e);
+            console.error(`MobileKeyValueStorage.clear error:`, e);
         }
     }
 }

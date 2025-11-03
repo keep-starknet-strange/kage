@@ -1,8 +1,8 @@
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js"
 import { concatBytes } from "@noble/hashes/utils.js"
-// import QuickCrypto from 'react-native-quick-crypto'
-import { CryptoProvider } from './CryptoProvider'
+import { PKDFPerformer } from "../pbkdf/PKDFPerformer"
 import { randomBytes } from "../utils/Random"
+import { CryptoProvider } from './CryptoProvider'
 
 const KEY_LENGTH = 32
 const NONCE_LENGTH = 12
@@ -31,13 +31,19 @@ function toUint8(result: any): Uint8Array {
  * Uses ChaCha20-Poly1305 for encryption and PBKDF2 with SHA-512 for key derivation.
  */
 export class EMIP3CryptoProvider implements CryptoProvider {
+  private readonly pbkdfPerformer: PKDFPerformer
+
+  constructor(pbkdfPerformer: PKDFPerformer) {
+    this.pbkdfPerformer = pbkdfPerformer
+  }
+
   async deriveKey(
     passphrase: Uint8Array,
     salt: Uint8Array | Uint16Array,
   ): Promise<Uint8Array> {
     const saltAsUint8Array = new Uint8Array(salt)
-    // const nativeOut = QuickCrypto.pbkdf2Sync(passphrase as any, saltAsUint8Array as any, PBKDF2_ITERATIONS, KEY_LENGTH, 'sha512') as any
-    return toUint8("")
+    const nativeOut = this.pbkdfPerformer.deriveKey(passphrase, saltAsUint8Array, PBKDF2_ITERATIONS, KEY_LENGTH)
+    return toUint8(nativeOut)
   }
 
   async encrypt(
