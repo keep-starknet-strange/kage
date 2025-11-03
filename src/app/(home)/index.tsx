@@ -1,4 +1,5 @@
 import { AddressView } from '@/components/address-view';
+import { BalanceCard } from '@/components/ui/balance-card';
 import { NetworkBadge } from '@/components/ui/network-badge';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
@@ -21,9 +22,6 @@ export default function HomeScreen() {
             : [];
     }, [profileState]);
 
-    // Calculate total balance (placeholder for now - you can implement actual balance calculation)
-    const totalBalance = "0.00";
-
     const renderHeader = () => (
         <>
             {/* Network Badge */}
@@ -36,10 +34,10 @@ export default function HomeScreen() {
             />
 
             {/* Total Balance Section */}
-            <View style={styles.balanceSection}>
-                <Text style={styles.balanceLabel}>Total Balance</Text>
-                <Text style={styles.balanceAmount}>${totalBalance}</Text>
-            </View>
+            <BalanceCard 
+                type="total"
+                accounts={accounts}
+            />
 
             {/* Section Title */}
             <Text style={styles.sectionTitle}>My Public Accounts</Text>
@@ -107,28 +105,6 @@ const styles = StyleSheet.create({
     networkBadgeMargin: {
         alignSelf: "center",
         marginBottom: spaceTokens[4], // 16px
-    },
-    balanceSection: {
-        backgroundColor: colorTokens['bg.elevated'],
-        borderRadius: radiusTokens.lg,
-        padding: spaceTokens[5], // 24px
-        alignItems: 'center',
-        shadowColor: colorTokens['shadow.primary'],
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 12,
-        elevation: 2,
-    },
-    balanceLabel: {
-        fontSize: 14,
-        color: colorTokens['text.muted'],
-        marginBottom: spaceTokens[1], // 8px
-        fontWeight: '500',
-    },
-    balanceAmount: {
-        fontSize: 48,
-        fontWeight: '700',
-        color: colorTokens['text.primary'],
     },
     sectionTitle: {
         fontSize: 20,

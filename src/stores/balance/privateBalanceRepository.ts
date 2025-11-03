@@ -30,8 +30,8 @@ export default class PrivateBalanceRepository extends BalanceRepository {
                 return forTokens.map((token) => {
                     const tongoToken = this.tongoCache.get(this.cacheKey(account, token));
 
-                    const promise = tongoToken ? tongoToken.state()
-                        .then((balance) => PrivateTokenBalance.unlocked(token, balance.balance, balance.pending)) : Promise.resolve(PrivateTokenBalance.locked(token));
+                    const promise = tongoToken ? Promise.all([tongoToken.state(), tongoToken.rate()])
+                        .then(([balance, rate]) => PrivateTokenBalance.unlocked(token, rate, balance)) : Promise.resolve(PrivateTokenBalance.locked(token));
 
                     return {
                         account: account.address,

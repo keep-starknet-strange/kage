@@ -24,6 +24,9 @@ const MAPPING = {
     'key': 'shield',
     'checkmark': 'check',
     'gearshape.fill': 'settings',
+    'plus.circle.fill': 'add-circle',
+    'arrow.right.circle.fill': 'arrow-circle-right',
+    'arrow.down.circle.fill': 'arrow-circle-down',
 } as IconMapping;
 
 /**

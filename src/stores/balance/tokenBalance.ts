@@ -1,4 +1,5 @@
 import Token from "./token";
+import { AccountState as TongoBalanceState } from "@fatsolutions/tongo-sdk";
 
 export abstract class TokenBalance {
     readonly token: Token;
@@ -44,13 +45,41 @@ export class PublicTokenBalance extends TokenBalance {
 }
 
 export class PrivateTokenBalance extends TokenBalance {
-    private isUnlocked: boolean;
-    private pendingBalance: bigint;
+    private readonly isUnlocked: boolean;
 
-    constructor(token: Token, balance: bigint, pendingBalance: bigint, isUnlocked: boolean) {
-        super(token, balance);
+    /**
+     * The pending balance of the token in ERC20 units
+     */
+    private readonly pendingBalance: bigint;
+    
+    /**
+     * The rate of the token in ERC20 units per Tongo unit
+     */
+    private readonly rate: bigint;
+    /**
+     * The decrypted balance of the token in Tongo units
+     */
+    private readonly decryptedBalance: bigint;
+    /**
+     * The decrypted pending balance of the token in Tongo units
+     */
+    private readonly decryptedPendingBalance: bigint;
+
+    constructor(
+        token: Token, 
+        rate: bigint, 
+        decryptedBalance: bigint,
+        decryptedPendingBalance: bigint,
+        isUnlocked: boolean
+    ) {
+        super(token, PrivateTokenBalance.convertToERC20Balance(decryptedBalance, rate));
+        
+        this.rate = rate;
+        this.decryptedBalance = decryptedBalance;
+        this.decryptedPendingBalance = decryptedPendingBalance;
         this.isUnlocked = isUnlocked;
-        this.pendingBalance = pendingBalance;
+
+        this.pendingBalance = PrivateTokenBalance.convertToERC20Balance(decryptedPendingBalance, rate);
     }
 
     formattedPendingBalance(compressed: boolean = false): string {
@@ -69,11 +98,23 @@ export class PrivateTokenBalance extends TokenBalance {
         return super.formattedBalance(compressed, this.spendableBalance);
     }
 
-    static locked(token: Token): PrivateTokenBalance {
-        return new PrivateTokenBalance(token, 0n, 0n, false);
+    get unlockedBalance(): bigint | null {
+        return this.isUnlocked ? this.spendableBalance : null;
     }
 
-    static unlocked(token: Token, balance: bigint, pendingBalance: bigint): PrivateTokenBalance {
-        return new PrivateTokenBalance(token, balance, pendingBalance, true);
+    get unlockedPendingBalance(): bigint | null {
+        return this.isUnlocked ? this.pendingBalance : null;
+    }
+
+    private static convertToERC20Balance(decryptedBalance: bigint, rate: bigint): bigint {
+        return decryptedBalance * rate;
+    }
+
+    static locked(token: Token): PrivateTokenBalance {
+        return new PrivateTokenBalance(token, 0n, 0n, 0n, false);
+    }
+
+    static unlocked(token: Token, rate: bigint, state: TongoBalanceState): PrivateTokenBalance {
+        return new PrivateTokenBalance(token, rate, state.balance, state.pending, true);
     }
 }

@@ -1,4 +1,5 @@
 import { AddressView } from '@/components/address-view';
+import { BalanceCard } from '@/components/ui/balance-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
@@ -34,15 +35,6 @@ export default function AccountDetailScreen() {
         }
         return profileState.getAccountOnCurrentNetwork(accountAddress);
     }, [profileState, accountAddress]);
-
-    // Calculate total balance in USD (placeholder - you can implement actual price conversion)
-    const totalBalance = useMemo(() => {
-        // TODO: Implement actual USD conversion based on token prices
-        return "0.00";
-    }, [publicBalances]);
-
-    // Dynamic balance label based on active tab
-    const balanceLabel = activeTab === 'public' ? 'Public Balance' : 'Private Balance';
 
     // Fetch balances for this account
     const fetchBalances = useCallback(async () => {
@@ -112,10 +104,11 @@ export default function AccountDetailScreen() {
             </View>
 
             {/* Total Balance Section */}
-            <View style={styles.balanceSection}>
-                <Text style={styles.balanceLabel}>{balanceLabel}</Text>
-                <Text style={styles.balanceAmount}>${totalBalance}</Text>
-            </View>
+            <BalanceCard 
+                type={activeTab}
+                account={account}
+                style={styles.balanceCard}
+            />
 
             {/* Tab Bar */}
             <View style={styles.tabBar}>
@@ -341,29 +334,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colorTokens['text.primary'],
     },
-    balanceSection: {
-        backgroundColor: colorTokens['bg.elevated'],
+    balanceCard: {
         marginHorizontal: spaceTokens[4],
-        borderRadius: radiusTokens.lg,
-        padding: spaceTokens[5],
-        alignItems: 'center',
-        shadowColor: colorTokens['shadow.primary'],
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 12,
-        elevation: 2,
-        marginBottom: spaceTokens[4],
-    },
-    balanceLabel: {
-        fontSize: 14,
-        color: colorTokens['text.muted'],
-        marginBottom: spaceTokens[1],
-        fontWeight: '500',
-    },
-    balanceAmount: {
-        fontSize: 48,
-        fontWeight: '700',
-        color: colorTokens['text.primary'],
+        marginVertical: spaceTokens[1],
     },
     tabBar: {
         flexDirection: 'row',
