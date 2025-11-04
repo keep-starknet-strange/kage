@@ -1,11 +1,11 @@
-import { constants } from "starknet";
+import { Expose, Transform, Type } from "class-transformer";
 import { NetworkId } from "../misc";
-import { Transform, Type } from "class-transformer";
 
 export default class NetworkDerfinition {
     @Type(() => URL)
-    @Transform(({ value }) => value.toString())
-    readonly rpcUrl: URL;
+    @Expose({ name: 'rpcUrl' })
+    @Transform(({ value }) => value ? value.toString() : null)
+    private readonly _rpcUrl: URL | null;
     readonly chainId: NetworkId;
     readonly accountClassHash: string;
     readonly feeTokenAddress: string;
@@ -13,13 +13,17 @@ export default class NetworkDerfinition {
     readonly blockExplorerUrl: URL | null;
 
     constructor(
-        rpcUrl: URL,
+        rpcUrl: URL | null,
         chainId: NetworkId,
         accountClassHash: string,
         feeTokenAddress: string,
         blockExplorerUrl: URL | null
     ) {
-        this.rpcUrl = rpcUrl;
+        if (rpcUrl === null && chainId !== "SN_MAIN" && chainId !== "SN_SEPOLIA") {
+            throw new Error("RPC URL is required for non-mainnet or sepolia networks");
+        }
+
+        this._rpcUrl = rpcUrl;
         this.chainId = chainId;
         this.accountClassHash = accountClassHash;
         this.feeTokenAddress = feeTokenAddress;
@@ -30,9 +34,31 @@ export default class NetworkDerfinition {
         return this.chainId !== "SN_MAIN";
     }
 
-    static sepolia(rpcUrlString: string = process.env.EXPO_PUBLIC_RPC_SN_SEPOLIA || ""): NetworkDerfinition {
+    get rpcUrl(): URL {
+        if (this._rpcUrl !== null) {
+            return this._rpcUrl;
+        }
+
+        if (this.chainId === "SN_MAIN") {
+            const rpcUrlString = process.env.EXPO_PUBLIC_RPC_SN_MAIN;
+            if (!rpcUrlString) {
+                throw new Error("RPC URL is not set for mainnet in environment variables");
+            }
+            return new URL(rpcUrlString);
+        } else if (this.chainId === "SN_SEPOLIA") {
+            const rpcUrlString = process.env.EXPO_PUBLIC_RPC_SN_SEPOLIA;
+            if (!rpcUrlString) {
+                throw new Error("RPC URL is not set for sepolia in environment variables");
+            }
+            return new URL(rpcUrlString);
+        } else {
+            throw new Error("RPC URL is not set for this network");
+        }
+    }
+
+    static sepolia(): NetworkDerfinition {
         return new NetworkDerfinition(
-            new URL(rpcUrlString),
+            null,
             "SN_SEPOLIA",
             "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564",
             "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
@@ -40,9 +66,9 @@ export default class NetworkDerfinition {
         );
     }
 
-    static mainnet(rpcUrlString: string = process.env.EXPO_PUBLIC_RPC_SN_MAIN || ""): NetworkDerfinition {
+    static mainnet(): NetworkDerfinition {
         return new NetworkDerfinition(
-            new URL(rpcUrlString),
+            null,
             "SN_MAIN",
             "0x01e60c8722677cfb7dd8dbea5be86c09265db02cdfe77113e77da7d44c017388",
             "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",

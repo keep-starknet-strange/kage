@@ -5,9 +5,9 @@
 // native acceleration. This functionality is treated as a functional fallback and
 // does not meet our desired performance.
 
-import { hkdf } from '@noble/hashes/hkdf'
-import { sha256, sha512 } from '@noble/hashes/sha2'
-import { pbkdf2Async } from '@noble/hashes/pbkdf2'
+import { hkdf } from '@noble/hashes/hkdf.js'
+import { sha256, sha512 } from '@noble/hashes/sha2.js'
+import { pbkdf2Async } from '@noble/hashes/pbkdf2.js'
 
 type CryptoKeyLike = { __raw: Uint8Array };
 

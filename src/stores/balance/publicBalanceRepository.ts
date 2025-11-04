@@ -49,7 +49,6 @@ export class PublicBalanceRepository extends BalanceRepository {
             entrypoint: "balance_of",
             calldata: [accountAddress]
         };
-
         const response = await this.provider.callContract(call);
 
         if (response && response.length >= 2) {

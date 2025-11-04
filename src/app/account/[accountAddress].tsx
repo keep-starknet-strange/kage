@@ -21,8 +21,8 @@ export default function AccountDetailScreen() {
     const { accountAddress } = useLocalSearchParams<{ accountAddress: AccountAddress }>();
     const { profileState } = useProfileStore();
     const { requestRefresh, unlockPrivateBalances, lockPrivateBalances } = useBalanceStore();
-    const publicBalances = useBalanceStore(state => state.publicBalances.get(accountAddress) ?? []);
-    const privateBalances = useBalanceStore(state => state.privateBalances.get(accountAddress) ?? []);
+    const publicBalances = useBalanceStore(state => state.publicBalances.get(accountAddress) ?? null);
+    const privateBalances = useBalanceStore(state => state.privateBalances.get(accountAddress) ?? null);
     const isPrivateBalancesUnlocked = useBalanceStore(state => state.unlockedPrivateBalances.has(accountAddress));
 
     const [isLoadingBalances, setIsLoadingBalances] = useState(true);
@@ -104,13 +104,13 @@ export default function AccountDetailScreen() {
             </View>
 
             {/* Total Balance Section */}
-            <BalanceCard 
+            <BalanceCard
                 type={activeTab}
                 account={account}
                 style={styles.balanceCard}
-                onFundPress={() => {}}
-                onTransferPress={() => {}}
-                onWithdrawPress={() => {}}
+                onFundPress={() => { }}
+                onTransferPress={() => { }}
+                onWithdrawPress={() => { }}
             />
 
             {/* Tab Bar */}
@@ -137,7 +137,7 @@ export default function AccountDetailScreen() {
             <View style={[styles.tabsContainer, { paddingBottom: insets.bottom }]}>
                 {activeTab === 'public' && (
                     <PublicTab
-                        balances={publicBalances}
+                        balances={publicBalances ?? []}
                         isLoading={isLoadingBalances}
                         onRefresh={fetchBalances}
                     />
@@ -145,7 +145,7 @@ export default function AccountDetailScreen() {
                 {activeTab === 'private' && (
                     isPrivateBalancesUnlocked ? (
                         <PrivateTab
-                            balances={privateBalances}
+                            balances={privateBalances ?? []}
                             isLoading={isLoadingBalances}
                             onRefresh={fetchBalances}
                             onLock={() => lockPrivateBalances([account])}

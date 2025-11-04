@@ -1,5 +1,5 @@
-import { chacha20poly1305 } from "@noble/ciphers/chacha"
-import { concatBytes } from "@noble/hashes/utils"
+import { chacha20poly1305 } from "@noble/ciphers/chacha.js"
+import { concatBytes } from "@noble/hashes/utils.js"
 import QuickCrypto from 'react-native-quick-crypto'
 import { CryptoProvider } from './CryptoProvider'
 import { randomBytes } from "../utils/Random"
