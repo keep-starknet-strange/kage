@@ -1,27 +1,27 @@
+import { DangerButton } from "@/components/ui/danger-button";
+import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
+import { useProfileStore } from "@/stores/profileStore";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
-import Keychain, { BIOMETRY_TYPE } from "react-native-keychain";
-import { DangerButton } from "@/components/ui/danger-button";
-import { useProfileStore } from "@/stores/profileStore";
-import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 
 export default function SettingsScreen() {
     const { insets } = useDynamicSafeAreaInsets();
-    const { keyValueStorage, seedPhraseVault } = useAppDependenciesStore();
+    const { keyValueStorage, seedPhraseVault, biometricsProvider } = useAppDependenciesStore();
     const { requestAccess } = useAccessVaultStore();
     const { delete: deleteProfile } = useProfileStore();
 
     const [isResolvingBiometrics, setIsResolvingBiometrics] = useState(false);
-    const [supportedBiometryType, setSupportedBiometryType] = useState<BIOMETRY_TYPE | null>(null);
+    const [supportedBiometryType, setSupportedBiometryType] = useState<BiometryType | null>(null);
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
     const [isDeletingProfile, setIsDeletingProfile] = useState(false);
 
     const resolveBiometricsStatus = useCallback(() => {
         setIsResolvingBiometrics(true);
-        Keychain.getSupportedBiometryType()
+        biometricsProvider.getBiometricsType()
             .then(async (biometryType) => {
                 setSupportedBiometryType(biometryType);
                 return biometryType !== null;
@@ -74,6 +74,7 @@ export default function SettingsScreen() {
 
     const handleDeleteWallet = async () => {
         setIsDeletingProfile(true);
+        console.log("Deleting profile");
         try {
             await deleteProfile();
         } catch (e) {
@@ -114,26 +115,27 @@ export default function SettingsScreen() {
                 <DangerButton
                     title="Delete Wallet"
                     onPress={handleDeleteWallet}
+                    loading={isDeletingProfile}
                 />
             </View>
         </View>
     );
 }
 
-function biometryTypeToString(biometryType: BIOMETRY_TYPE): string {
+function biometryTypeToString(biometryType: BiometryType): string {
     switch (biometryType) {
-        case BIOMETRY_TYPE.TOUCH_ID:
+        case BiometryType.TOUCH_ID:
             return "Touch ID";
-        case BIOMETRY_TYPE.FACE_ID:
+        case BiometryType.FACE_ID:
             return "Face ID";
-        case BIOMETRY_TYPE.OPTIC_ID:
-            return "Optic ID";
-        case BIOMETRY_TYPE.FINGERPRINT:
+        case BiometryType.FINGERPRINT:
             return "Fingerprint";
-        case BIOMETRY_TYPE.FACE:
-            return "Face";
-        case BIOMETRY_TYPE.IRIS:
+        case BiometryType.IRIS:
             return "Iris";
+        case BiometryType.FACE:
+            return "Face";
+        case BiometryType.OPTIC_ID:
+            return "Optic ID";
         default:
             return "Unknown";
     }

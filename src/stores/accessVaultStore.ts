@@ -1,9 +1,8 @@
+import { KeySourceId } from "@/profile/keys/keySource";
+import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
+import { mnemonicToWords } from "@starkms/key-management";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
-import Keychain from "react-native-keychain";
-import { mnemonicToWords } from "@starkms/key-management";
-import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
-import { KeySourceId } from "@/profile/keys/keySource";
 
 export type AuthorizationType = "passphrase" | "biometrics";
 
@@ -83,12 +82,13 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
         const appDependencies = useAppDependenciesStore.getState();
         const storage = appDependencies.keyValueStorage;
         const seedPhraseVault = appDependencies.seedPhraseVault;
+        const biometricsProvider = appDependencies.biometricsProvider;
 
         // Could decide what factor to request access.
         // For now, only one seed phrase is stored.
         let useBiometrics = await storage.getOrDefault("device.biometrics.enabled", false)
         if (useBiometrics) {
-            const biometricsAvailable = await Keychain.getSupportedBiometryType() !== null;
+            const biometricsAvailable = await biometricsProvider.isBiometricsAvailable();
 
             if (!biometricsAvailable) {
                 await storage.set("device.biometrics.enabled", false);

@@ -17,7 +17,7 @@ import EncryptedStorage, { AuthPrompt } from "./EncryptedStorage";
  * 
  * @see {@link https://oblador.github.io/react-native-keychain/docs/platform-value-storage Platform value storage documentation}
  */
-class KeychainStorage implements EncryptedStorage {
+class MobileEncryptedStorage implements EncryptedStorage {
 
     /**
      * Creates a new KeychainStorage instance.
@@ -182,4 +182,4 @@ class KeychainStorage implements EncryptedStorage {
     }
 }
 
-export default KeychainStorage;
+export default MobileEncryptedStorage;

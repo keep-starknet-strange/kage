@@ -9,23 +9,6 @@ const NONCE_LENGTH = 12
 const PBKDF2_ITERATIONS = 200_000
 const SALT_LENGTH = 32
 
-function toUint8(result: any): Uint8Array {
-  if (result instanceof Uint8Array) return result
-  if (ArrayBuffer.isView(result)) {
-    const view = result as ArrayBufferView
-    return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
-  }
-  if (result instanceof ArrayBuffer) return new Uint8Array(result)
-  if (Array.isArray(result)) return new Uint8Array(result)
-  if (result && typeof result === 'object' && 'buffer' in result && result.buffer instanceof ArrayBuffer) {
-    // @ts-ignore
-    return new Uint8Array(result.buffer, result.byteOffset ?? 0, result.byteLength ?? result.buffer.byteLength)
-  }
-  // Buffer from react-native-quick-crypto behaves like Uint8Array; fallback to copy
-  try { return new Uint8Array(result as any) } catch (_) { /* noop */ }
-  throw new Error('Unsupported PBKDF2 result type')
-}
-
 /**
  * EMIP3 implementation of CryptoProvider.
  * Uses ChaCha20-Poly1305 for encryption and PBKDF2 with SHA-512 for key derivation.
@@ -42,8 +25,7 @@ export class EMIP3CryptoProvider implements CryptoProvider {
     salt: Uint8Array | Uint16Array,
   ): Promise<Uint8Array> {
     const saltAsUint8Array = new Uint8Array(salt)
-    const nativeOut = this.pbkdfPerformer.deriveKey(passphrase, saltAsUint8Array, PBKDF2_ITERATIONS, KEY_LENGTH)
-    return toUint8(nativeOut)
+    return await this.pbkdfPerformer.deriveKey(passphrase, saltAsUint8Array, PBKDF2_ITERATIONS, KEY_LENGTH)
   }
 
   async encrypt(

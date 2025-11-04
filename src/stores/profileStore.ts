@@ -51,13 +51,13 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const seedPhraseWords = generateMnemonicWords();
         const profile = Profile.createFromSeedPhrase(seedPhraseWords);
         const updatedProfile = profile.addAccountOnCurrentNetwork(accountName, seedPhraseWords);
-        await profileStorage.storeProfile(updatedProfile);
         
-        const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
+        const created = await seedPhraseVault.setup(passphrase, seedPhraseWords);
         if (!created) {
             throw new Error("Failed to store seed phrase in vault");
         }
 
+        await profileStorage.storeProfile(updatedProfile);
         set({ profileState: updatedProfile });
     },
 

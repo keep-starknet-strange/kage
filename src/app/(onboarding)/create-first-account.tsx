@@ -2,7 +2,7 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { appTheme } from "@/design/theme";
 import { useProfileStore } from "@/stores/profileStore";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

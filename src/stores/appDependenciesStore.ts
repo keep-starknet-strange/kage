@@ -1,26 +1,30 @@
+import { MobilePKDFPerformer } from "@/crypto/pbkdf/MobilePBKDFPerformer";
+import { WebPKDFPerformer } from "@/crypto/pbkdf/WebPBKDFPerformer";
+import { BiometricsProvider, BiometricsProviderImpl } from "@/crypto/provider/biometrics/BiometricsProvider";
 import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
 import { EMIP3CryptoProvider } from "@/crypto/provider/EMIP3CryptoProvider";
 import EncryptedStorage from "@/storage/encrypted/EncryptedStorage";
-import KeychainStorage from "@/storage/encrypted/KeychainStorage";
+import MobileEncryptedStorage from "@/storage/encrypted/MobileEncryptedStorage";
+import WebEncryptedStorage from "@/storage/encrypted/WebEncryptedStorage";
 import KeyValueStorage from "@/storage/kv/KeyValueStorage";
-import ProfileStorage from "@/storage/profile/ProfileStorage";
-import SeedPhraseVault from "@/storage/SeedPhraseVault";
-import Constants from 'expo-constants';
-import { Platform } from "react-native";
-import { create } from "zustand";
-import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
-import PrivateBalanceRepository from "./balance/privateBalanceRepository";
-import MobileProfileStorage from "@/storage/profile/MobileProfileStorage";
-import WebProfileStorage from "@/storage/profile/WebProfileStorage";
-import WebKeyValueStorage from "@/storage/kv/WebKeyValueStorage";
 import MobileKeyValueStorage from "@/storage/kv/MobileKeyValueStorage";
-import { MobilePKDFPerformer } from "@/crypto/pbkdf/MobilePBKDFPerformer";
-import { WebPKDFPerformer } from "@/crypto/pbkdf/WebPBKDFPerformer";
+import WebKeyValueStorage from "@/storage/kv/WebKeyValueStorage";
+import MobileProfileStorage from "@/storage/profile/MobileProfileStorage";
+import ProfileStorage from "@/storage/profile/ProfileStorage";
+import WebProfileStorage from "@/storage/profile/WebProfileStorage";
+import SeedPhraseVault from "@/storage/SeedPhraseVault";
+import { platform } from "@/utils/platform";
+import Constants from 'expo-constants';
+import { create } from "zustand";
+import PrivateBalanceRepository from "./balance/privateBalanceRepository";
+import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
+import { Platform } from "react-native";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
     keyValueStorage: KeyValueStorage;
     cryptoProvider: CryptoProvider;
+    biometricsProvider: BiometricsProvider;
     profileStorage: ProfileStorage;
     seedPhraseVault: SeedPhraseVault;
     publicBalanceRepository: PublicBalanceRepository;
@@ -46,18 +50,24 @@ function getApplicationId(): string {
 }
 
 export const useAppDependenciesStore = create<AppDependencies>(() => {
-    const encryptedStorage = new KeychainStorage(getApplicationId());
+    const applicationId = getApplicationId();
+    const encryptedStorage = platform<EncryptedStorage>(
+        () => new MobileEncryptedStorage(applicationId),
+        () => new WebEncryptedStorage(applicationId)
+    );
     const cryptoProvider = new EMIP3CryptoProvider(
-        Platform.OS === "ios" || Platform.OS === "android" ? new MobilePKDFPerformer() : new WebPKDFPerformer()
+        platform(() => new MobilePKDFPerformer(), () => new WebPKDFPerformer())
     );
 
     return {
         encryptedStorage: encryptedStorage,
-        keyValueStorage: Platform.OS === "ios" || Platform.OS === "android" ? new MobileKeyValueStorage() : new WebKeyValueStorage(),
+        keyValueStorage: platform(() => new MobileKeyValueStorage(), () => new WebKeyValueStorage()),
         cryptoProvider: cryptoProvider,
-        profileStorage: Platform.OS === "ios" || Platform.OS === "android" ? new MobileProfileStorage() : new WebProfileStorage(),
+        biometricsProvider: new BiometricsProviderImpl(),
+        profileStorage: platform<ProfileStorage>(() => new MobileProfileStorage(), () => new WebProfileStorage()),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
         publicBalanceRepository: new PublicBalanceRepository(),
         privateBalanceRepository: new PrivateBalanceRepository(),
     }
 });
+
