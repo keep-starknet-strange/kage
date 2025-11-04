@@ -2,7 +2,7 @@ import { PKDFPerformer } from "./PKDFPerformer";
 
 export class WebPKDFPerformer implements PKDFPerformer {
     async deriveKey(passphrase: Uint8Array, salt: Uint8Array | Uint16Array, iterations: number, keyLength: number): Promise<Uint8Array> {
-        const importedKey = await window.crypto.subtle.importKey(
+        const importedKey = await crypto.subtle.importKey(
             'raw',
             passphrase as BufferSource,
             { name: 'PBKDF2' },
@@ -24,7 +24,7 @@ export class WebPKDFPerformer implements PKDFPerformer {
         };
 
         // 4. Derive the final encryption key (as a CryptoKey object)
-        const derivedKey = await window.crypto.subtle.deriveKey(
+        const derivedKey = await crypto.subtle.deriveKey(
             pbkdf2Params,
             importedKey,
             finalKeyAlgorithm,
@@ -33,7 +33,7 @@ export class WebPKDFPerformer implements PKDFPerformer {
         );
 
         // 5. Export the derived key as raw bytes (Uint8Array)
-        const rawKey = await window.crypto.subtle.exportKey('raw', derivedKey);
+        const rawKey = await crypto.subtle.exportKey('raw', derivedKey);
 
         return new Uint8Array(rawKey);
     }

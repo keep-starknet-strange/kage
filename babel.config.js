@@ -1,16 +1,25 @@
 module.exports = function (api) {
-  api.cache(true);
+  // Get the platform from the caller (e.g., 'web', 'ios', 'android')
+  const platform = api.caller((caller) => caller?.platform);
+  const configPlatform = platform === 'web' ? 'web' : 'mobile';
+  
+  // Cache based on the platform to allow different configs per platform
+  api.cache.using(() => configPlatform);
+  
   return {
     presets: [
-      ["babel-preset-expo", {
-        "decorators": false
-      }]
+      ["babel-preset-expo"]
     ],
     plugins: [
-      'babel-plugin-transform-typescript-metadata',
       ["@babel/plugin-proposal-decorators", { "legacy": true }],
-      ["@babel/plugin-proposal-class-properties", { "loose": true }],
-      ["@babel/plugin-transform-class-properties", { "loose": true }]
+      'babel-plugin-transform-typescript-metadata',
+      
+      // Add platform-specific plugins here if needed
+      ...(configPlatform === 'web' ? [
+        ["@babel/plugin-transform-class-properties", { "loose": true }]
+      ] : [
+        // Mobile-specific plugins
+      ])
 
       // Rest of the plugins...
     ],
