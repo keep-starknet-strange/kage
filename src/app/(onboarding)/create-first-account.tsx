@@ -1,21 +1,18 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { appTheme } from "@/design/theme";
 import { useProfileStore } from "@/stores/profileStore";
-import { useNavigation } from "expo-router";
+import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export interface CreateFirstAccountScreenProps {
-    passphrase: string; // Passphrase defined in the previous step
-}
-
-
-export default function CreateFirstAccountScreen({ passphrase }: CreateFirstAccountScreenProps) {
+export default function CreateFirstAccountScreen() {
     const navigation = useNavigation();
     const [accountName, setAccountName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const { create } = useProfileStore();
+    const { consumeTempPassphrase } = useTempPassphraseStore();
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -28,7 +25,12 @@ export default function CreateFirstAccountScreen({ passphrase }: CreateFirstAcco
 
     const handleCreateAccount = async () => {
         if (!isFormValid) return;
-        
+        const passphrase = consumeTempPassphrase();
+        if (!passphrase) {
+            console.error("No passphrase is set");
+            return;
+        }
+
         setIsCreating(true);
         try {
             await create(passphrase, accountName);

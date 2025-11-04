@@ -89,7 +89,7 @@ function ensureSubtle() {
     async exportKey(format: string, key: CryptoKeyLike): Promise<ArrayBuffer> {
       if (format !== 'raw') throw new Error('Only raw export supported');
       const raw = key.__raw;
-      return raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+      return raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength) as ArrayBuffer;
     },
   };
 

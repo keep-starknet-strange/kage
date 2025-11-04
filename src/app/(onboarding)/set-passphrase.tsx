@@ -4,6 +4,7 @@ import { Text, View, TextInput, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { appTheme } from "@/design/theme";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 
 const MIN_PASSPHRASE_LENGTH = 7;
 
@@ -14,6 +15,7 @@ export default function SetPassphraseScreen() {
     const [confirmPassphrase, setConfirmPassphrase] = useState("");
     const [showPassphrase, setShowPassphrase] = useState(false);
     const [showConfirmPassphrase, setShowConfirmPassphrase] = useState(false);
+    const { setTempPassphrase } = useTempPassphraseStore();
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -29,12 +31,10 @@ export default function SetPassphraseScreen() {
 
     const handleCreateAccount = () => {
         if (!isFormValid) return;
-        
-        router.navigate({
+
+        setTempPassphrase(passphrase);
+        router.push({
             pathname: "/create-first-account",
-            params: {
-                passphrase,
-            },
         });
     };
 
