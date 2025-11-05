@@ -108,9 +108,16 @@ export default function AccountDetailScreen() {
                 type={activeTab}
                 account={account}
                 style={styles.balanceCard}
-                onFundPress={() => { }}
-                onTransferPress={() => { }}
-                onWithdrawPress={() => { }}
+                onFundPress={() => { 
+                    console.log('funding account', accountAddress);
+                    router.push(`/tx/fund/${accountAddress}`);
+                }}
+                onTransferPress={() => { 
+                    router.push(`/tx/transfer/${accountAddress}`);
+                }}
+                onWithdrawPress={() => {
+                    router.push(`/tx/withdraw/${accountAddress}`);
+                 }}
             />
 
             {/* Tab Bar */}

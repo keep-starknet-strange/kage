@@ -3,6 +3,7 @@ import { KeySourceKind } from "./keySourceKind";
 import { CoinType } from "./coinType";
 import { ethers } from "ethers";
 import { encode } from "starknet";
+import Identifiable from "@/types/Identifiable";
 
 export type KeySourceId = string;
 
@@ -23,7 +24,7 @@ export namespace KeySourceId {
     }
 }
 
-export default class KeySource {
+export default class KeySource implements Identifiable {
     readonly id: KeySourceId;
     readonly kind: KeySourceKind;
 

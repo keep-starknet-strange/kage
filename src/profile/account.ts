@@ -1,13 +1,14 @@
-import { Type } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
 import HDKeyInstance, { KeyInstance } from "./keyInstance";
 import { NetworkId } from "./misc";
 import { RpcProvider, Account as StarknetAccount } from "starknet";
 import { AccountSigner } from "./accountSigner";
 import { AccessVaultState } from "@/stores/accessVaultStore";
+import Identifiable from "@/types/Identifiable";
 
 export type AccountAddress = string;
 
-export default class Account {
+export default class Account implements Identifiable {
 
     readonly address: AccountAddress;
     readonly name: string
@@ -33,6 +34,10 @@ export default class Account {
         this.name = name;
         this.networkId = networkId;
         this.keyInstance = keyInstance;
+    }
+
+    get id(): string {
+        return this.address;
     }
 
     toStarknetAccount(vault: AccessVaultState, provider: RpcProvider): StarknetAccount {

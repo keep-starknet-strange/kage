@@ -1,9 +1,11 @@
+import Identifiable from "@/types/Identifiable";
 import Token from "./token";
 import { AccountState as TongoBalanceState } from "@fatsolutions/tongo-sdk";
+import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 
-export abstract class TokenBalance {
+export abstract class TokenBalance implements Identifiable {
     readonly token: Token;
-    protected readonly spendableBalance: bigint;
+    readonly spendableBalance: bigint;
 
     constructor(token: Token, balance: bigint) {
         this.token = token;
@@ -17,24 +19,11 @@ export abstract class TokenBalance {
     }
 
     protected formattedBalance(compressed: boolean = false, balance: bigint): string {
-        const divisor = BigInt(10) ** BigInt(this.token.decimals);
-        const integerPart = (balance / divisor).toString();
-        const fractionalPart = (balance % divisor).toString().padStart(this.token.decimals, '0');
-        const maxFractionDigits = compressed ? Math.min(4, this.token.decimals) : this.token.decimals;
+        return tokenAmountToFormatted(compressed, balance, this.token);
+    }
 
-        const decimalString = `${integerPart}.${fractionalPart}`;
-        const numberValue = parseFloat(decimalString);
-        
-        const formatter = Intl.NumberFormat('default', {
-            style: 'currency',
-            currency: 'USD', // This will help replace USD with this token's symbol,
-            currencyDisplay: 'code',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: maxFractionDigits,
-        });
-
-        const formattedUSDLike = formatter.format(numberValue);
-        return formattedUSDLike.replace('USD', this.token.symbol);
+    get id(): string {
+        return this.token.contractAddress;
     }
 }
 
@@ -55,7 +44,7 @@ export class PrivateTokenBalance extends TokenBalance {
     /**
      * The rate of the token in ERC20 units per Tongo unit
      */
-    private readonly rate: bigint;
+    readonly rate: bigint;
     /**
      * The decrypted balance of the token in Tongo units
      */
@@ -72,14 +61,14 @@ export class PrivateTokenBalance extends TokenBalance {
         decryptedPendingBalance: bigint,
         isUnlocked: boolean
     ) {
-        super(token, PrivateTokenBalance.convertToERC20Balance(decryptedBalance, rate));
+        super(token, PrivateTokenBalance.convertToERC20Balance(decryptedBalance, rate, token.decimals));
         
         this.rate = rate;
         this.decryptedBalance = decryptedBalance;
         this.decryptedPendingBalance = decryptedPendingBalance;
         this.isUnlocked = isUnlocked;
 
-        this.pendingBalance = PrivateTokenBalance.convertToERC20Balance(decryptedPendingBalance, rate);
+        this.pendingBalance = PrivateTokenBalance.convertToERC20Balance(decryptedPendingBalance, rate, token.decimals);
     }
 
     formattedPendingBalance(compressed: boolean = false): string {
@@ -106,8 +95,12 @@ export class PrivateTokenBalance extends TokenBalance {
         return this.isUnlocked ? this.pendingBalance : null;
     }
 
-    private static convertToERC20Balance(decryptedBalance: bigint, rate: bigint): bigint {
-        return decryptedBalance * rate;
+    get minAcceptedBalance(): bigint {
+        return PrivateTokenBalance.convertToERC20Balance(1n, this.rate, this.token.decimals);
+    }
+
+    private static convertToERC20Balance(decryptedBalance: bigint, rate: bigint, decimals: number): bigint {
+        return decryptedBalance * rate * BigInt(10 ** decimals);
     }
 
     static locked(token: Token): PrivateTokenBalance {

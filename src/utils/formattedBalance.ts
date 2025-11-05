@@ -1,24 +1,63 @@
-function formatTokenBalance(rawAmount: bigint, decimals: number) {
-    let balanceStr = rawAmount.toString();
+import Token from "@/stores/balance/token";
 
-    // 1. Pad with leading zeros if the total amount is less than 1 STRK
-    // The total length should be at least (decimals + 1) to include a leading '0.'
-    const requiredLength = decimals + 1;
-    balanceStr = balanceStr.padStart(requiredLength, '0');
+export function tokenAmountToFormatted(
+    compressed: boolean = false, 
+    balance: bigint, 
+    token: Token,
+): string {
+    const divisor = BigInt(10) ** BigInt(token.decimals);
+    const integerPart = (balance / divisor).toString();
+    const fractionalPart = (balance % divisor).toString().padStart(token.decimals, '0');
+    const maxFractionDigits = compressed ? Math.min(4, token.decimals) : token.decimals;
 
-    // 2. Determine the position of the decimal point
-    const decimalIndex = balanceStr.length - decimals;
+    const decimalString = `${integerPart}.${fractionalPart}`;
+    const numberValue = parseFloat(decimalString);
+    
+    const formatter = Intl.NumberFormat('default', {
+        style: 'currency',
+        currency: 'USD', // This will help replace USD with this token's symbol,
+        currencyDisplay: 'code',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: maxFractionDigits,
+    });
 
-    // 3. Insert the decimal point and remove unnecessary trailing zeros
-    const integerPart = balanceStr.slice(0, decimalIndex) || '0';
-    const fractionalPart = balanceStr.slice(decimalIndex).replace(/0+$/, ''); // Remove trailing zeros
-
-    // 4. Combine parts
-    if (fractionalPart.length === 0) {
-        return integerPart; // Return as a whole number if no fractional part remains
-    }
-
-    return `${integerPart}.${fractionalPart}`;
+    const formattedUSDLike = formatter.format(numberValue);
+    return formattedUSDLike.replace('USD', token.symbol);
 }
 
-export default formatTokenBalance;
+export function stringToBigint(value: string, decimals: number, separator: string = '.'): bigint {
+    if (!value || value.trim() === '') {
+        return 0n;
+    }
+
+    const trimmedValue = value.trim();
+    const regex = new RegExp(`/^-?\\d*\\${separator}\\d+$/`);
+    if (regex.test(trimmedValue)) {
+        console.log('invalid value', trimmedValue);
+        return 0n;
+    }
+
+    const isNegative = trimmedValue.startsWith('-');
+    const absoluteValue = isNegative ? trimmedValue.slice(1) : trimmedValue;
+
+    const [integerPart = '0', decimalPart = ''] = absoluteValue.split(separator);
+
+    // Pad or truncate decimal part to match the required decimals
+    let adjustedDecimalPart = decimalPart;
+    
+    if (decimalPart.length > decimals) {
+        // Truncate if more decimals than allowed
+        adjustedDecimalPart = decimalPart.slice(0, decimals);
+    } else if (decimalPart.length < decimals) {
+        // Pad with zeros if fewer decimals than required
+        adjustedDecimalPart = decimalPart.padEnd(decimals, '0');
+    }
+
+    // Combine integer and decimal parts
+    const combinedValue = integerPart + adjustedDecimalPart;
+
+    // Convert to bigint
+    const result = BigInt(combinedValue);
+
+    return isNegative ? -result : result;
+}

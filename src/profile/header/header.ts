@@ -2,12 +2,13 @@ import { Expose, Type } from 'class-transformer';
 import uuid from 'react-native-uuid';
 import { Actor } from './actor';
 import { Device } from './device';
+import Identifiable from '@/types/Identifiable';
 
 export enum ProfileVersion {
     V1 = 1
 }
 
-export default class Header {
+export default class Header implements Identifiable {
     readonly version: ProfileVersion = ProfileVersion.V1;
 
     @Expose({ name: 'id' })
@@ -43,6 +44,10 @@ export default class Header {
         this.profileId = profileId;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+    }
+
+    get id(): string {
+        return this.profileId;
     }
 
     updateUsed(at: Date): Header {

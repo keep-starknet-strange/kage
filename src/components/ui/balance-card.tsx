@@ -47,19 +47,25 @@ export const BalanceCard = (props: BalanceCardProps) => {
             <ActionButton
                 icon="plus.circle.fill"
                 label="Fund"
-                onPress={() => { }}
+                onPress={() => { 
+                    props?.onFundPress?.();
+                }}
                 disabled={false}
             />
             <ActionButton
                 icon="arrow.right.circle.fill"
                 label="Transfer"
-                onPress={() => { }}
+                onPress={() => {
+                    props?.onTransferPress?.();
+                 }}
                 disabled={false}
             />
             <ActionButton
                 icon="arrow.down.circle.fill"
                 label="Withdraw"
-                onPress={() => { }}
+                onPress={() => { 
+                    props?.onWithdrawPress?.();
+                }}
                 disabled={false}
             />
         </View>

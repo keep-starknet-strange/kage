@@ -1,0 +1,192 @@
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import Identifiable from "@/types/Identifiable";
+import { ReactNode, useState } from "react";
+import { Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+
+type ModalPickerProps<T extends Identifiable> = {
+    items: T[];
+    selectedItem: T | null;
+    onSelectItem: (item: T) => void;
+    label?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    pickerButtonStyle?: StyleProp<ViewStyle>;
+    renderItem: (item: T) => ReactNode;
+};
+
+export function ModalPicker<T extends Identifiable>({
+    items,
+    selectedItem,
+    onSelectItem,
+    label,
+    placeholder,
+    disabled,
+    renderItem,
+    pickerButtonStyle,
+}: ModalPickerProps<T>) {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const handleSelectItem = (item: T) => {
+        onSelectItem(item);
+        setIsModalVisible(false);
+    };
+
+    return (
+        <View style={styles.container}>
+            {label && <Text style={styles.label}>{label}</Text>}
+            
+            <Pressable
+                style={[
+                    pickerButtonStyle ?? styles.pickerButton,
+                    disabled && (pickerButtonStyle ?? styles.pickerButtonDisabled)
+                ]}
+                onPress={() => !disabled && setIsModalVisible(true)}
+                disabled={disabled}
+            >
+                <View style={styles.pickerContent}>
+                    {selectedItem ? (
+                        renderItem(selectedItem)
+                    ) : (
+                        <Text style={styles.placeholder}>{placeholder}</Text>
+                    )}
+                </View>
+                <IconSymbol
+                    name="chevron.down"
+                    size={20}
+                    color={disabled ? colorTokens['text.muted'] : colorTokens['text.secondary']}
+                />
+            </Pressable>
+
+            <Modal
+                visible={isModalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setIsModalVisible(false)}
+            >
+                <Pressable
+                    style={styles.modalOverlay}
+                    onPress={() => setIsModalVisible(false)}
+                >
+                    <Pressable
+                        style={styles.modalContent}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{placeholder}</Text>
+                            <Pressable
+                                style={styles.closeButton}
+                                onPress={() => setIsModalVisible(false)}
+                            >
+                                <IconSymbol name="xmark" size={24} color={colorTokens['text.primary']} />
+                            </Pressable>
+                        </View>
+
+                        <ScrollView style={styles.itemsList}>
+                            {items.map((item) => (
+                                <Pressable
+                                    key={item.id}
+                                    style={[
+                                        styles.item,
+                                        selectedItem?.id === item.id && styles.itemSelected
+                                    ]}
+                                    onPress={() => handleSelectItem(item)}
+                                >
+                                    {renderItem(item)}
+
+                                    {selectedItem?.id === item.id && (
+                                        <IconSymbol
+                                            name="checkmark"
+                                            size={20}
+                                            color={colorTokens['brand.accent']}
+                                        />
+                                    )}
+                                </Pressable>
+                            ))}
+                        </ScrollView>
+                    </Pressable>
+                </Pressable>
+            </Modal>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        gap: spaceTokens[1],
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colorTokens['text.primary'],
+    },
+    pickerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: colorTokens['bg.elevated'],
+        borderWidth: 1,
+        borderColor: colorTokens['border.subtle'],
+        borderRadius: radiusTokens.sm,
+        padding: spaceTokens[3],
+        minHeight: 56,
+    },
+    pickerButtonDisabled: {
+        backgroundColor: colorTokens['bg.sunken'],
+        opacity: 0.6,
+    },
+    pickerContent: {
+        flex: 1,
+    },
+    placeholder: {
+        fontSize: 16,
+        color: colorTokens['text.muted'],
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: colorTokens['surface.overlay'],
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: colorTokens['bg.elevated'],
+        borderTopLeftRadius: radiusTokens.lg,
+        borderTopRightRadius: radiusTokens.lg,
+        maxHeight: '80%',
+        paddingBottom: spaceTokens[6],
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: spaceTokens[4],
+        borderBottomWidth: 1,
+        borderBottomColor: colorTokens['border.subtle'],
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colorTokens['text.primary'],
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: radiusTokens.md,
+    },
+    itemsList: {
+        flex: 1,
+    },
+    item: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: spaceTokens[4],
+        borderBottomWidth: 1,
+        borderBottomColor: colorTokens['border.subtle'],
+    },
+    itemSelected: {
+        backgroundColor: colorTokens['bg.sunken'],
+    },
+});
+

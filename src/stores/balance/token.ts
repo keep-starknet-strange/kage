@@ -1,6 +1,7 @@
+import Identifiable from "@/types/Identifiable";
 import formattedAddress from "@/utils/formattedAddress";
 
-export default class Token {
+export default class Token implements Identifiable {
 
     readonly contractAddress: string;
     readonly tongoAddress: string;
@@ -28,5 +29,9 @@ export default class Token {
 
     get formattedTongoAddress(): string {
         return this._formattedTongoAddress || (this._formattedTongoAddress = formattedAddress(this.tongoAddress, 'compact'));
+    }
+
+    get id(): string {
+        return this.contractAddress;
     }
 }
