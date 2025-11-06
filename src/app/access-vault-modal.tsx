@@ -1,4 +1,4 @@
-import { useAccessVaultStore } from "@/stores/accessVaultStore";
+import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useState } from "react";
 import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,15 +17,26 @@ export default function AccessVaultModal() {
         void handlePassphraseSubmit(passphrase);
     }
 
+    const explanation = (prompt: RequestAccessPrompt) => {
+        if (prompt.input.requestFor === "passphrase") {
+            return "Your passphrase is needed for enabling biometrics.";
+        } else if (prompt.input.requestFor === "keySources") {
+            if (prompt.validateWith === "biometrics") {
+                return "Please authenticate using biometrics to unlock your wallet. Your biometric information is only used on your device to unlock your encrypted keys.";
+            } else if (prompt.validateWith === "passphrase") {
+                return "Please authenticate using your passphrase to unlock your wallet. Your passphrase is used to decrypt your encrypted keys.";
+            }
+        }
+    }
+
     let innerContent = null;
     if (prompt && prompt.validateWith === "biometrics") {
         innerContent = (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <Text style={styles.label}>Biometric Authentication</Text>
 
-                {prompt.input.requestFor == "seedphrase" && (
-                    <Text style={styles.hint}>Please authenticate using Face ID or your fingerprint to unlock your wallet. Your biometric information is only used on your device to unlock your encrypted seed phrase.</Text>
-                )}
+                
+                <Text style={styles.hint}>{explanation(prompt)}</Text>
             </View>
         );
     } else if (prompt && prompt.validateWith === "passphrase") { 
@@ -33,13 +44,7 @@ export default function AccessVaultModal() {
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <Text style={styles.label}>Enter Passphrase</Text>
 
-                {prompt.input.requestFor == "seedphrase" && (
-                    <Text style={styles.hint}>Please authenticate using your passphrase to unlock your wallet. Your passphrase is used to decrypt your encrypted seed phrase.</Text>
-                )}
-
-                <Text style={styles.hint}>{ 
-                    prompt.input.requestFor == "seedphrase" ? "This will unlock your private key." : "Your passphrase is needed for enabling biometrics."
-                }</Text>
+                <Text style={styles.hint}>{explanation(prompt)}</Text>
 
                 <View style={styles.inputContainer}>
                     <TextInput

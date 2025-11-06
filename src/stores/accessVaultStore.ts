@@ -48,7 +48,12 @@ export type Output<I extends Input> =
     never;
 
 export type RequestAccessPrompt = {
-    input: Input;
+    input: {
+        requestFor: "passphrase"
+    } | {
+        requestFor: "keySources";
+        keySourceIds: KeySourceId[];
+    };
     validateWith: AuthorizationType;
 }
 
@@ -76,7 +81,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
         if (input.requestFor === "passphrase") {
             return await new Promise<string>((resolve, reject) => {
                 set({
-                    prompt: { input, validateWith: "passphrase" },
+                    prompt: { input: { requestFor: "passphrase" }, validateWith: "passphrase" },
                     passphrasePromise: { resolve, reject },
                 })
             }) as Output<I>;
@@ -122,13 +127,13 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
                         let seedPhrasesMap: Map<KeySourceId, SeedPhraseWords>;
                         if (useBiometrics) {
-                            set({ prompt: { input, validateWith: "biometrics" } });
+                            set({ prompt: { input: { requestFor: "keySources", keySourceIds: ids }, validateWith: "biometrics" } });
                             seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, ids);
                             set({ prompt: null });
                         } else {
                             let passphrase = await new Promise<string>((resolve, reject) => {
                                 set({
-                                    prompt: { input, validateWith: "passphrase" },
+                                    prompt: { input: { requestFor: "keySources", keySourceIds: ids }, validateWith: "passphrase" },
                                     passphrasePromise: { resolve, reject },
                                 })
                             })
@@ -194,7 +199,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
             let output: SeedPhraseOutput;
             if (useBiometrics) {
-                set({ prompt: { input, validateWith: "biometrics" } });
+                set({ prompt: { input: { requestFor: "keySources", keySourceIds: [input.keySourceId] }, validateWith: "biometrics" } });
                 const seedPhrases = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, [input.keySourceId])
                 const seedPhrase = seedPhrases.get(input.keySourceId);
                 if (!seedPhrase) {
@@ -210,7 +215,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
             } else {
                 let passphrase = await new Promise<string>((resolve, reject) => {
                     set({
-                        prompt: { input, validateWith: "passphrase" },
+                        prompt: { input: { requestFor: "keySources", keySourceIds: [input.keySourceId] }, validateWith: "passphrase" },
                         passphrasePromise: { resolve, reject },
                     })
                 })
