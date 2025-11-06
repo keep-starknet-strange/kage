@@ -1,14 +1,14 @@
 import { AddressView } from '@/components/address-view';
+import { PrivateBalancesLocked } from '@/components/private-balances-locked';
 import { BalanceCard } from '@/components/ui/balance-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { PrimaryButton } from '@/components/ui/primary-button';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
-import { PrivateTokenBalance, PublicTokenBalance } from '@/stores/balance/tokenBalance';
 import { useProfileStore } from '@/stores/profileStore';
+import { PrivateTokenBalance, PublicTokenBalance } from '@/types/tokenBalance';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -158,17 +158,10 @@ export default function AccountDetailScreen() {
                             onLock={() => lockPrivateBalances([account])}
                         />
                     ) : (
-                        <View style={styles.emptyState}>
-                            <IconSymbol name="lock.fill" size={48} color={colorTokens['text.muted']} />
-                            <Text style={styles.emptyStateText}>Private balances are locked</Text>
-
-                            <PrimaryButton
-                                style={styles.unlockButton}
-                                title="Unlock"
-                                loading={isLoadingBalances}
-                                onPress={handleUnlockPrivateBalances}
-                            />
-                        </View>
+                        <PrivateBalancesLocked
+                            isLoadingBalances={isLoadingBalances}
+                            handleUnlockPrivateBalances={handleUnlockPrivateBalances}
+                        />
                     )
                 )}
             </View>
@@ -452,11 +445,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: colorTokens['text.muted'],
     },
-    emptyStateSubtext: {
-        fontSize: 14,
-        color: colorTokens['text.muted'],
-        textAlign: 'center',
-    },
     loadingContainer: {
         flex: 1,
         alignItems: 'center',
@@ -486,19 +474,6 @@ const styles = StyleSheet.create({
         borderRadius: radiusTokens.md,
     },
     backButtonText: {
-        color: colorTokens['text.inverted'],
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    unlockButton: {
-        marginTop: spaceTokens[4],
-        paddingVertical: spaceTokens[3],
-        paddingHorizontal: spaceTokens[6],
-        backgroundColor: colorTokens['brand.accent'],
-        borderRadius: radiusTokens.md,
-        alignItems: 'center',
-    },
-    unlockButtonText: {
         color: colorTokens['text.inverted'],
         fontSize: 16,
         fontWeight: '600',

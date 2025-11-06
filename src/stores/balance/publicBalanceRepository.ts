@@ -1,8 +1,8 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { Call, uint256 } from "starknet";
 import BalanceRepository from "./balanceRepository";
-import Token from "./token";
-import { PublicTokenBalance } from "./tokenBalance";
+import Token from "@/types/token";
+import { PublicTokenBalance } from "@/types/tokenBalance";
 
 export class PublicBalanceRepository extends BalanceRepository {
 

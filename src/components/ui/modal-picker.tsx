@@ -35,7 +35,7 @@ export function ModalPicker<T extends Identifiable>({
     return (
         <View style={styles.container}>
             {label && <Text style={styles.label}>{label}</Text>}
-            
+
             <Pressable
                 style={[
                     pickerButtonStyle ?? styles.pickerButton,
@@ -44,13 +44,12 @@ export function ModalPicker<T extends Identifiable>({
                 onPress={() => !disabled && setIsModalVisible(true)}
                 disabled={disabled}
             >
-                <View style={styles.pickerContent}>
-                    {selectedItem ? (
-                        renderItem(selectedItem)
-                    ) : (
-                        <Text style={styles.placeholder}>{placeholder}</Text>
-                    )}
-                </View>
+                {selectedItem ? (
+                    renderItem(selectedItem)
+                ) : (
+                    <Text style={styles.placeholder}>{placeholder}</Text>
+                )}
+
                 <IconSymbol
                     name="chevron.down"
                     size={20}
@@ -60,51 +59,47 @@ export function ModalPicker<T extends Identifiable>({
 
             <Modal
                 visible={isModalVisible}
-                transparent
                 animationType="slide"
+                presentationStyle="pageSheet"
+                allowSwipeDismissal={true}
                 onRequestClose={() => setIsModalVisible(false)}
             >
                 <Pressable
-                    style={styles.modalOverlay}
-                    onPress={() => setIsModalVisible(false)}
+                    style={styles.modalContent}
+                    onPress={(e) => e.stopPropagation()}
                 >
-                    <Pressable
-                        style={styles.modalContent}
-                        onPress={(e) => e.stopPropagation()}
-                    >
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{placeholder}</Text>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>{placeholder}</Text>
+                        <Pressable
+                            style={styles.closeButton}
+                            onPress={() => setIsModalVisible(false)}
+                        >
+                            <IconSymbol name="xmark" size={24} color={colorTokens['text.primary']} />
+                        </Pressable>
+                    </View>
+
+                    <ScrollView style={styles.itemsList}>
+                        {items.map((item) => (
                             <Pressable
-                                style={styles.closeButton}
-                                onPress={() => setIsModalVisible(false)}
+                                key={item.id}
+                                style={[
+                                    styles.item,
+                                    selectedItem?.id === item.id && styles.itemSelected
+                                ]}
+                                onPress={() => handleSelectItem(item)}
                             >
-                                <IconSymbol name="xmark" size={24} color={colorTokens['text.primary']} />
+                                {renderItem(item)}
+
+                                {selectedItem?.id === item.id && (
+                                    <IconSymbol
+                                        name="checkmark"
+                                        size={20}
+                                        color={colorTokens['brand.accent']}
+                                    />
+                                )}
                             </Pressable>
-                        </View>
-
-                        <ScrollView style={styles.itemsList}>
-                            {items.map((item) => (
-                                <Pressable
-                                    key={item.id}
-                                    style={[
-                                        styles.item,
-                                        selectedItem?.id === item.id && styles.itemSelected
-                                    ]}
-                                    onPress={() => handleSelectItem(item)}
-                                >
-                                    {renderItem(item)}
-
-                                    {selectedItem?.id === item.id && (
-                                        <IconSymbol
-                                            name="checkmark"
-                                            size={20}
-                                            color={colorTokens['brand.accent']}
-                                        />
-                                    )}
-                                </Pressable>
-                            ))}
-                        </ScrollView>
-                    </Pressable>
+                        ))}
+                    </ScrollView>
                 </Pressable>
             </Modal>
         </View>
@@ -122,6 +117,7 @@ const styles = StyleSheet.create({
     },
     pickerButton: {
         flexDirection: 'row',
+        gap: spaceTokens[3],
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: colorTokens['bg.elevated'],
@@ -135,9 +131,6 @@ const styles = StyleSheet.create({
         backgroundColor: colorTokens['bg.sunken'],
         opacity: 0.6,
     },
-    pickerContent: {
-        flex: 1,
-    },
     placeholder: {
         fontSize: 16,
         color: colorTokens['text.muted'],
@@ -148,6 +141,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     modalContent: {
+        flex: 1,
         backgroundColor: colorTokens['bg.elevated'],
         borderTopLeftRadius: radiusTokens.lg,
         borderTopRightRadius: radiusTokens.lg,
@@ -157,17 +151,19 @@ const styles = StyleSheet.create({
     modalHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: spaceTokens[4],
+        justifyContent: 'center',
+        padding: spaceTokens[6],
         borderBottomWidth: 1,
         borderBottomColor: colorTokens['border.subtle'],
     },
     modalTitle: {
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: '700',
         color: colorTokens['text.primary'],
     },
     closeButton: {
+        position: 'absolute',
+        left: spaceTokens[4],
         width: 40,
         height: 40,
         alignItems: 'center',

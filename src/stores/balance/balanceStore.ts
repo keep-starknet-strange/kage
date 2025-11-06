@@ -5,8 +5,8 @@ import tokensConfig from "res/config/tokens.json";
 import { create } from "zustand";
 import PrivateBalanceRepository from "./privateBalanceRepository";
 import { PublicBalanceRepository } from "./publicBalanceRepository";
-import Token from "./token";
-import { PrivateTokenBalance, PublicTokenBalance } from "./tokenBalance";
+import Token from "@/types/token";
+import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { useAccessVaultStore } from "../accessVaultStore";
 
 type PresetNetworkId = keyof typeof tokensConfig;

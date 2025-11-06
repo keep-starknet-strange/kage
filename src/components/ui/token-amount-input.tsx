@@ -1,5 +1,5 @@
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
-import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/stores/balance/tokenBalance";
+import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
 import { stringToBigint } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
@@ -29,7 +29,12 @@ export function TokenAmountInput<T extends TokenBalance>({
 
     useEffect(() => {
         if (selectedBalance) {
-            setHintMessage(`Balance: ${selectedBalance.formattedSpendableBalance()}`);
+            if (selectedBalance instanceof PrivateTokenBalance) {
+                setHintMessage(`Private 1Balance: ${selectedBalance.formattedSpendableBalance()}`);
+            } else {
+                setHintMessage(`Balance: ${selectedBalance.formattedSpendableBalance()}`);
+            }
+
         }
     }, [selectedBalance]);
 
@@ -38,7 +43,7 @@ export function TokenAmountInput<T extends TokenBalance>({
             onAmountChange(null);
             return;
         }
-        
+
         if (selectedBalance instanceof PublicTokenBalance) {
             const amount = PublicAmount.fromTokenBalance(selectedBalance, amountDecimal);
             onAmountChange(amount);
@@ -80,7 +85,7 @@ export function TokenAmountInput<T extends TokenBalance>({
         if (!selectedBalance) {
             return;
         }
-        
+
         if (text.trim() === '') {
             setAmountDecimal(null);
             setAmountText('');
@@ -95,11 +100,9 @@ export function TokenAmountInput<T extends TokenBalance>({
 
     const renderItem = (balance: T) => {
         return (
-            <View style={styles.tokenItem}>
-                <Text style={styles.tokenText}>
-                    {balance.token.symbol}
-                </Text>
-            </View>
+            <Text style={styles.tokenText}>
+                {balance.token.symbol}
+            </Text>
         );
     };
 
@@ -125,7 +128,7 @@ export function TokenAmountInput<T extends TokenBalance>({
                     items={balances}
                     selectedItem={selectedBalance}
                     onSelectItem={setSelectedBalance}
-                    placeholder="Select a token"
+                    placeholder="Token"
                     disabled={disabled}
                     renderItem={renderItem}
                     pickerButtonStyle={styles.tokenPickerButton}
@@ -154,6 +157,7 @@ const styles = StyleSheet.create({
         borderColor: colorTokens['border.subtle'],
         borderRadius: radiusTokens.sm,
         paddingHorizontal: spaceTokens[3],
+        gap: spaceTokens[1],
     },
     inputContainerError: {
         borderColor: colorTokens['status.error'],
@@ -192,12 +196,9 @@ const styles = StyleSheet.create({
     },
     tokenPickerButton: {
         flex: 1,
-    },
-    tokenItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 12
+        gap: spaceTokens[0],
     },
     tokenText: {
         fontSize: 14,

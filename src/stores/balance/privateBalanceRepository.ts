@@ -6,8 +6,8 @@ import { Account as TongoToken } from "@fatsolutions/tongo-sdk";
 import { deriveStarknetKeyPairs, joinMnemonicWords, pathHash } from "@starkms/key-management";
 import { RequestAccessFn } from "../accessVaultStore";
 import BalanceRepository from "./balanceRepository";
-import Token from "./token";
-import { PrivateTokenBalance } from "./tokenBalance";
+import Token from "@/types/token";
+import { PrivateTokenBalance } from "@/types/tokenBalance";
 
 export default class PrivateBalanceRepository extends BalanceRepository {
 

@@ -1,8 +1,8 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { NetworkId } from "@/profile/misc";
 import NetworkDerfinition from "@/profile/settings/networkDefinition";
-import Token from "./token";
-import { PublicTokenBalance } from "./tokenBalance";
+import Token from "@/types/token";
+import { PublicTokenBalance } from "@/types/tokenBalance";
 import { RpcProvider } from "starknet";
 
 abstract class BalanceRepository {

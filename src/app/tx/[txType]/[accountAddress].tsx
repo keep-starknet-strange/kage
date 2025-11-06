@@ -21,9 +21,7 @@ const TransactionScreen = () => {
     const { profileState } = useProfileStore();
 
     const [activeTab, setActiveTab] = useState<TxType>(txType as TxType || 'fund');
-    const [transferAmount, setTransferAmount] = useState("");
     const [withdrawAmount, setWithdrawAmount] = useState("");
-    const [recipientAddress, setRecipientAddress] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     // Find the account from the profile state
@@ -33,27 +31,6 @@ const TransactionScreen = () => {
         }
         return profileState.getAccountOnCurrentNetwork(accountAddress);
     }, [profileState, accountAddress]);
-
-    const handleTransfer = useCallback(async () => {
-        if (!recipientAddress || !transferAmount) {
-            Alert.alert('Error', 'Please enter recipient address and amount');
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            // TODO: Implement transfer logic
-            console.log('Transferring', transferAmount, 'to', recipientAddress);
-            Alert.alert('Success', `Transferred ${transferAmount} tokens to ${recipientAddress}`);
-            setTransferAmount("");
-            setRecipientAddress("");
-        } catch (error) {
-            console.error('Error transferring:', error);
-            Alert.alert('Error', 'Failed to transfer tokens');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [recipientAddress, transferAmount]);
 
     const handleWithdraw = useCallback(async () => {
         if (!withdrawAmount) {
@@ -159,20 +136,11 @@ const TransactionScreen = () => {
                 {/* Tab Content */}
                 <View style={styles.tabContent}>
                     {activeTab === 'fund' && (
-                        <FundTab
-                            account={account}
-                        />
+                        <FundTab account={account} />
                     )}
 
                     {activeTab === 'transfer' && (
-                        <TransferTab
-                            recipientAddress={recipientAddress}
-                            amount={transferAmount}
-                            onRecipientAddressChange={setRecipientAddress}
-                            onAmountChange={setTransferAmount}
-                            onTransfer={handleTransfer}
-                            isLoading={isLoading}
-                        />
+                        <TransferTab account={account} />
                     )}
 
                     {activeTab === 'withdraw' && (

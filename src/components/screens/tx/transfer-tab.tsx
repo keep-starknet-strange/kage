@@ -1,25 +1,52 @@
+import { PrivateBalancesLocked } from "@/components/private-balances-locked";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import Account from "@/profile/account";
+import { useBalanceStore } from "@/stores/balance/balanceStore";
+import Amount from "@/types/amount";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 type TransferTabProps = {
-    recipientAddress: string;
-    amount: string;
-    onRecipientAddressChange: (address: string) => void;
-    onAmountChange: (amount: string) => void;
-    onTransfer: () => void;
-    isLoading: boolean;
+    account: Account;
 };
 
 export function TransferTab({ 
-    recipientAddress, 
-    amount, 
-    onRecipientAddressChange, 
-    onAmountChange, 
-    onTransfer, 
-    isLoading 
+    account,
 }: TransferTabProps) {
+    const [recipientAddress, setRecipientAddress] = useState("");
+    const [amount, setAmount] = useState<Amount | null>(null);
+    const [isTransferring, setIsTransferring] = useState(false);
+    const [isUnlockingBalances, setIsUnlockingBalances] = useState(false);
+    
+    const { unlockPrivateBalances } = useBalanceStore();
+
+    const isLocked = useBalanceStore(state => !state.unlockedPrivateBalances.has(account.address));
+    const privateBalances = useBalanceStore(state => state.privateBalances.get(account.address) ?? null);
+
+    const handleTransfer = useCallback(() => {
+        if (!recipientAddress) {
+            return;
+        }
+
+        setIsTransferring(true);
+        console.log(`Transferring from ${account.address} to ${recipientAddress}`);
+        // TODO: Implement transfer logic
+        setIsTransferring(false);
+    }, [recipientAddress, account]);
+
+    const handleUnlockPrivateBalances = useCallback(async () => {
+        setIsUnlockingBalances(true);
+        try {
+            await unlockPrivateBalances([account]);
+        } catch (error) {
+            console.error('Error unlocking private balances:', error);
+        } finally {
+            setIsUnlockingBalances(false);
+        }
+    }, [account, unlockPrivateBalances]);
+
     return (
         <View style={styles.container}>
             <Text style={styles.description}>
@@ -31,24 +58,31 @@ export function TransferTab({
                 <TextInput
                     style={styles.input}
                     value={recipientAddress}
-                    onChangeText={onRecipientAddressChange}
+                    onChangeText={setRecipientAddress}
                     placeholder="0x..."
                     placeholderTextColor={colorTokens['text.muted']}
                 />
             </View>
 
-            <TokenAmountInput
-                label="Amount"
-                value={amount}
-                onChangeText={onAmountChange}
-                tokenSymbol="STRK"
-                placeholder="0.0"
-            />
+            {isLocked ? (
+                <PrivateBalancesLocked
+                    isLoadingBalances={isUnlockingBalances}
+                    handleUnlockPrivateBalances={handleUnlockPrivateBalances}
+                />
+            ) : (
+                <TokenAmountInput
+                    label="Amount"
+                    placeholder="0.0"
+                    onAmountChange={setAmount}
+                    balances={privateBalances ?? []}
+                />
+            )}
 
             <PrimaryButton
                 title="Transfer"
-                onPress={onTransfer}
-                disabled={!recipientAddress || !amount || isLoading}
+                onPress={handleTransfer}
+                disabled={!recipientAddress}
+                loading={isTransferring}
             />
         </View>
     );

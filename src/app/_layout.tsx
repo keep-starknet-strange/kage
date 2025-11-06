@@ -31,7 +31,6 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (!ProfileState.isInitialized(profileState)) {
-            console.log("initialize");
             void initialize().then(() => {
                 SplashScreen.hide()
             })

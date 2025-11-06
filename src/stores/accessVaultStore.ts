@@ -8,7 +8,7 @@ export type AuthorizationType = "passphrase" | "biometrics";
 
 export type SeedPhraseInput = {
     requestFor: "seedphrase";
-    keySourceId: KeySourceId;
+    keySourceId: KeySourceId; // Multiple key sources should be supported in one go.
 }
 
 export type PassphraseInput = {

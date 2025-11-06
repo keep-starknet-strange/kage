@@ -5,8 +5,6 @@ import { colorTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
-import Token from "@/stores/balance/token";
-import { TokenBalance } from "@/stores/balance/tokenBalance";
 import { useProfileStore } from "@/stores/profileStore";
 import Amount from "@/types/amount";
 import { useCallback, useMemo, useState } from "react";

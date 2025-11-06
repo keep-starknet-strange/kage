@@ -1,5 +1,5 @@
 import Identifiable from "@/types/Identifiable";
-import Token from "./token";
+import Token from "@/types/token";
 import { AccountState as TongoBalanceState } from "@fatsolutions/tongo-sdk";
 import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 
