@@ -1,14 +1,19 @@
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
-import { stringToBigint } from "@/utils/formattedBalance";
+import { stringToBigint, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { ModalPicker } from "./modal-picker";
 import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
 
+type AmountType<T extends TokenBalance> = 
+    T extends PrivateTokenBalance ? PrivateAmount :
+    T extends PublicTokenBalance ? PublicAmount :
+    Amount;
+
 type TokenAmountInputProps<T extends TokenBalance> = {
     label?: string;
-    onAmountChange: (amount: Amount | null) => void;
+    onAmountChange: (amount: AmountType<T> | null) => void;
     placeholder?: string;
     disabled?: boolean;
     balances: T[];
@@ -30,7 +35,7 @@ export function TokenAmountInput<T extends TokenBalance>({
     useEffect(() => {
         if (selectedBalance) {
             if (selectedBalance instanceof PrivateTokenBalance) {
-                setHintMessage(`Private 1Balance: ${selectedBalance.formattedSpendableBalance()}`);
+                setHintMessage(`Private Balance: ${selectedBalance.formattedSpendableBalance()}`);
             } else {
                 setHintMessage(`Balance: ${selectedBalance.formattedSpendableBalance()}`);
             }
@@ -46,12 +51,12 @@ export function TokenAmountInput<T extends TokenBalance>({
 
         if (selectedBalance instanceof PublicTokenBalance) {
             const amount = PublicAmount.fromTokenBalance(selectedBalance, amountDecimal);
-            onAmountChange(amount);
+            onAmountChange(amount as AmountType<T>);
         } else if (selectedBalance instanceof PrivateTokenBalance) {
             const amount = PrivateAmount.fromTokenBalance(selectedBalance, amountDecimal);
-            onAmountChange(amount);
+            onAmountChange(amount as AmountType<T>);
         }
-    }, [amountDecimal, selectedBalance]);
+    }, [amountDecimal, selectedBalance, onAmountChange]);
 
     useEffect(() => {
         if (!selectedBalance) {
@@ -70,8 +75,8 @@ export function TokenAmountInput<T extends TokenBalance>({
         if (amountDecimal > maxRange) {
             setError("Exceeds balance")
             return;
-        } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {
-            setError(`Private ${selectedBalance.token.symbol} amount must be at least ${selectedBalance.formattedBalance(true, minRange)}`)
+        } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {6
+            setError(`Private ${selectedBalance.token.symbol} amount must be at least ${tokenAmountToFormatted(true, minRange, selectedBalance.token)}`)
             return;
         } else if (amountDecimal < minRange) {
             setError("Negative amounts are not allowed")

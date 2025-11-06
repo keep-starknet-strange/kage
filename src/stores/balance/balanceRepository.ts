@@ -13,9 +13,9 @@ abstract class BalanceRepository {
         this.provider = new RpcProvider({ nodeUrl: NetworkDerfinition.mainnet().rpcUrl.toString(), batch: 0 });
     }
 
-    public setNetwork(network: NetworkDerfinition) {
-        this.currentNetwork = network.chainId;
-        this.provider = new RpcProvider({ nodeUrl: network.rpcUrl.toString(), batch: 0 });
+    public setNetwork(networkId: NetworkId, rpcProvider: RpcProvider) {
+        this.currentNetwork = networkId;
+        this.provider = rpcProvider
     }
 
     abstract getBalances(accounts: Account[], forTokens: Token[]): Promise<Map<AccountAddress, PublicTokenBalance[]>>;

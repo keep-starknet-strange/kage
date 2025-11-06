@@ -8,6 +8,7 @@ import { PublicBalanceRepository } from "./publicBalanceRepository";
 import Token from "@/types/token";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { useAccessVaultStore } from "../accessVaultStore";
+import { RpcProvider } from "starknet";
 
 type PresetNetworkId = keyof typeof tokensConfig;
 
@@ -21,7 +22,7 @@ export interface BalanceState {
     publicBalances: ReadonlyMap<AccountAddress, PublicTokenBalance[]>,
     privateBalances: ReadonlyMap<AccountAddress, PrivateTokenBalance[]>,
 
-    changeNetwork: (network: NetworkDerfinition, accounts: Account[]) => Promise<void>,
+    changeNetwork: (networkId: NetworkId, rpcProvider: RpcProvider, accounts: Account[]) => Promise<void>,
     requestRefresh: (accounts: Account[]) => Promise<void>,
     unlockPrivateBalances: (accounts: Account[]) => Promise<void>,
     lockPrivateBalances: (accounts: Account[]) => Promise<void>,
@@ -36,18 +37,18 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
     publicBalances: new Map(),
     privateBalances: new Map(),
 
-    changeNetwork: async (network: NetworkDerfinition, accounts: Account[]) => {
-        if (get().networkId === network.chainId) {
+    changeNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider, accounts: Account[]) => {
+        if (get().networkId === networkId) {
             return;
         }
 
-        get().privateBalanceRepository.setNetwork(network);
-        get().publicBalanceRepository.setNetwork(network);
+        get().privateBalanceRepository.setNetwork(networkId, rpcProvider);
+        get().publicBalanceRepository.setNetwork(networkId, rpcProvider);
 
-        const presetExists = Object.prototype.hasOwnProperty.call(tokensConfig, network.chainId);
+        const presetExists = Object.prototype.hasOwnProperty.call(tokensConfig, networkId);
         let tokens: Token[];
         if (presetExists) {
-            tokens = tokensConfig[network.chainId as PresetNetworkId].map((token) => {
+            tokens = tokensConfig[networkId as PresetNetworkId].map((token) => {
                 return new Token(token.erc20, token.tongo, token.symbol, token.decimals)
             });
         } else {
@@ -55,7 +56,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => ({
         }
 
         set({
-            networkId: network.chainId,
+            networkId: networkId,
             tokens: new Map(tokens.map((token) => [token.contractAddress, token])),
             publicBalances: new Map(),
             privateBalances: new Map()

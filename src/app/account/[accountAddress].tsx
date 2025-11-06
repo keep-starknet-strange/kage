@@ -2,6 +2,7 @@ import { AddressView } from '@/components/address-view';
 import { PrivateBalancesLocked } from '@/components/private-balances-locked';
 import { BalanceCard } from '@/components/ui/balance-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { PrivateAddressView } from '@/components/ui/private-address-view';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
@@ -184,9 +185,6 @@ function PublicTab({
             <View style={styles.tokenCard}>
                 <View style={styles.tokenInfo}>
                     <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
-                    <Text style={styles.tokenAddress} numberOfLines={1}>
-                        {item.token.formattedContractAddress}
-                    </Text>
                 </View>
                 <View style={styles.tokenBalance}>
                     <Text style={styles.tokenBalanceAmount}>
@@ -252,9 +250,9 @@ function PrivateTab({
             <View style={styles.tokenCard}>
                 <View style={styles.tokenInfo}>
                     <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
-                    <Text style={styles.tokenAddress} numberOfLines={1}>
-                        {item.token.formattedTongoAddress}
-                    </Text>
+                    {item.isUnlocked && (
+                        <PrivateAddressView address={item.privateTokenAddress!} />
+                    )}
                 </View>
                 <View style={styles.tokenBalance}>
                     <Text style={styles.tokenBalanceAmount}>
@@ -403,6 +401,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         shadowColor: colorTokens['shadow.primary'],
+        gap: spaceTokens[1],
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 1,
         shadowRadius: 4,

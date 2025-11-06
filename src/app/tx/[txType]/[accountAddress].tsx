@@ -95,7 +95,7 @@ const TransactionScreen = () => {
                         onPress={() => setActiveTab('fund')}
                     >
                         <IconSymbol
-                            name="arrow.down.circle"
+                            name="plus.circle"
                             size={20}
                             color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                         />
@@ -144,12 +144,7 @@ const TransactionScreen = () => {
                     )}
 
                     {activeTab === 'withdraw' && (
-                        <WithdrawTab
-                            amount={withdrawAmount}
-                            onAmountChange={setWithdrawAmount}
-                            onWithdraw={handleWithdraw}
-                            isLoading={isLoading}
-                        />
+                        <WithdrawTab account={account} />
                     )}
                 </View>
             </ScrollView>

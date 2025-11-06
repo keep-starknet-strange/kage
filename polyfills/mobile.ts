@@ -27,7 +27,10 @@ function toUint8Array(data: ArrayBuffer | ArrayBufferView | Uint8Array): Uint8Ar
 function ensureSubtle() {
   const g: any = globalThis as any;
   if (!g.crypto) g.crypto = {};
-  if (g.crypto.subtle) return;
+  // if (g.crypto.subtle) {
+  //   console.log('>>>>>> SUBTLE ALREADY INSTALLED');
+  //   return;
+  // }
 
   const subtle: any = {
     // Marker to indicate this is a JS polyfill, not native
@@ -99,3 +102,5 @@ function ensureSubtle() {
 }
 
 ensureSubtle();
+
+console.log('>>>>>> MOBILE POLYFILLS INSTALLED');

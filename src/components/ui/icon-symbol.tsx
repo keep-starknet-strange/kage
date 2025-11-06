@@ -23,12 +23,18 @@ const MAPPING = {
     'trash.fill': 'delete',
     'key': 'shield',
     'checkmark': 'check',
+    'checkmark.circle.fill': 'check-circle',
     'gearshape.fill': 'settings',
     'plus.circle.fill': 'add-circle',
+    'plus.circle': 'add-circle-outline',
     'arrow.right.circle.fill': 'arrow-circle-right',
     'arrow.down.circle.fill': 'arrow-circle-down',
+    'arrow.up.circle.fill': 'arrow-circle-up',
+    'arrow.up.circle': 'arrow-circle-up',
     'lock.fill': 'lock',
     'lock.open.fill': 'lock-open',
+    'lock.shield.fill': 'shield',
+    'document.on.document': 'content-copy'
 } as IconMapping;
 
 /**

@@ -6,9 +6,12 @@ import Account from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useProfileStore } from "@/stores/profileStore";
-import Amount from "@/types/amount";
-import { useCallback, useMemo, useState } from "react";
+import { useTxStore } from "@/stores/txStore";
+import { PublicAmount } from "@/types/amount";
+import { useRouter } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 
 type FundTabProps = {
     account: Account;
@@ -18,9 +21,17 @@ export function FundTab({
     account,
 }: FundTabProps) {
     const { profileState } = useProfileStore();
+    const { fund } = useTxStore();
+    const router = useRouter();
+    const isFocused = useIsFocused();
+    const isFocusedRef = useRef(isFocused);
+
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-    const [amount, setAmount] = useState<Amount | null>(null);
+    const [amount, setAmount] = useState<PublicAmount | null>(null);
     const [isFunding, setIsFunding] = useState<boolean>(false);
+
+    // Keep the ref updated with the current focus state
+    isFocusedRef.current = isFocused;
 
     const accounts = useMemo(() => {
         if (!ProfileState.isProfile(profileState)) {
@@ -38,16 +49,23 @@ export function FundTab({
     }, [selectedAccount]);
 
     const handleFund = useCallback(() => {
-        if (!amount) {
-            return;
+        const fundAsync = async (account: Account, amount: PublicAmount) => {
+            setIsFunding(true);
+            await fund(account, amount, account);
+            setIsFunding(false);
         }
 
-        setIsFunding(true);
+        if (!amount || !selectedAccount) {
+            return;
+        }
         
-        console.log(`Fund from ${selectedAccount?.address} ${amount.formatted()} to ${account.address}`);
-        // TODO: Implement funding logic
-        setIsFunding(false);
-    }, [setIsFunding, amount, selectedAccount]);
+        fundAsync(selectedAccount, amount).then(() => {
+            // Only navigate back if the screen is still focused/visible
+            if (isFocusedRef.current) {
+                router.back();
+            }
+        });
+    }, [setIsFunding, amount, selectedAccount, router, fund]);
 
     if (!accounts) {
         return null;

@@ -1,35 +1,98 @@
+import { PrivateBalancesLocked } from "@/components/private-balances-locked";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { colorTokens, spaceTokens } from "@/design/tokens";
+import Account from "@/profile/account";
+import { useBalanceStore } from "@/stores/balance/balanceStore";
+import { useTxStore } from "@/stores/txStore";
+import { PrivateAmount } from "@/types/amount";
+import { PrivateTokenBalance } from "@/types/tokenBalance";
+import { useIsFocused } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 type WithdrawTabProps = {
-    amount: string;
-    onAmountChange: (amount: string) => void;
-    onWithdraw: () => void;
-    isLoading: boolean;
+    account: Account;
 };
 
-export function WithdrawTab({ amount, onAmountChange, onWithdraw, isLoading }: WithdrawTabProps) {
+export function WithdrawTab({ account }: WithdrawTabProps) {
+    const { unlockPrivateBalances } = useBalanceStore();
+    const { withdraw } = useTxStore();
+    const router = useRouter();
+
+    const isFocused = useIsFocused();
+    const isFocusedRef = useRef(isFocused);
+
+    const [amount, setAmount] = useState<PrivateAmount | null>(null);
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
+    const [isUnlockingBalances, setIsUnlockingBalances] = useState(false);
+
+    
+    const isLocked = useBalanceStore(state => !state.unlockedPrivateBalances.has(account.address));
+    const privateBalances: PrivateTokenBalance[] | null = useBalanceStore(state => state.privateBalances.get(account.address) ?? null);
+
+
+    const handleWithdraw = useCallback(() => {
+        if (!amount) {
+            return;
+        }
+
+        const withdrawAsync = async () => {
+            setIsWithdrawing(true);
+            await withdraw(account, amount, account);
+            setIsWithdrawing(false);
+        }
+
+        withdrawAsync().then(() => {
+            // Only navigate back if the screen is still focused/visible
+            if (isFocusedRef.current) {
+                router.back();
+            }
+        });
+    }, [account, isFocusedRef, router, withdraw, amount]);
+
+
+    const handleUnlockPrivateBalances = useCallback(async () => {
+        setIsUnlockingBalances(true);
+        try {
+            await unlockPrivateBalances([account]);
+        } catch (error) {
+            console.error('Error unlocking private balances:', error);
+        } finally {
+            setIsUnlockingBalances(false);
+        }
+    }, [account, unlockPrivateBalances]);
+    
     return (
         <View style={styles.container}>
-            <Text style={styles.description}>
-                Withdraw tokens from your account to an external wallet.
-            </Text>
-            
-            <TokenAmountInput
-                label="Amount"
-                value={amount}
-                onChangeText={onAmountChange}
-                tokenSymbol="STRK"
-                placeholder="0.0"
-            />
+            {isLocked ? (
+                <PrivateBalancesLocked
+                    isLoadingBalances={isUnlockingBalances}
+                    handleUnlockPrivateBalances={handleUnlockPrivateBalances}
+                />
+            ) : (
+                <>
+                    <Text style={styles.description}>
+                        Withdraw tokens from your private balance to your public wallet.
+                    </Text>
 
-            <PrimaryButton
-                title="Withdraw"
-                onPress={onWithdraw}
-                disabled={!amount || isLoading}
-            />
+                    <TokenAmountInput
+                        label="Amount"
+                        placeholder="0.0"
+                        balances={privateBalances ?? []}
+                        onAmountChange={setAmount}
+                    />
+
+                    <PrimaryButton
+                        title="Withdraw"
+                        onPress={handleWithdraw}
+                        disabled={!amount}
+                        loading={isWithdrawing}
+                    />
+                </>
+
+            )}
         </View>
     );
 }

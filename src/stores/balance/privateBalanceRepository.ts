@@ -1,13 +1,12 @@
 import Account, { AccountAddress } from "@/profile/account";
-import HDKeyInstance from "@/profile/keyInstance";
-import { KeySourceId } from "@/profile/keys/keySource";
-import NetworkDerfinition from "@/profile/settings/networkDefinition";
-import { Account as TongoToken } from "@fatsolutions/tongo-sdk";
-import { deriveStarknetKeyPairs, joinMnemonicWords, pathHash } from "@starkms/key-management";
-import { RequestAccessFn } from "../accessVaultStore";
-import BalanceRepository from "./balanceRepository";
+import { NetworkId } from "@/profile/misc";
 import Token from "@/types/token";
 import { PrivateTokenBalance } from "@/types/tokenBalance";
+import { Account as TongoToken } from "@fatsolutions/tongo-sdk";
+import { RpcProvider } from "starknet";
+import { RequestAccessFn } from "../accessVaultStore";
+import BalanceRepository from "./balanceRepository";
+import PrivateTokenAddress from "@/types/privateRecipient";
 
 export default class PrivateBalanceRepository extends BalanceRepository {
 
@@ -15,8 +14,8 @@ export default class PrivateBalanceRepository extends BalanceRepository {
     // keeping private keys in memory when using tongo sdk.
     private tongoCache: Map<string, TongoToken> = new Map();
 
-    setNetwork(network: NetworkDerfinition) {
-        super.setNetwork(network);
+    setNetwork(networkId: NetworkId, rpcProvider: RpcProvider) {
+        super.setNetwork(networkId, rpcProvider);
         this.tongoCache.clear();
     }
 
@@ -30,8 +29,11 @@ export default class PrivateBalanceRepository extends BalanceRepository {
                 return forTokens.map((token) => {
                     const tongoToken = this.tongoCache.get(this.cacheKey(account, token));
 
-                    const promise = tongoToken ? Promise.all([tongoToken.state(), tongoToken.rate()])
-                        .then(([balance, rate]) => PrivateTokenBalance.unlocked(token, rate, balance)) : Promise.resolve(PrivateTokenBalance.locked(token));
+                    const promise = tongoToken ? Promise.all([tongoToken.state(), tongoToken.rate(), Promise.resolve(tongoToken.tongoAddress())])
+                        .then(([balance, rate, address]) => {
+                            const privateTokenAddress = PrivateTokenAddress.fromHex(address);
+                            return PrivateTokenBalance.unlocked(token, rate, balance, privateTokenAddress);
+                        }) : Promise.resolve(PrivateTokenBalance.locked(token));
 
                     return {
                         account: account.address,

@@ -11,12 +11,14 @@ import AccessVaultModal from './access-vault-modal';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
 import Account from '@/profile/account';
 import NetworkBanner from '@/components/ui/network-banner';
+import { useRpcStore } from '@/stores/useRpcStore';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     const { profileState, initialize } = useProfileStore();
-    const { changeNetwork } = useBalanceStore();
+    const { changeNetwork: changeRpcNetwork } = useRpcStore();
+    const { changeNetwork: changeBalanceNetwork } = useBalanceStore();
 
     const currentNetworkDefinition = useProfileStore(state => {
         if (!ProfileState.isProfile(state.profileState)) {
@@ -44,10 +46,11 @@ export default function RootLayout() {
 
             const profileState = useProfileStore.getState().profileState;
             if (ProfileState.isProfile(profileState)) {
-                changeNetwork(currentNetworkDefinition, profileState.accountsOnCurrentNetwork as Account[]);
+                const provider = changeRpcNetwork(currentNetworkDefinition);
+                changeBalanceNetwork(currentNetworkDefinition.chainId, provider, profileState.accountsOnCurrentNetwork as Account[]);
             }
         }
-    }, [currentNetworkDefinition?.chainId ?? "", changeNetwork]);
+    }, [currentNetworkDefinition?.chainId ?? "", changeRpcNetwork, changeBalanceNetwork]);
 
     return (
         <AppProviders>

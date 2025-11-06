@@ -1,4 +1,4 @@
-import Token from "@/stores/balance/token";
+import Token from "@/types/token";
 
 export function tokenAmountToFormatted(
     compressed: boolean = false, 

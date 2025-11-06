@@ -24,6 +24,10 @@ export class PublicAmount extends Amount {
     static fromTokenBalance(balance: PublicTokenBalance, amount: bigint): PublicAmount {
         return new PublicAmount(amount, balance.token);
     }
+
+    intoPrivateAmount(rate: bigint): PrivateAmount {
+        return new PrivateAmount(this.amount, this.token, rate);
+    }
 }
 
 export class PrivateAmount extends Amount {
@@ -34,9 +38,9 @@ export class PrivateAmount extends Amount {
         this.rate = rate;
     }
 
+    // WARNING: Loses precision.
     toSdkAmount(): bigint {
-        // return this.amount * this.rate;
-        return 0n;
+        return this.amount / this.rate;
     }
 
     static fromTokenBalance(balance: PrivateTokenBalance, amount: bigint): PrivateAmount {

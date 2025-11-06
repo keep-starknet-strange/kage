@@ -61,7 +61,7 @@ export const BalanceCard = (props: BalanceCardProps) => {
                 disabled={false}
             />
             <ActionButton
-                icon="arrow.down.circle.fill"
+                icon="arrow.up.circle.fill"
                 label="Withdraw"
                 onPress={() => { 
                     props?.onWithdrawPress?.();

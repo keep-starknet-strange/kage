@@ -1,40 +1,60 @@
 import { PrivateBalancesLocked } from "@/components/private-balances-locked";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { PrivateAddressInput } from "@/components/ui/private-address-input";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
-import Amount from "@/types/amount";
-import { useCallback, useMemo, useState } from "react";
+import { useTxStore } from "@/stores/txStore";
+import Amount, { PrivateAmount } from "@/types/amount";
+import PrivateTokenAddress from "@/types/privateRecipient";
+import { PrivateTokenBalance } from "@/types/tokenBalance";
+import { useIsFocused } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 type TransferTabProps = {
     account: Account;
 };
 
-export function TransferTab({ 
+export function TransferTab({
     account,
 }: TransferTabProps) {
-    const [recipientAddress, setRecipientAddress] = useState("");
-    const [amount, setAmount] = useState<Amount | null>(null);
+    const { unlockPrivateBalances } = useBalanceStore();
+    const { transfer } = useTxStore();
+    const router = useRouter();
+
+    const isFocused = useIsFocused();
+    const isFocusedRef = useRef(isFocused);
+
+    const [recipientAddress, setRecipientAddress] = useState<PrivateTokenAddress | null>(null);
+    const [amount, setAmount] = useState<PrivateAmount | null>(null);
     const [isTransferring, setIsTransferring] = useState(false);
     const [isUnlockingBalances, setIsUnlockingBalances] = useState(false);
-    
-    const { unlockPrivateBalances } = useBalanceStore();
+
 
     const isLocked = useBalanceStore(state => !state.unlockedPrivateBalances.has(account.address));
-    const privateBalances = useBalanceStore(state => state.privateBalances.get(account.address) ?? null);
+    const privateBalances: PrivateTokenBalance[] | null = useBalanceStore(state => state.privateBalances.get(account.address) ?? null);
 
     const handleTransfer = useCallback(() => {
-        if (!recipientAddress) {
+        if (!recipientAddress || !amount) {
             return;
         }
 
-        setIsTransferring(true);
-        console.log(`Transferring from ${account.address} to ${recipientAddress}`);
-        // TODO: Implement transfer logic
-        setIsTransferring(false);
-    }, [recipientAddress, account]);
+        const transferAsync = async () => {
+            setIsTransferring(true);
+            await transfer(account, amount, account, recipientAddress);
+            setIsTransferring(false);
+        }
+
+        transferAsync().then(() => {
+            // Only navigate back if the screen is still focused/visible
+            if (isFocusedRef.current) {
+                router.back();
+            }
+        });
+    }, [recipientAddress, account, isFocusedRef, router, transfer]);
 
     const handleUnlockPrivateBalances = useCallback(async () => {
         setIsUnlockingBalances(true);
@@ -49,20 +69,6 @@ export function TransferTab({
 
     return (
         <View style={styles.container}>
-            <Text style={styles.description}>
-                Transfer tokens to another address.
-            </Text>
-            
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Recipient Address</Text>
-                <TextInput
-                    style={styles.input}
-                    value={recipientAddress}
-                    onChangeText={setRecipientAddress}
-                    placeholder="0x..."
-                    placeholderTextColor={colorTokens['text.muted']}
-                />
-            </View>
 
             {isLocked ? (
                 <PrivateBalancesLocked
@@ -70,20 +76,32 @@ export function TransferTab({
                     handleUnlockPrivateBalances={handleUnlockPrivateBalances}
                 />
             ) : (
-                <TokenAmountInput
-                    label="Amount"
-                    placeholder="0.0"
-                    onAmountChange={setAmount}
-                    balances={privateBalances ?? []}
-                />
-            )}
+                <>
+                    <Text style={styles.description}>
+                        Transfer tokens to another address.
+                    </Text>
 
-            <PrimaryButton
-                title="Transfer"
-                onPress={handleTransfer}
-                disabled={!recipientAddress}
-                loading={isTransferring}
-            />
+                    <PrivateAddressInput
+                        label="Recipient Address"
+                        placeholder="Enter recipient's private address..."
+                        onAddressChange={setRecipientAddress}
+                    />
+                    <TokenAmountInput
+                        label="Amount"
+                        placeholder="0.0"
+                        balances={privateBalances ?? []}
+                        onAmountChange={setAmount}
+                    />
+
+                    <PrimaryButton
+                        title="Transfer"
+                        onPress={handleTransfer}
+                        disabled={!recipientAddress || !amount}
+                        loading={isTransferring}
+                    />
+                </>
+
+            )}
         </View>
     );
 }
