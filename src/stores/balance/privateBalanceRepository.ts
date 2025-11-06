@@ -58,38 +58,20 @@ export default class PrivateBalanceRepository extends BalanceRepository {
     }
 
     async unlock(forAccounts: readonly Account[], forTokens: Token[], requestAccess: RequestAccessFn) {
-        const keySourcesToUnlock = new Set<KeySourceId>();
-
+        const accountTokens = new Map<Account, Token[]>();
         for (const account of forAccounts) {
-            if (account.keyInstance instanceof HDKeyInstance) {
-                keySourcesToUnlock.add(account.keyInstance.keySourceId);
+            for (const token of forTokens) {
+                accountTokens.set(account, [...(accountTokens.get(account) ?? []), token]);
             }
         }
 
-        for (const keySourceId of keySourcesToUnlock) {
-            const seedPhrase = await requestAccess({ requestFor: "seedphrase", keySourceId });
-            const mnemonicWords = joinMnemonicWords(seedPhrase);
+        const result = await requestAccess({ requestFor: "privateKeys", signing: [], tokens: accountTokens });
 
-            for (const account of forAccounts) {
-                if (account.keyInstance instanceof HDKeyInstance && account.keyInstance.keySourceId === keySourceId) {
-                    const accountIndex = account.keyInstance.index;
-
-                    for (const token of forTokens) {
-                        const tongoIndex = pathHash(`${account.address}.${token.contractAddress}.${token.tongoAddress}`);
-                        const tongoKeyPairs = deriveStarknetKeyPairs({
-                            accountIndex: accountIndex,
-                            addressIndex: tongoIndex,
-                        }, mnemonicWords, true);                        
-
-                        const tongoToken = new TongoToken(tongoKeyPairs.spendingKeyPair.privateSpendingKey, token.tongoAddress, this.provider);
-
-                        this.tongoCache.set(this.cacheKey(account, token), tongoToken);
-                    }
-                }
-            }
+        for (const [account, tokenKeyPairs] of result.tokens.entries()) {
+            const tongoToken = new TongoToken(tokenKeyPairs.keyPairs.spendingKeyPair.privateSpendingKey, tokenKeyPairs.token.tongoAddress, this.provider);
+            this.tongoCache.set(this.cacheKey(account, tokenKeyPairs.token), tongoToken);
         }
     }
-
 
     async lock(forAccounts: readonly Account[], forTokens: Token[]) {
         for (const account of forAccounts) {

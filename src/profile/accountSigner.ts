@@ -1,8 +1,6 @@
 import { AccessVaultState } from "@/stores/accessVaultStore";
-import { deriveStarknetPrivateKey, joinMnemonicWords } from "@starkms/key-management";
 import { ec, Signature, Signer } from "starknet";
 import Account from "./account";
-import HDKeyInstance from "./keyInstance";
 
 export class AccountSigner extends Signer {
 
@@ -27,18 +25,14 @@ export class AccountSigner extends Signer {
     }
 
     private async getSigningKey(): Promise<string> {
-        if (this.account.keyInstance instanceof HDKeyInstance) {
-            const keySourceId = this.account.keyInstance.keySourceId;
-            const seedphrase = await this.vault.requestAccess({ requestFor: "seedphrase", keySourceId: keySourceId });
+        const result = await this.vault.requestAccess({ requestFor: "privateKeys", signing: [this.account], tokens: new Map() });
 
-            const derivationArgs = {
-                accountIndex: 0,
-                addressIndex: this.account.keyInstance.index,
-            }
-            return deriveStarknetPrivateKey(derivationArgs, joinMnemonicWords(seedphrase));
-        } else {
-            throw new Error("Non HD derivation is not supported yet");
+        const keyPairs = result.signing.get(this.account);
+
+        if (!keyPairs) {
+            throw new Error("Signing key not found for account " + this.account.address);
         }
 
+        return keyPairs.spendingKeyPair.privateSpendingKey;
     }
 }

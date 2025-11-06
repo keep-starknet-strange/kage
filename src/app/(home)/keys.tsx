@@ -32,9 +32,9 @@ export default function BackupScreen() {
             setShowRetry(false);
             setShowLoading(true);
 
-            const mnemonicWords = await requestAccess({ requestFor: "seedphrase", keySourceId });
+            const output = await requestAccess({ requestFor: "seedPhrase", keySourceId });
             
-            setMnemonicWords(mnemonicWords);
+            setMnemonicWords(output.seedPhrase.getWords());
             setShowLoading(false);
         } catch (e) {
             console.error("Failed to read mnemonic", e);

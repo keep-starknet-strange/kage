@@ -1,5 +1,5 @@
-import Token from "@/stores/balance/token";
-import { PrivateTokenBalance, PublicTokenBalance } from "@/stores/balance/tokenBalance";
+import Token from "@/types/token";
+import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 
 export default abstract class Amount {

@@ -1,25 +1,50 @@
-import { KeySourceId } from "@/profile/keys/keySource";
+import KeySource, { KeySourceId } from "@/profile/keys/keySource";
 import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
-import { mnemonicToWords } from "@starkms/key-management";
+import { deriveStarknetKeyPairs, mnemonicToWords, pathHash, StarknetKeyPair } from "@starkms/key-management";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
+import HDKeyInstance, { KeyInstance } from "@/profile/keyInstance";
+import { useProfileStore } from "./profileStore";
+import { ProfileState } from "@/profile/profileState";
+import { KeySourceKind } from "@/profile/keys/keySourceKind";
+import Account from "@/profile/account";
+import SeedPhraseWords from "@/types/seedPhraseWords";
+import Token from "@/types/token";
+import { groupBy } from "@/utils/collections";
 
 export type AuthorizationType = "passphrase" | "biometrics";
 
-export type SeedPhraseInput = {
-    requestFor: "seedphrase";
-    keySourceId: KeySourceId; // Multiple key sources should be supported in one go.
+export type PrivateKeysInput = {
+    requestFor: "privateKeys";
+    signing: Account[];
+    tokens: Map<Account, Token[]>;
 }
 
 export type PassphraseInput = {
     requestFor: "passphrase";
 }
 
-export type Input = SeedPhraseInput | PassphraseInput;
+export type SeedPhraseInput = {
+    requestFor: "seedPhrase";
+    keySourceId: KeySourceId;
+}
+
+export type SeedPhraseOutput = {
+    keySourceId: KeySourceId;
+    seedPhrase: SeedPhraseWords;
+}
+
+export type Input = PrivateKeysInput | PassphraseInput | SeedPhraseInput;
+
+export type PrivateKeysOutput = {
+    signing: Map<Account, StarknetKeyPair>;
+    tokens: Map<Account, { token: Token, keyPairs: StarknetKeyPair }>;
+}
 
 export type Output<I extends Input> =
-    I extends SeedPhraseInput ? string[] :
     I extends PassphraseInput ? string :
+    I extends PrivateKeysInput ? PrivateKeysOutput :
+    I extends SeedPhraseInput ? SeedPhraseOutput :
     never;
 
 export type RequestAccessPrompt = {
@@ -32,26 +57,6 @@ export type RequestAccessFn = <I extends Input>(input: I, prompt?: AuthPrompt) =
 export interface AccessVaultState {
     prompt: RequestAccessPrompt | null;
 
-    /**
-      * Requests access to the vault and returns either the user's passphrase or their seed phrase,
-      * depending on the type of input requested.
-      * 
-      * This method can prompt the user for a passphrase, or for seed phrase access via biometrics (if enabled)
-      * or a fallback passphrase prompt as appropriate. An optional `prompt` parameter may be provided to customize
-      * the UI prompt (e.g., title or message) shown to the user during authentication.
-      * 
-      * Remarks:
-      * - Only one seed phrase is currently stored; future versions may support accessing multiple factors by ID.
-      * - If biometrics are disabled or unavailable, the method will fall back to a passphrase prompt for seed phrase access.
-      * - Triggers the appropriate UI prompt by updating `prompt` in the store state.
-      * - Returns a promise that resolves to either the unlocked seed phrase (as a string array), or the user's passphrase (as a string),
-      *   depending on the input specified.
-      * - The promise is rejected if authentication fails or is cancelled.
-      * 
-      * @param input The type of credential to request ("passphrase" or "seedphrase").
-      * @param [prompt] Optional prompt to customize the authentication UI (e.g., title/message).
-      * @returns Promise<string | string[]> The user's passphrase, or the decrypted seed phrase as an array of words.
-      */
     requestAccess: RequestAccessFn;
 
     // Promises for async passphrase input
@@ -75,53 +80,158 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                     passphrasePromise: { resolve, reject },
                 })
             }) as Output<I>;
-        }
+        } else if (input.requestFor === "privateKeys") {
+            const appDependencies = useAppDependenciesStore.getState();
+            const storage = appDependencies.keyValueStorage;
+            const biometricsProvider = appDependencies.biometricsProvider;
+            const seedPhraseVault = appDependencies.seedPhraseVault;
 
-        const { keySourceId } = input;
-
-        const appDependencies = useAppDependenciesStore.getState();
-        const storage = appDependencies.keyValueStorage;
-        const seedPhraseVault = appDependencies.seedPhraseVault;
-        const biometricsProvider = appDependencies.biometricsProvider;
-
-        // Could decide what factor to request access.
-        // For now, only one seed phrase is stored.
-        let useBiometrics = await storage.getOrDefault("device.biometrics.enabled", false)
-        if (useBiometrics) {
-            const biometricsAvailable = await biometricsProvider.isBiometricsAvailable();
-
-            if (!biometricsAvailable) {
-                await storage.set("device.biometrics.enabled", false);
-                useBiometrics = false;
+            const profileState = useProfileStore.getState().profileState;
+            if (!ProfileState.isProfile(profileState)) {
+                throw new Error("Profile state is not initialized");
             }
-        }
 
-        if (useBiometrics) {
-            set({ prompt: { input, validateWith: "biometrics" } });
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, keySourceId);
-            set({ prompt: null });
+            const allAccounts = new Set(input.signing.concat(Array.from(input.tokens.keys())));
+            const keyInstances = Array.from(allAccounts).map(account => account.keyInstance);
 
-            if (seedPhrase) {
-                return mnemonicToWords(seedPhrase) as Output<I>;
+            const keySources = keyInstances
+                .map(instance => profileState.keySources.find(keySource => keySource.id === instance.keySourceId) ?? null)
+                .filter(keySource => keySource !== null);
+
+            const groupedByKind = groupBy(keySources, keySource => keySource.kind);
+
+            const signingResult: Map<Account, StarknetKeyPair> = new Map();
+            const tokensResult: Map<Account, { token: Token, keyPairs: StarknetKeyPair }> = new Map();
+
+            for (const [kind, keySources] of groupedByKind) {
+                switch (kind) {
+                    case KeySourceKind.SEED_PHRASE:
+                        const ids = keySources.map(keySource => keySource.id);
+                        const relatedSigningAccounts = input.signing.filter(account => ids.some(id => id === account.keyInstance.keySourceId));
+                        const relatedTokens = new Map([...input.tokens.entries()].filter(([account, _]) => ids.some(id => id === account.keyInstance.keySourceId)));
+
+                        let useBiometrics = await storage.getOrDefault("device.biometrics.enabled", false)
+                        if (useBiometrics) {
+                            const biometricsAvailable = await biometricsProvider.isBiometricsAvailable();
+
+                            if (!biometricsAvailable) {
+                                await storage.set("device.biometrics.enabled", false);
+                                useBiometrics = false;
+                            }
+                        }
+
+                        let seedPhrasesMap: Map<KeySourceId, SeedPhraseWords>;
+                        if (useBiometrics) {
+                            set({ prompt: { input, validateWith: "biometrics" } });
+                            seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, ids);
+                            set({ prompt: null });
+                        } else {
+                            let passphrase = await new Promise<string>((resolve, reject) => {
+                                set({
+                                    prompt: { input, validateWith: "passphrase" },
+                                    passphrasePromise: { resolve, reject },
+                                })
+                            })
+
+                            const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
+                            seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithPassphrase(passphrase, ids);
+                        }
+
+                        for (const signingAccount of relatedSigningAccounts) {
+                            const seedPhrase = seedPhrasesMap.get(signingAccount.keyInstance.keySourceId)?.toString();
+                            if (!seedPhrase) {
+                                throw new Error(`Seed phrase not found for account ${signingAccount.address}`);
+                            }
+
+                            const keyPairs = deriveStarknetKeyPairs({
+                                accountIndex: 0,
+                                addressIndex: (signingAccount.keyInstance as HDKeyInstance).index,
+                            }, seedPhrase, true)
+                            signingResult.set(signingAccount, keyPairs);
+                        }
+
+                        for (const [account, tokens] of relatedTokens) {
+                            const seedPhrase = seedPhrasesMap.get(account.keyInstance.keySourceId)?.toString();
+                            if (!seedPhrase) {
+                                throw new Error(`Seed phrase not found for account ${account.address}`);
+                            }
+
+                            for (const token of tokens) {
+                                const tokenIndex = pathHash(`${account.address}.${token.contractAddress}.${token.tongoAddress}`);
+                                const keyPairs = deriveStarknetKeyPairs({
+                                    accountIndex: (account.keyInstance as HDKeyInstance).index,
+                                    addressIndex: tokenIndex,
+                                }, seedPhrase, true);
+                                tokensResult.set(account, { token, keyPairs: keyPairs });
+                            }
+                        }
+
+                        break;
+                    default:
+                        throw new Error("Unsupported key source kind");
+                }
+            }
+
+            return {
+                signing: signingResult,
+                tokens: tokensResult,
+            } as Output<I>;
+        } else if (input.requestFor === "seedPhrase") {
+            const appDependencies = useAppDependenciesStore.getState();
+            const storage = appDependencies.keyValueStorage;
+            const biometricsProvider = appDependencies.biometricsProvider;
+            const seedPhraseVault = appDependencies.seedPhraseVault;
+
+            let useBiometrics = await storage.getOrDefault("device.biometrics.enabled", false)
+            if (useBiometrics) {
+                const biometricsAvailable = await biometricsProvider.isBiometricsAvailable();
+
+                if (!biometricsAvailable) {
+                    await storage.set("device.biometrics.enabled", false);
+                    useBiometrics = false;
+                }
+            }
+
+            let output: SeedPhraseOutput;
+            if (useBiometrics) {
+                set({ prompt: { input, validateWith: "biometrics" } });
+                const seedPhrases = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, [input.keySourceId])
+                const seedPhrase = seedPhrases.get(input.keySourceId);
+                if (!seedPhrase) {
+                    throw new Error(`Seed phrase not found for key source ${input.keySourceId}`);
+                }
+
+                output = {
+                    keySourceId: input.keySourceId,
+                    seedPhrase: seedPhrase,
+                }
+        
+                set({ prompt: null });
             } else {
-                throw new Error("Failed to get seed phrase with biometrics");
-            }
-        } else {
-            let passphrase = await new Promise<string>((resolve, reject) => {
-                set({
-                    prompt: { input, validateWith: "passphrase" },
-                    passphrasePromise: { resolve, reject },
+                let passphrase = await new Promise<string>((resolve, reject) => {
+                    set({
+                        prompt: { input, validateWith: "passphrase" },
+                        passphrasePromise: { resolve, reject },
+                    })
                 })
-            })
 
-            const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
-            const seedPhrase = await seedPhraseVault.getSeedPhraseWithPassphrase(passphrase, keySourceId);
+                const seedPhraseVault = useAppDependenciesStore.getState().seedPhraseVault;
+                const seedPhrases = await seedPhraseVault.getSeedPhrasesWithPassphrase(passphrase, [input.keySourceId]);
 
-            if (seedPhrase) {
-                return mnemonicToWords(seedPhrase) as Output<I>;
-            } else {
-                throw new Error("Failed to get seed phrase with passphrase");
+                const seedPhrase = seedPhrases.get(input.keySourceId);
+                if (!seedPhrase) {
+                    throw new Error(`Seed phrase not found for key source ${input.keySourceId}`);
+                }
+
+                output = {
+                    keySourceId: input.keySourceId,
+                    seedPhrase: seedPhrase,
+                }
             }
+
+            return output as Output<I>;
+        } else {
+            throw new Error(`Unsupported input type: ${input}`);
         }
     },
 
@@ -143,5 +253,5 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                 requestAccessPromise: null,
             }
         })
-    },
+    }
 }));
