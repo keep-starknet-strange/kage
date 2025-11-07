@@ -8,7 +8,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
 
   if (moduleName === 'crypto' && (platform === 'ios' || platform === 'android')) {
-      console.log('METROOOOO platform', platform);
     // when importing crypto, resolve to react-native-quick-crypto
     return context.resolveRequest(
       context,

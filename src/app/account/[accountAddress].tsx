@@ -110,7 +110,6 @@ export default function AccountDetailScreen() {
                 account={account}
                 style={styles.balanceCard}
                 onFundPress={() => { 
-                    console.log('funding account', accountAddress);
                     router.push(`/tx/fund/${accountAddress}`);
                 }}
                 onTransferPress={() => { 

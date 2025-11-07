@@ -74,7 +74,7 @@ export default function SettingsScreen() {
 
     const handleDeleteWallet = async () => {
         setIsDeletingProfile(true);
-        console.log("Deleting profile");
+        
         try {
             await deleteProfile();
         } catch (e) {

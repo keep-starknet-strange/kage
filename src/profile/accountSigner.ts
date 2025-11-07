@@ -19,7 +19,6 @@ export class AccountSigner extends Signer {
     }
 
     protected async signRaw(msgHash: string): Promise<Signature> {
-        console.log("Signing raw message", msgHash);
         const signingKey = await this.getSigningKey();
         return ec.starkCurve.sign(signingKey, msgHash);
     }

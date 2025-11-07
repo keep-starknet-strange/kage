@@ -59,7 +59,6 @@ export default function HomeScreen() {
             activeOpacity={0.7}
             onPress={() => {
                 // TODO: Navigate to create account screen
-                //console.log('Create new account');
             }}
         >
             <Text style={styles.createAccountButtonText}>Add a new public account</Text>

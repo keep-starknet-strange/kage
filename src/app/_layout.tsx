@@ -12,6 +12,7 @@ import { useBalanceStore } from '@/stores/balance/balanceStore';
 import Account from '@/profile/account';
 import NetworkBanner from '@/components/ui/network-banner';
 import { useRpcStore } from '@/stores/useRpcStore';
+import { LOG } from '@/utils/logs';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,7 +43,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (currentNetworkDefinition) {
-            console.log("Network changed to", currentNetworkDefinition.chainId);
+            LOG.info("Network changed to", currentNetworkDefinition.chainId);
 
             const profileState = useProfileStore.getState().profileState;
             if (ProfileState.isProfile(profileState)) {

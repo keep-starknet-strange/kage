@@ -102,5 +102,3 @@ function ensureSubtle() {
 }
 
 ensureSubtle();
-
-console.log('>>>>>> MOBILE POLYFILLS INSTALLED');

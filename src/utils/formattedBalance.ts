@@ -1,4 +1,5 @@
 import Token from "@/types/token";
+import { LOG } from "./logs";
 
 export function tokenAmountToFormatted(
     compressed: boolean = false, 
@@ -33,7 +34,7 @@ export function stringToBigint(value: string, decimals: number, separator: strin
     const trimmedValue = value.trim();
     const regex = new RegExp(`/^-?\\d*\\${separator}\\d+$/`);
     if (regex.test(trimmedValue)) {
-        console.log('invalid value', trimmedValue);
+        LOG.warn('stringToBigint: invalid value', trimmedValue);
         return 0n;
     }
 

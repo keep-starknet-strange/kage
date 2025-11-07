@@ -41,7 +41,6 @@ const TransactionScreen = () => {
         setIsLoading(true);
         try {
             // TODO: Implement withdraw logic
-            console.log('Withdrawing from account:', withdrawAmount);
             Alert.alert('Success', `Withdrawn ${withdrawAmount} tokens`);
             setWithdrawAmount("");
         } catch (error) {
