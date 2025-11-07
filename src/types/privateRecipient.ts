@@ -1,7 +1,7 @@
-import { PubKey, pubKeyAffineToBase58 } from "@fatsolutions/tongo-sdk/dist/types";
-import { ProjectivePoint, projectivePointToStarkPoint, pubKeyBase58ToAffine } from "@fatsolutions/tongo-sdk/dist/types";
+import Account from "@/profile/account";
+import { projectivePointToStarkPoint, PubKey, pubKeyAffineToBase58, pubKeyBase58ToAffine } from "@/utils/fatSolutions";
 
-export default class PrivateTokenAddress {
+export class PrivateTokenAddress {
     readonly pubKey: PubKey;
 
     constructor(pubKey: PubKey) {
@@ -13,7 +13,7 @@ export default class PrivateTokenAddress {
     }
 
     static fromHex(hex: string): PrivateTokenAddress {
-        const pubKey = projectivePointToStarkPoint(pubKeyBase58ToAffine(hex) as ProjectivePoint);
+        const pubKey = projectivePointToStarkPoint(pubKeyBase58ToAffine(hex));
         return new PrivateTokenAddress(pubKey);
     }
 
@@ -23,5 +23,22 @@ export default class PrivateTokenAddress {
         } catch (error) {
             return null;
         }
+    }
+}
+
+export class PrivateTokenRecipient {
+    readonly privateTokenAddress: PrivateTokenAddress;
+
+    constructor(privateTokenAddress: PrivateTokenAddress) {
+        this.privateTokenAddress = privateTokenAddress;
+    }
+}
+
+export class WalletPrivateTokenRecipient extends PrivateTokenRecipient {
+    readonly to: Account;
+    
+    constructor(to: Account, privateTokenAddress: PrivateTokenAddress) {
+        super(privateTokenAddress);
+        this.to = to;
     }
 }

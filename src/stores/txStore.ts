@@ -1,6 +1,6 @@
 import Account from "@/profile/account";
 import { PrivateAmount, PublicAmount } from "@/types/amount";
-import PrivateTokenAddress from "@/types/privateRecipient";
+import { PrivateTokenRecipient } from "@/types/privateRecipient";
 import { PrivateTransaction } from "@/types/transaction";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import { Account as StarknetAccount } from "starknet";
@@ -8,32 +8,29 @@ import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
 import { useBalanceStore } from "./balance/balanceStore";
 import { useRpcStore } from "./useRpcStore";
+import { LOG } from "@/utils/logs";
 
 export interface TxState {
     pendingTransactionsStack: PrivateTransaction[];
 
-    completedTransactions: PrivateTransaction[];
-
     fund: (from: Account, amount: PublicAmount, signer: Account) => Promise<void>;
 
-    transfer: (from: Account, amount: PrivateAmount, signer: Account, recipient: PrivateTokenAddress) => Promise<void>;
+    transfer: (from: Account, amount: PrivateAmount, signer: Account, recipient: PrivateTokenRecipient) => Promise<void>;
 
     withdraw: (to: Account, amount: PrivateAmount, signer: Account) => Promise<void>;
 
     appendPendingTransaction: (transaction: PrivateTransaction) => void;
 
-    markTransactionAsCompleted: (transactionHash: string) => void;
+    removePendingTransaction: (transactionHash: string) => void;
 }
 
 export const useTxStore = create<TxState>((set, get) => ({
     pendingTransactionsStack: [],
-    completedTransactions: [],
 
     fund: async (from: Account, amount: PublicAmount, signer: Account) => {
         const { requestAccess } = useAccessVaultStore.getState();
         const { provider } = useRpcStore.getState();
-        const { appendPendingTransaction, markTransactionAsCompleted } = get();
-        const { requestRefresh } = useBalanceStore.getState();
+        const { appendPendingTransaction } = get();
 
         try {
             const result = await requestAccess({ requestFor: "privateKeys", signing: [signer], tokens: new Map([[from, [amount.token]]]) });
@@ -58,8 +55,10 @@ export const useTxStore = create<TxState>((set, get) => ({
                 signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
             });
 
+            LOG.info("[TX]: 🗝 Prooving funding...");
             const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount() });
             await fundOp.populateApprove();
+            LOG.info("[TX]: 🚀 Funding account execute...");
             const starknetTx = await signerAccount.execute([
                 fundOp.approve!,
                 fundOp.toCalldata()
@@ -67,32 +66,20 @@ export const useTxStore = create<TxState>((set, get) => ({
 
             appendPendingTransaction({
                 type: "fund",
-                from: from.address,
+                from: from,
                 amount: privateAmount,
-                signer: signer.address,
+                signer: signer,
                 txHash: starknetTx.transaction_hash,
             });
-
-            await provider.waitForTransaction(starknetTx.transaction_hash);
-
-            markTransactionAsCompleted(starknetTx.transaction_hash);
-
-            const accountsToRefresh = [from]
-            if (from.address !== signer.address) {
-                accountsToRefresh.push(signer);
-            }
-
-            await requestRefresh(accountsToRefresh);
         } catch (error) {
             console.error("Error funding account", error);
         }
     },
 
-    transfer: async (from: Account, amount: PrivateAmount, signer: Account, recipient: PrivateTokenAddress) => {
+    transfer: async (from: Account, amount: PrivateAmount, signer: Account, recipient: PrivateTokenRecipient) => {
         const { requestAccess } = useAccessVaultStore.getState();
         const { provider } = useRpcStore.getState();
-        const { appendPendingTransaction, markTransactionAsCompleted } = get();
-        const { requestRefresh } = useBalanceStore.getState();
+        const { appendPendingTransaction } = get();
 
         try {
             const result = await requestAccess({ requestFor: "privateKeys", signing: [signer], tokens: new Map([[from, [amount.token]]]) });
@@ -114,32 +101,23 @@ export const useTxStore = create<TxState>((set, get) => ({
                 signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
             });
 
+            LOG.info("[TX]: 🗝 Proving Transfering...");
             const transferOp = await tongoAccount.transfer({
-                to: recipient.pubKey,
+                to: recipient.privateTokenAddress.pubKey,
                 amount: amount.toSdkAmount()
             });
-            
+
+            LOG.info("[TX]: 🚀 Transfer execute...");
             const starknetTx = await signerAccount.execute(transferOp.toCalldata());
 
             appendPendingTransaction({
                 type: "transfer",
-                from: from.address,
+                from: from,
                 amount: amount,
-                signer: signer.address,
+                signer: signer,
                 recipient: recipient,
                 txHash: starknetTx.transaction_hash,
             });
-
-            await provider.waitForTransaction(starknetTx.transaction_hash);
-
-            markTransactionAsCompleted(starknetTx.transaction_hash);
-
-            const accountsToRefresh = [from]
-            if (from.address !== signer.address) {
-                accountsToRefresh.push(signer);
-            }
-
-            await requestRefresh(accountsToRefresh);
         } catch (error) {
             console.error("Error funding account", error);
         }
@@ -148,8 +126,7 @@ export const useTxStore = create<TxState>((set, get) => ({
     withdraw: async (to: Account, amount: PrivateAmount, signer: Account) => {
         const { requestAccess } = useAccessVaultStore.getState();
         const { provider } = useRpcStore.getState();
-        const { appendPendingTransaction, markTransactionAsCompleted } = get();
-        const { requestRefresh } = useBalanceStore.getState();
+        const { appendPendingTransaction } = get();
 
         try {
             const result = await requestAccess({ requestFor: "privateKeys", signing: [signer], tokens: new Map([[to, [amount.token]]]) });
@@ -172,44 +149,56 @@ export const useTxStore = create<TxState>((set, get) => ({
                 signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
             });
 
-            const withdrawOp = await tongoAccount.withdraw({ 
+            LOG.info("[TX]: 🗝 Prooving withdraw...");
+            const withdrawOp = await tongoAccount.withdraw({
                 to: to.address,
                 amount: amount.toSdkAmount()
             });
+            LOG.info("[TX]: 🚀 Withdraw execute...");
             const starknetTx = await signerAccount.execute([
                 withdrawOp.toCalldata()
             ]);
 
             appendPendingTransaction({
                 type: "withdraw",
-                to: to.address,
+                to: to,
                 amount: amount,
-                signer: signer.address,
+                signer: signer,
                 txHash: starknetTx.transaction_hash,
             });
-
-            await provider.waitForTransaction(starknetTx.transaction_hash);
-
-            markTransactionAsCompleted(starknetTx.transaction_hash);
-
-            const accountsToRefresh = [to]
-            if (to.address !== signer.address) {
-                accountsToRefresh.push(signer);
-            }
-
-            await requestRefresh(accountsToRefresh);
         } catch (error) {
             console.error("Error funding account", error);
         }
     },
 
     appendPendingTransaction: (transaction: PrivateTransaction) => {
+        const { removePendingTransaction } = get();
+        const { feeToken, updateBalances } = useBalanceStore.getState();
+        const { provider } = useRpcStore.getState();
+
+        LOG.info(`[TX]: 🤝 ${transaction.type}:`, transaction.txHash);
+
         set((state) => ({
             pendingTransactionsStack: [transaction, ...state.pendingTransactionsStack],
         }));
+
+        provider.waitForTransaction(transaction.txHash)
+            .then((receipt) => {
+                removePendingTransaction(transaction.txHash);
+                LOG.info("[TX]: ✅ Completed: ", transaction.txHash);
+                LOG.debug("---- 🧾 Receipt: ", receipt, "for", transaction.txHash);
+                // TODO check what happens in reverted case.
+
+                return PrivateTransaction.affectedBalances(transaction, feeToken);
+            }).then(({ publicBalances, privateBalances }) => {
+                updateBalances(publicBalances, privateBalances);
+            }).catch((error) => {
+                removePendingTransaction(transaction.txHash);
+                console.error("Error waiting for transaction", error);
+            });
     },
 
-    markTransactionAsCompleted: (transactionHash: string) => {
+    removePendingTransaction: (transactionHash: string) => {
         const pending = get().pendingTransactionsStack.find((transaction) => transaction.txHash === transactionHash);
         if (!pending) {
             console.warn("Transaction not found in pending transactions stack", transactionHash);
@@ -217,8 +206,7 @@ export const useTxStore = create<TxState>((set, get) => ({
         }
 
         set((state) => ({
-            completedTransactions: [...state.completedTransactions, pending],
             pendingTransactionsStack: state.pendingTransactionsStack.filter((transaction) => transaction.txHash !== transactionHash),
         }));
     },
-}));
+}))

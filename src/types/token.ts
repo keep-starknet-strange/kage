@@ -1,3 +1,4 @@
+import { NetworkId } from "@/profile/misc";
 import Identifiable from "@/types/Identifiable";
 import formattedAddress from "@/utils/formattedAddress";
 

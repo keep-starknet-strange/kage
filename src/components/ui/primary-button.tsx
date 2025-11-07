@@ -27,7 +27,7 @@ export const PrimaryButton = ({ title, onPress, disabled, loading, style, ...pro
                 {loading && (
                     <ActivityIndicator
                         size="small"
-                        color={appTheme.colors.textInverted}
+                        color={isDisabled ? appTheme.colors.textMuted : appTheme.colors.textInverted}
                         style={styles.loader}
                     />
                 )}

@@ -18,7 +18,7 @@ abstract class BalanceRepository {
         this.provider = rpcProvider
     }
 
-    abstract getBalances(accounts: Account[], forTokens: Token[]): Promise<Map<AccountAddress, PublicTokenBalance[]>>;
+    abstract getBalances(accounts: Map<Account, Token[]>): Promise<Map<AccountAddress, PublicTokenBalance[]>>;
 }
 
 export default BalanceRepository;

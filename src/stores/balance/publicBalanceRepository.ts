@@ -6,38 +6,40 @@ import { PublicTokenBalance } from "@/types/tokenBalance";
 
 export class PublicBalanceRepository extends BalanceRepository {
 
-    async getBalances(accounts: Account[], forTokens: Token[]): Promise<Map<AccountAddress, PublicTokenBalance[]>> {
-        const tokensWithAddresses = new Map(forTokens.map((token) => [token.contractAddress, token]));
-        const promises = accounts.map((account) => {
+    async getBalances(accounts: Map<Account, Token[]>): Promise<Map<AccountAddress, PublicTokenBalance[]>> {
+        const allRequestedTokens = new Map(Array.from(accounts.values())
+            .flat()
+            .map((token) => [token.contractAddress, token]));
+
+        const promisesTuples = Array.from(accounts.entries()).map(([account, tokens]) => {
+            const tokenAddresses = tokens.map((token) => token.contractAddress);
             if (account.networkId !== this.currentNetwork) {
                 throw new Error(`Balance repository is set to ${this.currentNetwork} but account ${account.address} is on ${account.networkId}`);
             }
 
-            return Array.from(tokensWithAddresses.keys()).map((token) => {
+            return tokenAddresses.map((tokenAddress) => {
                 return {
                     account: account.address,
-                    token: token,
-                    balancePromise: this.balanceOf(account.address, token)
+                    token: tokenAddress,
+                    balancePromise: this.balanceOf(account.address, tokenAddress)
                 };
             });
         }).flat();
 
-        const allBalances = await Promise.all(promises.map((promise) => promise.balancePromise));
-
+        const allBalances = await Promise.all(promisesTuples.map((tuple) => tuple.balancePromise));
         const results = new Map<AccountAddress, PublicTokenBalance[]>();
 
         allBalances.forEach((balance, index) => {
-            const accountAddress = promises[index].account;
-            const tokenAddress = promises[index].token;
-            const tokenBalances = results.get(accountAddress) ?? [];
-            const token = tokensWithAddresses.get(tokenAddress);
-
+            const accountAddress = promisesTuples[index].account;
+            const tokenAddress = promisesTuples[index].token;
+            const token = allRequestedTokens.get(tokenAddress);
             if (!token) {
                 throw new Error(`Token ${tokenAddress} not found on current network ${this.currentNetwork}`);
             }
 
-            tokenBalances.push(new PublicTokenBalance(token, balance));
-            results.set(accountAddress, tokenBalances);
+            const tokenBalancesForAccount = results.get(accountAddress) ?? [];
+            tokenBalancesForAccount.push(new PublicTokenBalance(token, balance));
+            results.set(accountAddress, tokenBalancesForAccount);
         });
 
         return results;

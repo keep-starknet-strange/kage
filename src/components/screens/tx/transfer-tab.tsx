@@ -6,13 +6,13 @@ import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useTxStore } from "@/stores/txStore";
-import Amount, { PrivateAmount } from "@/types/amount";
-import PrivateTokenAddress from "@/types/privateRecipient";
+import { PrivateAmount } from "@/types/amount";
+import { PrivateTokenAddress, PrivateTokenRecipient } from "@/types/privateRecipient";
 import { PrivateTokenBalance } from "@/types/tokenBalance";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 type TransferTabProps = {
     account: Account;
@@ -44,7 +44,8 @@ export function TransferTab({
 
         const transferAsync = async () => {
             setIsTransferring(true);
-            await transfer(account, amount, account, recipientAddress);
+            // TODO handle wallet recipient too.
+            await transfer(account, amount, account, new PrivateTokenRecipient(recipientAddress));
             setIsTransferring(false);
         }
 
