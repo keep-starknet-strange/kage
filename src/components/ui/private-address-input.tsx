@@ -1,8 +1,8 @@
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
-import PrivateTokenAddress from "@/types/privateRecipient";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { PrivateTokenAddress } from "@/types/privateRecipient";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 type PrivateAddressInputProps = {
     label?: string;
