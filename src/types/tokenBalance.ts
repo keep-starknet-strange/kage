@@ -2,7 +2,7 @@ import Identifiable from "@/types/Identifiable";
 import Token from "@/types/token";
 import { AccountState as TongoBalanceState } from "@fatsolutions/tongo-sdk";
 import { tokenAmountToFormatted } from "@/utils/formattedBalance";
-import PrivateTokenAddress from "./privateRecipient";
+import { PrivateTokenAddress } from "./privateRecipient";
 
 export abstract class TokenBalance implements Identifiable {
     readonly token: Token;

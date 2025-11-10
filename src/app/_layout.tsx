@@ -16,40 +16,9 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     useEffect(() => {
-        const { changeNetwork, requestRefresh, subscribeToBalanceUpdates, unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
-        
-        const unsubscribeFromProfileUpdates = useProfileStore.subscribe(
-            (state) => state.profileState,
-            (currentProfileState, prevProfileState) => {
-                if (prevProfileState === "retrieving" && ProfileState.isInitialized(currentProfileState)) {
-                    SplashScreen.hide()
-                }
-
-                const prevNetworkDefinition = ProfileState.isProfile(prevProfileState) ? prevProfileState.currentNetworkWithDefinition.networkDefinition : null;
-                if (ProfileState.isProfile(currentProfileState)) {
-                    const { network, networkDefinition: currentNetworkDefinition } = currentProfileState.currentNetworkWithDefinition;
-
-                    if (prevNetworkDefinition?.chainId !== currentNetworkDefinition.chainId) {
-                        LOG.info("Network changed to", currentNetworkDefinition.chainId);
-
-                        const provider = useRpcStore.getState().changeNetwork(currentNetworkDefinition);
-                        const accounts = network.accounts as Account[];
-                        changeNetwork(currentNetworkDefinition.chainId, provider).then(() => {
-                            requestRefresh(accounts, accounts);
-                            subscribeToBalanceUpdates(accounts);
-                        })
-                    }
-                }
-            }
-        );
-
-        if (!ProfileState.isInitialized(useProfileStore.getState().profileState)) {
-            void useProfileStore.getState().initialize();
-        }
-
-        return () => {
-            unsubscribeFromProfileUpdates();
-            unsubscribeFromBalanceUpdates();
+        const { profileState, initialize } = useProfileStore.getState();
+        if (!ProfileState.isInitialized(profileState)) {
+            initialize().then(() => SplashScreen.hideAsync());
         }
     }, []);
 
@@ -59,6 +28,34 @@ export default function RootLayout() {
         }
         return state.profileState.currentNetworkWithDefinition.networkDefinition;
     });
+
+    useEffect(() => {
+        const handleChangeNetwork = async () => {
+            const { networkId: rpcStoreNetworkId, changeNetwork: changeRpcNetwork } = useRpcStore.getState();
+            if (currentNetworkDefinition && rpcStoreNetworkId !== currentNetworkDefinition.chainId) {
+                await changeRpcNetwork(currentNetworkDefinition);
+            }
+
+            const { networkId: balanceStoreNetworkId, changeNetwork: changeBalanceNetwork, subscribeToBalanceUpdates, requestRefresh } = useBalanceStore.getState();
+            if (currentNetworkDefinition && balanceStoreNetworkId !== currentNetworkDefinition.chainId) {
+                await changeBalanceNetwork(currentNetworkDefinition.chainId, useRpcStore.getState().provider);
+            }
+
+            const { profileState } = useProfileStore.getState();
+            if (ProfileState.isProfile(profileState)) {
+                const accounts = profileState.accountsOnCurrentNetwork as Account[];
+                await requestRefresh(accounts, accounts);
+                await subscribeToBalanceUpdates(accounts);
+            }
+        }
+
+        handleChangeNetwork();
+
+        return () => {
+            const { unsubscribeFromBalanceUpdates } = useBalanceStore.getState()
+            unsubscribeFromBalanceUpdates();
+        };
+    }, [currentNetworkDefinition?.chainId]);
 
     const isOnboarded = useProfileStore(state => ProfileState.isOnboarded(state.profileState));
 

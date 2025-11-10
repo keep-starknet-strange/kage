@@ -47,6 +47,7 @@ export function TransferTab({
             setIsTransferring(true);
             try {
                 // TODO handle wallet recipient too.
+                console.log("recipientAddress", recipientAddress.base58);
                 await transfer(account, amount, account, new PrivateTokenRecipient(recipientAddress));
             } catch (error) {
                 LOG.error("[Transfer]:", error)

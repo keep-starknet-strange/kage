@@ -1,5 +1,6 @@
 import { NetworkId } from "@/profile/misc";
 import NetworkDerfinition from "@/profile/settings/networkDefinition";
+import { LOG } from "@/utils/logs";
 import { RpcProvider, WebSocketChannel } from "starknet";
 import { create } from "zustand";
 
@@ -8,31 +9,37 @@ export interface RpcState {
     provider: RpcProvider;
     wsChannel: WebSocketChannel;
 
-    changeNetwork: (network: NetworkDerfinition) => RpcProvider;
+    changeNetwork: (network: NetworkDerfinition) => Promise<RpcProvider>;
 }
 
 export const useRpcStore = create<RpcState>((set, get) => {
     const mainnet = NetworkDerfinition.mainnet()
+    const initialWsChannel = new WebSocketChannel({ nodeUrl: mainnet.wsUrl.toString() });
 
     return {
         networkId: "SN_MAIN",
         provider: new RpcProvider({ nodeUrl: mainnet.rpcUrl.toString(), batch: 0 }),
-        wsChannel: new WebSocketChannel({ nodeUrl: mainnet.wsUrl.toString() }),
+        wsChannel: initialWsChannel,
 
-        changeNetwork: (network: NetworkDerfinition) => {
-            const { wsChannel } = get();
-            const provider = new RpcProvider({ nodeUrl: network.rpcUrl.toString(), batch: 0 });
+        changeNetwork: async (network: NetworkDerfinition) => {
+            const { networkId, wsChannel, provider } = get();
 
-            if (wsChannel.isConnected()) {
-                wsChannel.disconnect();
+            if (networkId === network.chainId) {
+                return provider;
             }
+
+            LOG.info("Change RPC network to", network.chainId);
+            
+            const newProvider = new RpcProvider({ nodeUrl: network.rpcUrl.toString(), batch: 0 })
+            const newWsChannel = new WebSocketChannel({ nodeUrl: network.wsUrl.toString() })
 
             set({
                 networkId: network.chainId,
-                provider: provider,
-                wsChannel: new WebSocketChannel({ nodeUrl: network.wsUrl.toString() }),
+                provider: newProvider,
+                wsChannel: newWsChannel,
             });
-            return provider;
+
+            return newProvider;
         },
     }
 });

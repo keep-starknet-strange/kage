@@ -40,6 +40,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
     const privateBalanceRepository = new PrivateBalanceRepository();
     const publicBalanceRepository = new PublicBalanceRepository();
     let networkTokens = mainnetTokens;
+
+    const accountsSubscribedToBalanceUpdates = new Set<AccountAddress>();
     const publicTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
     const privateTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
 
@@ -88,6 +90,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             if (currentNetworkId === networkId) {
                 return;
             }
+            
+            LOG.info("Changing balance network to", networkId);
 
             privateBalanceRepository.setNetwork(networkId, rpcProvider);
             publicBalanceRepository.setNetwork(networkId, rpcProvider);
@@ -139,21 +143,31 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         subscribeToBalanceUpdates: async (accounts: Account[]) => {
-            const { unsubscribeFromBalanceUpdates } = get();
+            const remainingAccounts = accounts.filter((account) => !accountsSubscribedToBalanceUpdates.has(account.address));
+            if (remainingAccounts.length === 0) {
+                return;
+            }
+
+            LOG.info("Listening for:", remainingAccounts.map((account) => account.name).join(", "));
+            remainingAccounts.forEach((account) => accountsSubscribedToBalanceUpdates.add(account.address));
 
             const tokens = Array.from(networkTokens.values());
             const { wsChannel } = useRpcStore.getState();
 
-            const accountAddresses = new Map(accounts.map((account) => [account.address, account]));
+            // Ensure WebSocket is connected before subscribing
+            if (!wsChannel.isConnected()) {
+                LOG.info("📣 WebSocket not connected, waiting for connection...");
+                await wsChannel.waitForConnection();
+                LOG.info("📣 WebSocket connected, proceeding with subscriptions");
+            }
 
-            // Gracefully unsubscribe from all subscriptions
-            await unsubscribeFromBalanceUpdates();
-
-            await wsChannel.waitForConnection();
-            LOG.info("📣 Socket connected");
+            const accountAddresses = new Map(remainingAccounts.map((account) => [account.address, account]));
 
             const transferEventKey = num.toHex(hash.starknetKeccak('Transfer'));
+
+            const privateFundEventKey = num.toHex(hash.starknetKeccak('FundEvent'));
             const privateTransferEventKey = num.toHex(hash.starknetKeccak('TransferEvent'));
+            const privateWithdrawEventKey = num.toHex(hash.starknetKeccak('WithdrawEvent'));
 
             for (const token of tokens) {
                 const publicTokenSubscription = await wsChannel.subscribeEvents({
@@ -167,7 +181,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 const privateTokenSubscription = await wsChannel.subscribeEvents({
                     fromAddress: token.tongoAddress,
                     keys: [
-                        [privateTransferEventKey],
+                        [privateFundEventKey, privateTransferEventKey, privateWithdrawEventKey],
                     ]
                 });
                 privateTokenSubscriptions.set(token.tongoAddress, privateTokenSubscription);
@@ -253,22 +267,44 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                         return;
                     }
 
-                    const toTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[1], data.keys[2]));
-                    const fromTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[3], data.keys[4]));
+                    const accountsToUpdate: AccountAddress[] = [];
 
-                    const toAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(toTokenAddress);
-                    const fromAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(fromTokenAddress);
-                    
-                    const toAccount = toAccountAddress ? accountAddresses.get(toAccountAddress) : null;
-                    const fromAccount = fromAccountAddress ? accountAddresses.get(fromAccountAddress) : null;
+                    if (data.keys[0] === privateFundEventKey) {
+                        LOG.info("Fund event received for token", address);
+                        const toTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[1], data.keys[2]));
+                        const toAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(toTokenAddress);
+                        if (toAccountAddress) {
+                            accountsToUpdate.push(toAccountAddress);
+                        }
+                    } else if (data.keys[0] === privateTransferEventKey) {
+                        LOG.info("Transfer event received for token", address);
+                        const toTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[1], data.keys[2]));
+                        const fromTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[3], data.keys[4]));
 
-                    if (toAccount) {
-                        MapUtils.update(privateBalancesNeedingUpdate, toAccount, token)
+                        const toAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(toTokenAddress);
+                        if (toAccountAddress) {
+                            accountsToUpdate.push(toAccountAddress);
+                        }
+
+                        const fromAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(fromTokenAddress);
+                        if (fromAccountAddress) {
+                            accountsToUpdate.push(fromAccountAddress);
+                        }
+                    } else if (data.keys[0] === privateWithdrawEventKey) {
+                        LOG.info("Withdraw event received for token", address);
+                        const fromTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[1], data.keys[2]));
+                        const fromAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(fromTokenAddress);
+                        if (fromAccountAddress) {
+                            accountsToUpdate.push(fromAccountAddress);
+                        }
                     }
 
-                    if (fromAccount) {
-                        MapUtils.update(privateBalancesNeedingUpdate, fromAccount, token)
-                    }
+                    accountsToUpdate.forEach((accountAddress) => {
+                        const account = accountAddresses.get(accountAddress);
+                        if (account) {
+                            MapUtils.update(privateBalancesNeedingUpdate, account, token);
+                        }
+                    });
 
                     triggerUpdate();
                 })
@@ -278,13 +314,14 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         unsubscribeFromBalanceUpdates: async () => {
             LOG.info("Unsubscribing from balance updates");
             const { wsChannel } = useRpcStore.getState();
-            
+            accountsSubscribedToBalanceUpdates.clear();
+
             await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
             await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
             publicTokenSubscriptions.clear();
             privateTokenSubscriptions.clear();
 
-            void wsChannel.disconnect();
+            wsChannel.disconnect();
         },
     }
 });

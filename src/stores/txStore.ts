@@ -81,7 +81,6 @@ export const useTxStore = create<TxState>((set, get) => ({
         const {provider} = useRpcStore.getState();
         const {appendPendingTransaction} = get();
 
-
         const result = await requestAccess({
             requestFor: "privateKeys",
             signing: [signer],
@@ -106,14 +105,14 @@ export const useTxStore = create<TxState>((set, get) => ({
             signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
         });
 
-        LOG.info("[TX]: 🗝 Proving Transfering...");
+        LOG.info("[TX]: 🗝 Proving Transfer...");
         const transferOp = await tongoAccount.transfer({
             to: recipient.privateTokenAddress.pubKey,
             amount: amount.toSdkAmount()
         });
 
         LOG.info("[TX]: 🚀 Transfer execute...");
-        const starknetTx = await signerAccount.execute(transferOp.toCalldata());
+        const starknetTx = await signerAccount.execute([transferOp.toCalldata()]);
 
         appendPendingTransaction({
             type: "transfer",
