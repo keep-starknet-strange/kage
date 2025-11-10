@@ -18,7 +18,7 @@ export default function RootLayout() {
     useEffect(() => {
         const { changeNetwork, requestRefresh, subscribeToBalanceUpdates, unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
         
-        const unsubscribe = useProfileStore.subscribe(
+        const unsubscribeFromProfileUpdates = useProfileStore.subscribe(
             (state) => state.profileState,
             (currentProfileState, prevProfileState) => {
                 if (prevProfileState === "retrieving" && ProfileState.isInitialized(currentProfileState)) {
@@ -48,7 +48,7 @@ export default function RootLayout() {
         }
 
         return () => {
-            unsubscribe();
+            unsubscribeFromProfileUpdates();
             unsubscribeFromBalanceUpdates();
         }
     }, []);

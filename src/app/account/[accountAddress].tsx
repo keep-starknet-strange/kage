@@ -11,7 +11,7 @@ import { useBalanceStore } from '@/stores/balance/balanceStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { PrivateTokenBalance, PublicTokenBalance } from '@/types/tokenBalance';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type TabType = 'public' | 'private';

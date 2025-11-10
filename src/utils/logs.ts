@@ -2,6 +2,9 @@ import {
   consoleTransport,
   logger,
 } from "react-native-logs";
+import * as ExpoDevice from 'expo-device';
+
+const deviceName = ExpoDevice.deviceName ?? "Unknown Device";
 
 var LOG = logger.createLogger({
   transport: consoleTransport,
@@ -17,6 +20,6 @@ var LOG = logger.createLogger({
     },
   },
   enabled: __DEV__,
-});
+}).extend(`📱 ${deviceName}`);
 
 export { LOG };

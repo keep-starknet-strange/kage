@@ -1,5 +1,5 @@
 import Account from "@/profile/account";
-import { projectivePointToStarkPoint, PubKey, pubKeyAffineToBase58, pubKeyBase58ToAffine } from "@/utils/fatSolutions";
+import { projectivePointToStarkPoint, PubKey, pubKeyAffineToBase58, pubKeyAffineToHex, pubKeyBase58ToAffine, pubKeyBase58ToHex } from "@/utils/fatSolutions";
 
 export class PrivateTokenAddress {
     readonly pubKey: PubKey;
@@ -8,18 +8,22 @@ export class PrivateTokenAddress {
         this.pubKey = pubKey;
     }
 
-    get hex(): string {
+    get base58(): string {
         return pubKeyAffineToBase58(this.pubKey);
     }
 
-    static fromHex(hex: string): PrivateTokenAddress {
-        const pubKey = projectivePointToStarkPoint(pubKeyBase58ToAffine(hex));
+    get hex(): string {
+        return pubKeyAffineToHex(this.pubKey);
+    }
+
+    static fromBase58(base58: string): PrivateTokenAddress {
+        const pubKey = projectivePointToStarkPoint(pubKeyBase58ToAffine(base58));
         return new PrivateTokenAddress(pubKey);
     }
 
-    static fromHexOrNull(hex: string): PrivateTokenAddress | null {
+    static fromBase58OrNull(base58: string): PrivateTokenAddress | null {
         try {
-            return PrivateTokenAddress.fromHex(hex);
+            return PrivateTokenAddress.fromBase58(base58);
         } catch (error) {
             return null;
         }

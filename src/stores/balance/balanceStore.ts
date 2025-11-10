@@ -11,6 +11,9 @@ import { useRpcStore } from "../useRpcStore";
 import PrivateBalanceRepository from "./privateBalanceRepository";
 import { PublicBalanceRepository } from "./publicBalanceRepository";
 import { MapUtils } from "@/utils/map";
+import { pubKeyAffineToBase58, pubKeyFromData } from "@/utils/fatSolutions";
+import { PrivateTokenAddress } from "@/types/privateRecipient";
+import { TongoAddress } from "@fatsolutions/tongo-sdk/dist/types";
 
 type PresetNetworkId = keyof typeof tokensConfig;
 
@@ -37,7 +40,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
     const privateBalanceRepository = new PrivateBalanceRepository();
     const publicBalanceRepository = new PublicBalanceRepository();
     let networkTokens = mainnetTokens;
-    const subscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
+    const publicTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
+    const privateTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
 
     const updateBalancesWithTokens = async (
         publicBalances: Map<Account, Token[]>,
@@ -135,27 +139,38 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         subscribeToBalanceUpdates: async (accounts: Account[]) => {
+            const { unsubscribeFromBalanceUpdates } = get();
+
             const tokens = Array.from(networkTokens.values());
             const { wsChannel } = useRpcStore.getState();
 
             const accountAddresses = new Map(accounts.map((account) => [account.address, account]));
 
             // Gracefully unsubscribe from all subscriptions
-            await Promise.all(Array.from(subscriptions.values()).map(s => s.unsubscribe()));
-            subscriptions.clear();
+            await unsubscribeFromBalanceUpdates();
 
             await wsChannel.waitForConnection();
             LOG.info("📣 Socket connected");
 
             const transferEventKey = num.toHex(hash.starknetKeccak('Transfer'));
+            const privateTransferEventKey = num.toHex(hash.starknetKeccak('TransferEvent'));
+
             for (const token of tokens) {
-                const subscription = await wsChannel.subscribeEvents({
+                const publicTokenSubscription = await wsChannel.subscribeEvents({
                     fromAddress: token.contractAddress,
                     keys: [
                         [transferEventKey],
                     ]
                 });
-                subscriptions.set(token.contractAddress, subscription);
+                publicTokenSubscriptions.set(token.contractAddress, publicTokenSubscription);
+
+                const privateTokenSubscription = await wsChannel.subscribeEvents({
+                    fromAddress: token.tongoAddress,
+                    keys: [
+                        [privateTransferEventKey],
+                    ]
+                });
+                privateTokenSubscriptions.set(token.tongoAddress, privateTokenSubscription);
             }
 
             // Track pairs of accounts + tokens that need update
@@ -209,7 +224,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 }, 1000); // 1 second debounce
             };
 
-            Array.from(subscriptions.entries()).forEach(([address, subscription]) => {
+            Array.from(publicTokenSubscriptions.entries()).forEach(([address, subscription]) => {
                 subscription.on((data) => {
                     const token = tokens.find((t) => t.contractAddress === address);
                     if (!token) {
@@ -220,13 +235,39 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                     const toAccount = accountAddresses.get(data.data[1]);
 
                     if (fromAccount) {
-                        LOG.info(`Received update for ${fromAccount.name} as FROM`)
                         MapUtils.update(publicBalancesNeedingUpdate, fromAccount, token)
                     }
 
                     if (toAccount) {
-                        LOG.info(`Received update for ${toAccount.name} as TO`)
                         MapUtils.update(publicBalancesNeedingUpdate, toAccount, token)
+                    }
+
+                    triggerUpdate();
+                })
+            });
+
+            Array.from(privateTokenSubscriptions.entries()).forEach(([address, subscription]) => {
+                subscription.on((data) => {
+                    const token = tokens.find((t) => t.tongoAddress === address);
+                    if (!token) {
+                        return;
+                    }
+
+                    const toTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[1], data.keys[2]));
+                    const fromTokenAddress = new PrivateTokenAddress(pubKeyFromData(data.keys[3], data.keys[4]));
+
+                    const toAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(toTokenAddress);
+                    const fromAccountAddress = privateBalanceRepository.accountFromUnlockedTokenAddress(fromTokenAddress);
+                    
+                    const toAccount = toAccountAddress ? accountAddresses.get(toAccountAddress) : null;
+                    const fromAccount = fromAccountAddress ? accountAddresses.get(fromAccountAddress) : null;
+
+                    if (toAccount) {
+                        MapUtils.update(privateBalancesNeedingUpdate, toAccount, token)
+                    }
+
+                    if (fromAccount) {
+                        MapUtils.update(privateBalancesNeedingUpdate, fromAccount, token)
                     }
 
                     triggerUpdate();
@@ -235,11 +276,14 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         unsubscribeFromBalanceUpdates: async () => {
+            LOG.info("Unsubscribing from balance updates");
             const { wsChannel } = useRpcStore.getState();
             
-            await Promise.all(Array.from(subscriptions.values()).map(s => s.unsubscribe()));
-            subscriptions.clear();
-            
+            await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            publicTokenSubscriptions.clear();
+            privateTokenSubscriptions.clear();
+
             void wsChannel.disconnect();
         },
     }

@@ -11,6 +11,10 @@ export interface PubKey {
     y: BigNumberish;
 }
 
+export function pubKeyFromData(x: BigNumberish, y: BigNumberish): PubKey {
+    return { x, y };
+}
+
 export function pubKeyBase58ToAffine(b58string: string): ProjectivePoint {
     const bytes = base58.decode(b58string);
     return ProjectivePoint.fromHex(bytesToHex(bytes));
@@ -28,4 +32,14 @@ export function starkPointToProjectivePoint({ x, y }: PubKey): ProjectivePoint {
 export function pubKeyAffineToBase58(pub: PubKey): string {
     const point = starkPointToProjectivePoint(pub);
     return base58.encode(point.toRawBytes(true));
+}
+
+export function pubKeyAffineToHex(pub: PubKey): string {
+    const point = starkPointToProjectivePoint(pub);
+    return bytesToHex(point.toRawBytes(true));
+}
+
+export function pubKeyBase58ToHex(b58string: string): string {
+    const bytes = base58.decode(b58string);
+    return bytesToHex(bytes);
 }

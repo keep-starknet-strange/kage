@@ -1,5 +1,5 @@
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
-import PrivateTokenAddress from '@/types/privateRecipient';
+import { PrivateTokenAddress } from '@/types/privateRecipient';
 import formattedAddress from '@/utils/formattedAddress';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from "react";
@@ -17,12 +17,12 @@ export function PrivateAddressView({ address, variant = 'default' }: PrivateAddr
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
     const displayedAddress = useMemo(() => {
-        return formattedAddress(address.hex, variant);
+        return formattedAddress(address.base58, variant);
     }, [address, variant]);
 
     const copyToClipboard = async () => {
         try {
-            await Clipboard.setStringAsync(address.hex);
+            await Clipboard.setStringAsync(address.base58);
 
             // Animate button press
             Animated.sequence([

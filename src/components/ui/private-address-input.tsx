@@ -30,7 +30,7 @@ export function PrivateAddressInput({
         }
 
         // Try to parse the address
-        const parsedAddress = PrivateTokenAddress.fromHexOrNull(addressText.trim());
+        const parsedAddress = PrivateTokenAddress.fromBase58OrNull(addressText.trim());
 
         if (parsedAddress) {
             setError(null);
