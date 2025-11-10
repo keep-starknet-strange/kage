@@ -10,7 +10,11 @@ export type ProfileStateError = {
 export namespace ProfileState {
 
     export function isInitialized(state: ProfileState): boolean {
-        return state !== "idle";
+        return state !== "idle" && state !== "retrieving";
+    }
+
+    export function isRetrieving(state: ProfileState): boolean {
+        return state === "retrieving";
     }
 
     export function canChangeProfileState(state: ProfileState): boolean {

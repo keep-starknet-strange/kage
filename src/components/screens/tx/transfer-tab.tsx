@@ -13,6 +13,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import {LOG} from "@/utils/logs";
 
 type TransferTabProps = {
     account: Account;
@@ -44,9 +45,14 @@ export function TransferTab({
 
         const transferAsync = async () => {
             setIsTransferring(true);
-            // TODO handle wallet recipient too.
-            await transfer(account, amount, account, new PrivateTokenRecipient(recipientAddress));
-            setIsTransferring(false);
+            try {
+                // TODO handle wallet recipient too.
+                await transfer(account, amount, account, new PrivateTokenRecipient(recipientAddress));
+            } catch (error) {
+                LOG.error("[Transfer]:", error)
+            } finally {
+                setIsTransferring(false);
+            }
         }
 
         transferAsync().then(() => {
@@ -55,7 +61,7 @@ export function TransferTab({
                 router.back();
             }
         });
-    }, [recipientAddress, account, isFocusedRef, router, transfer]);
+    }, [recipientAddress, amount, transfer, account, router]);
 
     const handleUnlockPrivateBalances = useCallback(async () => {
         setIsUnlockingBalances(true);

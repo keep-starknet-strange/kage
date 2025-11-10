@@ -3,6 +3,7 @@ import { Call, uint256 } from "starknet";
 import BalanceRepository from "./balanceRepository";
 import Token from "@/types/token";
 import { PublicTokenBalance } from "@/types/tokenBalance";
+import {LOG} from "@/utils/logs";
 
 export class PublicBalanceRepository extends BalanceRepository {
 
@@ -10,6 +11,8 @@ export class PublicBalanceRepository extends BalanceRepository {
         const allRequestedTokens = new Map(Array.from(accounts.values())
             .flat()
             .map((token) => [token.contractAddress, token]));
+
+        this.logUpdates(accounts, false);
 
         const promisesTuples = Array.from(accounts.entries()).map(([account, tokens]) => {
             const tokenAddresses = tokens.map((token) => token.contractAddress);

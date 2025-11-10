@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
+import {LOG} from "@/utils/logs";
 
 type FundTabProps = {
     account: Account;
@@ -38,7 +39,7 @@ export function FundTab({
             return null;
         }
         return profileState.accountsOnCurrentNetwork as Account[];
-    }, [profileState, account]);
+    }, [profileState]);
 
     const selectedAccountBalances = useMemo(() => {
         if (!selectedAccount) {
@@ -51,8 +52,13 @@ export function FundTab({
     const handleFund = useCallback(() => {
         const fundAsync = async (account: Account, amount: PublicAmount) => {
             setIsFunding(true);
-            await fund(account, amount, account);
-            setIsFunding(false);
+            try {
+                await fund(account, amount, account);
+            } catch (error) {
+                LOG.error("[FUND]:", error);
+            } finally {
+                setIsFunding(false);
+            }
         }
 
         if (!amount || !selectedAccount) {

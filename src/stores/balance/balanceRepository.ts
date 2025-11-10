@@ -4,6 +4,8 @@ import NetworkDerfinition from "@/profile/settings/networkDefinition";
 import Token from "@/types/token";
 import { PublicTokenBalance } from "@/types/tokenBalance";
 import { RpcProvider } from "starknet";
+import {LOG} from "@/utils/logs";
+import PrivateBalanceRepository from "@/stores/balance/privateBalanceRepository";
 
 abstract class BalanceRepository {
     protected currentNetwork: NetworkId = "SN_MAIN";
@@ -19,6 +21,17 @@ abstract class BalanceRepository {
     }
 
     abstract getBalances(accounts: Map<Account, Token[]>): Promise<Map<AccountAddress, PublicTokenBalance[]>>;
+
+    protected logUpdates(accounts: Map<Account, Token[]>, isPrivate: boolean) {
+        if (accounts.size === 0) return;
+
+        const lock = isPrivate ? " 🔒 " : " ";
+        LOG.debug(`Requesting${lock}balances for:`)
+        for (const [account, tokens] of accounts) {
+            LOG.debug(`- ${account.name}:`)
+            LOG.debug(`--- ${tokens.map(t => t.symbol).join(", ")}`)
+        }
+    }
 }
 
 export default BalanceRepository;

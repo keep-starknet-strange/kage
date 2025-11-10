@@ -11,6 +11,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import {LOG} from "@/utils/logs";
 
 type WithdrawTabProps = {
     account: Account;
@@ -40,8 +41,13 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
 
         const withdrawAsync = async () => {
             setIsWithdrawing(true);
-            await withdraw(account, amount, account);
-            setIsWithdrawing(false);
+            try {
+                await withdraw(account, amount, account);
+            } catch (error) {
+                LOG.error("[Withdraw]:", error)
+            } finally {
+                setIsWithdrawing(false);
+            }
         }
 
         withdrawAsync().then(() => {

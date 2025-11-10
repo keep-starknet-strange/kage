@@ -5,13 +5,13 @@ export namespace MapUtils {
         const current = map.get(key) ?? [];
 
         let valueUpdated = false;
-        current.map((v) => {
+        for (const [i, v] of current.entries()) {
             if (v.id === value.id) {
                 valueUpdated = true;
-                return value;
+                current[i] = value;
+                break;
             }
-            return v;
-        });
+        }
 
         if (!valueUpdated) {
             current.push(value);

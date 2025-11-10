@@ -1,25 +1,57 @@
+import NetworkBanner from '@/components/ui/network-banner';
+import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { AppProviders } from '@/providers/AppProviders';
-import { useAppDependenciesStore } from '@/stores/appDependenciesStore';
-import { useProfileStore } from '@/stores/profileStore';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useMemo } from "react";
-import 'react-native-reanimated';
-import AccessVaultModal from './access-vault-modal';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
-import Account from '@/profile/account';
-import NetworkBanner from '@/components/ui/network-banner';
+import { useProfileStore } from '@/stores/profileStore';
 import { useRpcStore } from '@/stores/useRpcStore';
 import { LOG } from '@/utils/logs';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect } from "react";
+import 'react-native-reanimated';
+import AccessVaultModal from './access-vault-modal';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-    const { profileState, initialize } = useProfileStore();
-    const { changeNetwork: changeRpcNetwork } = useRpcStore();
-    const { changeNetwork: changeBalanceNetwork } = useBalanceStore();
+    useEffect(() => {
+        const { changeNetwork, requestRefresh, subscribeToBalanceUpdates, unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
+        
+        const unsubscribe = useProfileStore.subscribe(
+            (state) => state.profileState,
+            (currentProfileState, prevProfileState) => {
+                if (prevProfileState === "retrieving" && ProfileState.isInitialized(currentProfileState)) {
+                    SplashScreen.hide()
+                }
+
+                const prevNetworkDefinition = ProfileState.isProfile(prevProfileState) ? prevProfileState.currentNetworkWithDefinition.networkDefinition : null;
+                if (ProfileState.isProfile(currentProfileState)) {
+                    const { network, networkDefinition: currentNetworkDefinition } = currentProfileState.currentNetworkWithDefinition;
+
+                    if (prevNetworkDefinition?.chainId !== currentNetworkDefinition.chainId) {
+                        LOG.info("Network changed to", currentNetworkDefinition.chainId);
+
+                        const provider = useRpcStore.getState().changeNetwork(currentNetworkDefinition);
+                        const accounts = network.accounts as Account[];
+                        changeNetwork(currentNetworkDefinition.chainId, provider).then(() => {
+                            requestRefresh(accounts, accounts);
+                            subscribeToBalanceUpdates(accounts);
+                        })
+                    }
+                }
+            }
+        );
+
+        if (!ProfileState.isInitialized(useProfileStore.getState().profileState)) {
+            void useProfileStore.getState().initialize();
+        }
+
+        return () => {
+            unsubscribe();
+            unsubscribeFromBalanceUpdates();
+        }
+    }, []);
 
     const currentNetworkDefinition = useProfileStore(state => {
         if (!ProfileState.isProfile(state.profileState)) {
@@ -28,30 +60,7 @@ export default function RootLayout() {
         return state.profileState.currentNetworkWithDefinition.networkDefinition;
     });
 
-    const isOnboarded = useMemo(() => {
-        return ProfileState.isOnboarded(profileState)
-    }, [profileState])
-
-    useEffect(() => {
-        if (!ProfileState.isInitialized(profileState)) {
-            void initialize().then(() => {
-                SplashScreen.hide()
-            })
-        }
-    }, [profileState, initialize]);
-
-
-    useEffect(() => {
-        if (currentNetworkDefinition) {
-            LOG.info("Network changed to", currentNetworkDefinition.chainId);
-
-            const profileState = useProfileStore.getState().profileState;
-            if (ProfileState.isProfile(profileState)) {
-                const provider = changeRpcNetwork(currentNetworkDefinition);
-                changeBalanceNetwork(currentNetworkDefinition.chainId, provider, profileState.accountsOnCurrentNetwork as Account[]);
-            }
-        }
-    }, [currentNetworkDefinition?.chainId ?? "", changeRpcNetwork, changeBalanceNetwork]);
+    const isOnboarded = useProfileStore(state => ProfileState.isOnboarded(state.profileState));
 
     return (
         <AppProviders>

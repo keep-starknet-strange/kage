@@ -6,6 +6,12 @@ export default class NetworkDerfinition {
     @Expose({ name: 'rpcUrl' })
     @Transform(({ value }) => value ? value.toString() : null)
     private readonly _rpcUrl: URL | null;
+
+    @Type(() => URL)
+    @Expose({ name: 'wsUrl' })
+    @Transform(({ value }) => value ? value.toString() : null)
+    private readonly _wsUrl: URL | null;
+
     readonly chainId: NetworkId;
     readonly accountClassHash: string;
     readonly feeTokenAddress: string;
@@ -14,6 +20,7 @@ export default class NetworkDerfinition {
 
     constructor(
         rpcUrl: URL | null,
+        wsUrl: URL | null,
         chainId: NetworkId,
         accountClassHash: string,
         feeTokenAddress: string,
@@ -23,7 +30,12 @@ export default class NetworkDerfinition {
             throw new Error("RPC URL is required for non-mainnet or sepolia networks");
         }
 
+        if (wsUrl === null && chainId !== "SN_MAIN" && chainId !== "SN_SEPOLIA") {
+            throw new Error("WebSocket URL is required for non-mainnet or sepolia networks");
+        }
+
         this._rpcUrl = rpcUrl;
+        this._wsUrl = wsUrl;
         this.chainId = chainId;
         this.accountClassHash = accountClassHash;
         this.feeTokenAddress = feeTokenAddress;
@@ -56,8 +68,31 @@ export default class NetworkDerfinition {
         }
     }
 
+    get wsUrl(): URL {
+        if (this._wsUrl !== null) {
+            return this._wsUrl;
+        }
+
+        if (this.chainId === "SN_MAIN") {
+            const wsUrlString = process.env.EXPO_PUBLIC_WS_SN_MAIN;
+            if (!wsUrlString) {
+                throw new Error("WebSocket URL is not set for mainnet in environment variables");
+            }
+            return new URL(wsUrlString);
+        } else if (this.chainId === "SN_SEPOLIA") {
+            const wsUrlString = process.env.EXPO_PUBLIC_WS_SN_SEPOLIA;
+            if (!wsUrlString) {
+                throw new Error("WebSocket URL is not set for sepolia in environment variables");
+            }
+            return new URL(wsUrlString);
+        } else {
+            throw new Error("WebSocket URL is not set for this network");
+        }
+    }
+
     static sepolia(): NetworkDerfinition {
         return new NetworkDerfinition(
+            null,
             null,
             "SN_SEPOLIA",
             "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564",
@@ -68,6 +103,7 @@ export default class NetworkDerfinition {
 
     static mainnet(): NetworkDerfinition {
         return new NetworkDerfinition(
+            null,
             null,
             "SN_MAIN",
             "0x01e60c8722677cfb7dd8dbea5be86c09265db02cdfe77113e77da7d44c017388",

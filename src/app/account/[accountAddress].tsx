@@ -26,7 +26,7 @@ export default function AccountDetailScreen() {
     const privateBalances = useBalanceStore(state => state.privateBalances.get(accountAddress) ?? null);
     const isPrivateBalancesUnlocked = useBalanceStore(state => state.unlockedPrivateBalances.has(accountAddress));
 
-    const [isLoadingBalances, setIsLoadingBalances] = useState(true);
+    const [isLoadingBalances, setIsLoadingBalances] = useState(false);
     const [activeTab, setActiveTab] = useState<TabType>('public');
 
     // Find the account from the profile state
@@ -43,7 +43,7 @@ export default function AccountDetailScreen() {
 
         setIsLoadingBalances(true);
         try {
-            await requestRefresh([account]);
+            await requestRefresh([account], [account]);
         } catch (error) {
             console.error('Error fetching balances:', error);
         } finally {
@@ -63,10 +63,6 @@ export default function AccountDetailScreen() {
             setIsLoadingBalances(false);
         }
     }, [account, unlockPrivateBalances]);
-
-    useEffect(() => {
-        void fetchBalances();
-    }, [fetchBalances]);
 
     // If account not found, show error
     if (!account) {

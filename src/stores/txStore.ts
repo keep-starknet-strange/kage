@@ -1,14 +1,13 @@
 import Account from "@/profile/account";
-import { PrivateAmount, PublicAmount } from "@/types/amount";
-import { PrivateTokenRecipient } from "@/types/privateRecipient";
-import { PrivateTransaction } from "@/types/transaction";
-import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
-import { Account as StarknetAccount } from "starknet";
-import { create } from "zustand";
-import { useAccessVaultStore } from "./accessVaultStore";
-import { useBalanceStore } from "./balance/balanceStore";
-import { useRpcStore } from "./useRpcStore";
-import { LOG } from "@/utils/logs";
+import {PrivateAmount, PublicAmount} from "@/types/amount";
+import {PrivateTokenRecipient} from "@/types/privateRecipient";
+import {PrivateTransaction} from "@/types/transaction";
+import {Account as TongoAccount} from "@fatsolutions/tongo-sdk";
+import {Account as StarknetAccount} from "starknet";
+import {create} from "zustand";
+import {useAccessVaultStore} from "./accessVaultStore";
+import {useRpcStore} from "./useRpcStore";
+import {LOG} from "@/utils/logs";
 
 export interface TxState {
     pendingTransactionsStack: PrivateTransaction[];
@@ -28,153 +27,157 @@ export const useTxStore = create<TxState>((set, get) => ({
     pendingTransactionsStack: [],
 
     fund: async (from: Account, amount: PublicAmount, signer: Account) => {
-        const { requestAccess } = useAccessVaultStore.getState();
-        const { provider } = useRpcStore.getState();
-        const { appendPendingTransaction } = get();
+        const {requestAccess} = useAccessVaultStore.getState();
+        const {provider} = useRpcStore.getState();
+        const {appendPendingTransaction} = get();
 
-        try {
-            const result = await requestAccess({ requestFor: "privateKeys", signing: [signer], tokens: new Map([[from, [amount.token]]]) });
+        const result = await requestAccess({
+            requestFor: "privateKeys",
+            signing: [signer],
+            tokens: new Map([[from, [amount.token]]])
+        });
 
-            const signerKeyPairs = result.signing.get(signer);
-            if (!signerKeyPairs) {
-                throw new Error("Signing key not found for account " + signer.address);
-            }
-
-            const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
-            if (!tokenKeyPairs) {
-                throw new Error("Token key not found for account " + from.address);
-            }
-
-            const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
-            const sdkRate = await tongoAccount.rate();
-            const privateAmount = amount.intoPrivateAmount(sdkRate);
-
-            const signerAccount = new StarknetAccount({
-                provider: provider,
-                address: signer.address,
-                signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
-            });
-
-            LOG.info("[TX]: 🗝 Prooving funding...");
-            const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount() });
-            await fundOp.populateApprove();
-            LOG.info("[TX]: 🚀 Funding account execute...");
-            const starknetTx = await signerAccount.execute([
-                fundOp.approve!,
-                fundOp.toCalldata()
-            ]);
-
-            appendPendingTransaction({
-                type: "fund",
-                from: from,
-                amount: privateAmount,
-                signer: signer,
-                txHash: starknetTx.transaction_hash,
-            });
-        } catch (error) {
-            console.error("Error funding account", error);
+        const signerKeyPairs = result.signing.get(signer);
+        if (!signerKeyPairs) {
+            throw new Error("Signing key not found for account " + signer.address);
         }
+
+        const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
+        if (!tokenKeyPairs) {
+            throw new Error("Token key not found for account " + from.address);
+        }
+
+        // @ts-ignore
+        const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
+        const sdkRate = await tongoAccount.rate();
+        const privateAmount = amount.intoPrivateAmount(sdkRate);
+
+        const signerAccount = new StarknetAccount({
+            provider: provider,
+            address: signer.address,
+            signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
+        });
+
+        LOG.info("[TX]: 🗝 Prooving funding...");
+        const fundOp = await tongoAccount.fund({amount: privateAmount.toSdkAmount()});
+        await fundOp.populateApprove();
+        LOG.info("[TX]: 🚀 Funding account execute...");
+        const starknetTx = await signerAccount.execute([
+            fundOp.approve!,
+            fundOp.toCalldata()
+        ]);
+
+        appendPendingTransaction({
+            type: "fund",
+            from: from,
+            amount: privateAmount,
+            signer: signer,
+            txHash: starknetTx.transaction_hash,
+        });
     },
 
     transfer: async (from: Account, amount: PrivateAmount, signer: Account, recipient: PrivateTokenRecipient) => {
-        const { requestAccess } = useAccessVaultStore.getState();
-        const { provider } = useRpcStore.getState();
-        const { appendPendingTransaction } = get();
+        const {requestAccess} = useAccessVaultStore.getState();
+        const {provider} = useRpcStore.getState();
+        const {appendPendingTransaction} = get();
 
-        try {
-            const result = await requestAccess({ requestFor: "privateKeys", signing: [signer], tokens: new Map([[from, [amount.token]]]) });
 
-            const signerKeyPairs = result.signing.get(signer);
-            if (!signerKeyPairs) {
-                throw new Error("Signing key not found for account " + signer.address);
-            }
+        const result = await requestAccess({
+            requestFor: "privateKeys",
+            signing: [signer],
+            tokens: new Map([[from, [amount.token]]])
+        });
 
-            const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
-            if (!tokenKeyPairs) {
-                throw new Error("Token key not found for account " + from.address);
-            }
-
-            const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
-            const signerAccount = new StarknetAccount({
-                provider: provider,
-                address: signer.address,
-                signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
-            });
-
-            LOG.info("[TX]: 🗝 Proving Transfering...");
-            const transferOp = await tongoAccount.transfer({
-                to: recipient.privateTokenAddress.pubKey,
-                amount: amount.toSdkAmount()
-            });
-
-            LOG.info("[TX]: 🚀 Transfer execute...");
-            const starknetTx = await signerAccount.execute(transferOp.toCalldata());
-
-            appendPendingTransaction({
-                type: "transfer",
-                from: from,
-                amount: amount,
-                signer: signer,
-                recipient: recipient,
-                txHash: starknetTx.transaction_hash,
-            });
-        } catch (error) {
-            console.error("Error funding account", error);
+        const signerKeyPairs = result.signing.get(signer);
+        if (!signerKeyPairs) {
+            throw new Error("Signing key not found for account " + signer.address);
         }
+
+        const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
+        if (!tokenKeyPairs) {
+            throw new Error("Token key not found for account " + from.address);
+        }
+
+        // @ts-ignore
+        const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
+        const signerAccount = new StarknetAccount({
+            provider: provider,
+            address: signer.address,
+            signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
+        });
+
+        LOG.info("[TX]: 🗝 Proving Transfering...");
+        const transferOp = await tongoAccount.transfer({
+            to: recipient.privateTokenAddress.pubKey,
+            amount: amount.toSdkAmount()
+        });
+
+        LOG.info("[TX]: 🚀 Transfer execute...");
+        const starknetTx = await signerAccount.execute(transferOp.toCalldata());
+
+        appendPendingTransaction({
+            type: "transfer",
+            from: from,
+            amount: amount,
+            signer: signer,
+            recipient: recipient,
+            txHash: starknetTx.transaction_hash,
+        });
     },
 
     withdraw: async (to: Account, amount: PrivateAmount, signer: Account) => {
-        const { requestAccess } = useAccessVaultStore.getState();
-        const { provider } = useRpcStore.getState();
-        const { appendPendingTransaction } = get();
+        const {requestAccess} = useAccessVaultStore.getState();
+        const {provider} = useRpcStore.getState();
+        const {appendPendingTransaction} = get();
 
-        try {
-            const result = await requestAccess({ requestFor: "privateKeys", signing: [signer], tokens: new Map([[to, [amount.token]]]) });
 
-            const signerKeyPairs = result.signing.get(signer);
-            if (!signerKeyPairs) {
-                throw new Error("Signing key not found for account " + signer.address);
-            }
+        const result = await requestAccess({
+            requestFor: "privateKeys",
+            signing: [signer],
+            tokens: new Map([[to, [amount.token]]])
+        });
 
-            const tokenKeyPairs = result.tokens.get(to)?.keyPairs;
-            if (!tokenKeyPairs) {
-                throw new Error("Token key not found for account " + to.address);
-            }
-
-            const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
-
-            const signerAccount = new StarknetAccount({
-                provider: provider,
-                address: signer.address,
-                signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
-            });
-
-            LOG.info("[TX]: 🗝 Prooving withdraw...");
-            const withdrawOp = await tongoAccount.withdraw({
-                to: to.address,
-                amount: amount.toSdkAmount()
-            });
-            LOG.info("[TX]: 🚀 Withdraw execute...");
-            const starknetTx = await signerAccount.execute([
-                withdrawOp.toCalldata()
-            ]);
-
-            appendPendingTransaction({
-                type: "withdraw",
-                to: to,
-                amount: amount,
-                signer: signer,
-                txHash: starknetTx.transaction_hash,
-            });
-        } catch (error) {
-            console.error("Error funding account", error);
+        const signerKeyPairs = result.signing.get(signer);
+        if (!signerKeyPairs) {
+            throw new Error("Signing key not found for account " + signer.address);
         }
+
+        const tokenKeyPairs = result.tokens.get(to)?.keyPairs;
+        if (!tokenKeyPairs) {
+            throw new Error("Token key not found for account " + to.address);
+        }
+
+        // @ts-ignore
+        const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
+
+        const signerAccount = new StarknetAccount({
+            provider: provider,
+            address: signer.address,
+            signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
+        });
+
+        LOG.info("[TX]: 🗝 Prooving withdraw...");
+        const withdrawOp = await tongoAccount.withdraw({
+            to: to.address,
+            amount: amount.toSdkAmount()
+        });
+        LOG.info("[TX]: 🚀 Withdraw execute...");
+        const starknetTx = await signerAccount.execute([
+            withdrawOp.toCalldata()
+        ]);
+
+        appendPendingTransaction({
+            type: "withdraw",
+            to: to,
+            amount: amount,
+            signer: signer,
+            txHash: starknetTx.transaction_hash,
+        });
     },
 
     appendPendingTransaction: (transaction: PrivateTransaction) => {
-        const { removePendingTransaction } = get();
-        const { feeToken, updateBalances } = useBalanceStore.getState();
-        const { provider } = useRpcStore.getState();
+        const {removePendingTransaction} = get();
+        const {provider} = useRpcStore.getState();
 
         LOG.info(`[TX]: 🤝 ${transaction.type}:`, transaction.txHash);
 
@@ -187,15 +190,10 @@ export const useTxStore = create<TxState>((set, get) => ({
                 removePendingTransaction(transaction.txHash);
                 LOG.info("[TX]: ✅ Completed: ", transaction.txHash);
                 LOG.debug("---- 🧾 Receipt: ", receipt, "for", transaction.txHash);
-                // TODO check what happens in reverted case.
-
-                return PrivateTransaction.affectedBalances(transaction, feeToken);
-            }).then(({ publicBalances, privateBalances }) => {
-                updateBalances(publicBalances, privateBalances);
             }).catch((error) => {
-                removePendingTransaction(transaction.txHash);
-                console.error("Error waiting for transaction", error);
-            });
+            removePendingTransaction(transaction.txHash);
+            console.error("Error waiting for transaction", error);
+        });
     },
 
     removePendingTransaction: (transactionHash: string) => {

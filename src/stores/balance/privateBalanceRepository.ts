@@ -20,6 +20,8 @@ export default class PrivateBalanceRepository extends BalanceRepository {
     }
 
     async getBalances(accounts: Map<Account, Token[]>): Promise<Map<AccountAddress, PrivateTokenBalance[]>> {
+        this.logUpdates(accounts, true);
+
         const promisesTuples = Array.from(accounts.entries()).map(([account, tokens]) => {
             return tokens.map((token) => {
                 const tongoToken = this.tongoCache.get(this.cacheKey(account, token));
@@ -66,6 +68,7 @@ export default class PrivateBalanceRepository extends BalanceRepository {
         const result = await requestAccess({ requestFor: "privateKeys", signing: [], tokens: accountTokens });
 
         for (const [account, tokenKeyPairs] of result.tokens.entries()) {
+            // @ts-ignore
             const tongoToken = new TongoToken(tokenKeyPairs.keyPairs.spendingKeyPair.privateSpendingKey, tokenKeyPairs.token.tongoAddress, this.provider);
             this.tongoCache.set(this.cacheKey(account, tokenKeyPairs.token), tongoToken);
         }
