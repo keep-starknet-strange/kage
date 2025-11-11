@@ -1,25 +1,53 @@
 import Identifiable from "@/types/Identifiable";
 import Token from "@/types/token";
 import { AccountState as TongoBalanceState } from "@fatsolutions/tongo-sdk";
-import { tokenAmountToFormatted } from "@/utils/formattedBalance";
+import { fiatBalanceToFormatted, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { PrivateTokenAddress } from "./privateRecipient";
+import Account, { AccountAddress } from "@/profile/account";
+
+export function getAggregatedFiatBalance<B extends TokenBalance>(
+    accounts: Account[],
+    balances: ReadonlyMap<AccountAddress, B[]>
+): number {
+    return accounts.reduce((total, account) => {
+        const accBalances = balances.get(account.address);
+        if (!accBalances) {
+            return total + 0;
+        }
+
+        return total + accBalances.reduce((inAccountTotal, balance) => inAccountTotal + (balance.fiatPrice ?? 0), 0);
+    }, 0);
+}
 
 export abstract class TokenBalance implements Identifiable {
     readonly token: Token;
     readonly spendableBalance: bigint;
+    readonly fiatPrice: number | null;
 
     constructor(token: Token, balance: bigint) {
         this.token = token;
         this.spendableBalance = balance;
+
+        const usd = this.token.priceInUsd;
+        if (usd === null) {
+            this.fiatPrice = null;
+            return;
+        }
+
+        const divisor = 10n ** BigInt(this.token.decimals);
+        const tokenAmount = Number(this.spendableBalance) / Number(divisor);
+        this.fiatPrice = tokenAmount * usd;
     }
 
-    // TODO: Current implementation loses precision when converting to float
-    // Better approach is to use Intl.NumberFormat.formatToParts but this currently seems to not be polyfilled for React Native
-    formattedSpendableBalance(compressed: boolean = false): string {
-        return this.formattedBalance(compressed, this.spendableBalance);
+    formattedFiatPrice(): string | null{
+        if (this.fiatPrice === null) {
+            return null;
+        }
+
+        return fiatBalanceToFormatted(this.fiatPrice);
     }
 
-    protected formattedBalance(compressed: boolean = false, balance: bigint): string {
+    formattedBalance(compressed: boolean = false, balance: bigint = this.spendableBalance): string {
         return tokenAmountToFormatted(compressed, balance, this.token);
     }
 
@@ -79,20 +107,20 @@ export class PrivateTokenBalance extends TokenBalance {
         this.pendingBalance = pending;
     }
 
-    formattedPendingBalance(compressed: boolean = false): string {
-        if (!this.isUnlocked) {
-            return "LOCKED";
-        }
-
-        return super.formattedBalance(compressed, this.pendingBalance);
-    }
-
     formattedBalance(compressed: boolean = false): string {
         if (!this.isUnlocked) {
             return "LOCKED";
         }
 
         return super.formattedBalance(compressed, this.spendableBalance);
+    }
+
+    formattedFiatPrice(): string | null {
+        if (!this.isUnlocked) {
+            return null;
+        }
+
+        return super.formattedFiatPrice();
     }
 
     get unlockedBalance(): bigint | null {

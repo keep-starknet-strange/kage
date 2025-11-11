@@ -1,8 +1,9 @@
 import { AddressView } from '@/components/address-view';
 import { PrivateBalancesLocked } from '@/components/private-balances-locked';
-import { BalanceCard } from '@/components/ui/balance-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { PrivateAddressView } from '@/components/ui/private-address-view';
+import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
+import { PublicBalanceCard } from '@/components/ui/public-balance-card';
+import { PrivateTokenBalanceView, PublicTokenBalanceView } from '@/components/ui/token-balance-view';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
@@ -101,20 +102,28 @@ export default function AccountDetailScreen() {
             </View>
 
             {/* Total Balance Section */}
-            <BalanceCard
-                type={activeTab}
-                account={account}
-                style={styles.balanceCard}
-                onFundPress={() => { 
-                    router.push(`/tx/fund/${accountAddress}`);
-                }}
-                onTransferPress={() => { 
-                    router.push(`/tx/transfer/${accountAddress}`);
-                }}
-                onWithdrawPress={() => {
-                    router.push(`/tx/withdraw/${accountAddress}`);
-                 }}
-            />
+            {activeTab === 'public' && (
+                <PublicBalanceCard
+                    account={account}
+                    style={styles.balanceCard}
+                />
+            )}
+
+            {activeTab === 'private' && (
+                <PrivateBalanceCard
+                    account={account}
+                    style={styles.balanceCard}
+                    onFundPress={() => {
+                        router.push(`/tx/fund/${accountAddress}`);
+                    }}
+                    onTransferPress={() => {
+                        router.push(`/tx/transfer/${accountAddress}`);
+                    }}
+                    onWithdrawPress={() => {
+                        router.push(`/tx/withdraw/${accountAddress}`);
+                    }}
+                />
+            )}
 
             {/* Tab Bar */}
             <View style={styles.tabBar}>
@@ -176,18 +185,7 @@ function PublicTab({
     onRefresh: () => void;
 }) {
     const renderTokenItem = ({ item }: { item: PublicTokenBalance }) => {
-        return (
-            <View style={styles.tokenCard}>
-                <View style={styles.tokenInfo}>
-                    <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
-                </View>
-                <View style={styles.tokenBalance}>
-                    <Text style={styles.tokenBalanceAmount}>
-                        {item.formattedSpendableBalance(true)}
-                    </Text>
-                </View>
-            </View>
-        )
+        return <PublicTokenBalanceView balance={item} />
     };
 
     const renderEmpty = () => (
@@ -241,21 +239,7 @@ function PrivateTab({
     onLock: () => void;
 }) {
     const renderTokenItem = ({ item }: { item: PrivateTokenBalance }) => {
-        return (
-            <View style={styles.tokenCard}>
-                <View style={styles.tokenInfo}>
-                    <Text style={styles.tokenSymbol}>{item.token.symbol}</Text>
-                    {item.isUnlocked && (
-                        <PrivateAddressView address={item.privateTokenAddress!} />
-                    )}
-                </View>
-                <View style={styles.tokenBalance}>
-                    <Text style={styles.tokenBalanceAmount}>
-                        {item.formattedSpendableBalance(true)}
-                    </Text>
-                </View>
-            </View>
-        )
+        return <PrivateTokenBalanceView balance={item} />
     };
 
     const renderEmpty = () => (
@@ -268,10 +252,6 @@ function PrivateTab({
     const renderHeader = () => (
         <View style={[styles.tabHeader]}>
             <Text style={styles.tabHeaderText}>Your Tokens</Text>
-            <Pressable onPress={() => onLock()} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <IconSymbol name="lock.open.fill" size={18} color={colorTokens['brand.accent']} />
-                <Text style={{ color: colorTokens['brand.accent'], fontWeight: '600', fontSize: 16, marginLeft: 4 }}>Lock</Text>
-            </Pressable>
         </View>
     );
 
@@ -387,42 +367,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: radiusTokens.sm,
         backgroundColor: colorTokens['bg.elevated'],
-    },
-    tokenCard: {
-        backgroundColor: colorTokens['bg.elevated'],
-        borderRadius: radiusTokens.md,
-        padding: spaceTokens[4],
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        shadowColor: colorTokens['shadow.primary'],
-        gap: spaceTokens[1],
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 1,
-        shadowRadius: 4,
-        elevation: 1,
-    },
-    tokenInfo: {
-        flex: 1,
-        gap: spaceTokens[1],
-    },
-    tokenSymbol: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: colorTokens['text.primary'],
-    },
-    tokenAddress: {
-        fontSize: 12,
-        color: colorTokens['text.muted'],
-        maxWidth: 200,
-    },
-    tokenBalance: {
-        alignItems: 'flex-end',
-    },
-    tokenBalanceAmount: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: colorTokens['text.primary'],
     },
     tokenSeparator: {
         height: spaceTokens[2],

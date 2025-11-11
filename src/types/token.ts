@@ -1,27 +1,30 @@
-import { NetworkId } from "@/profile/misc";
 import Identifiable from "@/types/Identifiable";
 import formattedAddress from "@/utils/formattedAddress";
+import { TokenAddress } from "./tokenAddress";
 
 export default class Token implements Identifiable {
 
-    readonly contractAddress: string;
+    readonly contractAddress: TokenAddress;
     readonly tongoAddress: string;
     readonly symbol: string;
     readonly decimals: number;
+    private readonly metadata: TokenMetadata | null = null;
 
     private _formattedContractAddress: string | null = null;
     private _formattedTongoAddress: string | null = null;
 
     constructor(
-        contractAddress: string,
+        contractAddress: TokenAddress,
         tongoAddress: string,
         symbol: string,
-        decimals: number
+        decimals: number,
+        metadata: TokenMetadata | null = null
     ) {
         this.contractAddress = contractAddress;
         this.tongoAddress = tongoAddress;
         this.symbol = symbol;
         this.decimals = decimals;
+        this.metadata = metadata;
     }
 
     get formattedContractAddress(): string {
@@ -34,5 +37,37 @@ export default class Token implements Identifiable {
 
     get id(): string {
         return this.contractAddress;
+    }
+
+    get logo(): URL | null {
+        return this.metadata?.logo ?? null;
+    }
+
+    get name(): string | null {
+        return this.metadata?.name ?? null;
+    }
+
+    get priceInUsd(): number | null {
+        return this.metadata?.priceInUsd ?? null;
+    }
+
+    withMetadata(metadata: TokenMetadata): Token {
+        return new Token(this.contractAddress, this.tongoAddress, this.symbol, this.decimals, metadata);
+    }
+}
+
+export class TokenMetadata {
+    readonly logo: URL | null = null;
+    readonly name: string | null = null;
+    readonly priceInUsd: number = 0;
+
+    constructor(
+        logo: URL | null = null,
+        name: string | null = null,
+        priceInUsd: number = 0
+    ) {
+        this.logo = logo;
+        this.name = name;
+        this.priceInUsd = priceInUsd;
     }
 }

@@ -35,9 +35,9 @@ export function TokenAmountInput<T extends TokenBalance>({
     useEffect(() => {
         if (selectedBalance) {
             if (selectedBalance instanceof PrivateTokenBalance) {
-                setHintMessage(`Private Balance: ${selectedBalance.formattedSpendableBalance()}`);
+                setHintMessage(`Private Balance: ${selectedBalance.formattedBalance()}`);
             } else {
-                setHintMessage(`Balance: ${selectedBalance.formattedSpendableBalance()}`);
+                setHintMessage(`Balance: ${selectedBalance.formattedBalance()}`);
             }
 
         }

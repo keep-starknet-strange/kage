@@ -1,9 +1,9 @@
 import Account, { AccountAddress } from "@/profile/account";
-import { Call, uint256 } from "starknet";
-import BalanceRepository from "./balanceRepository";
 import Token from "@/types/token";
 import { PublicTokenBalance } from "@/types/tokenBalance";
-import {LOG} from "@/utils/logs";
+import { Call, uint256 } from "starknet";
+import BalanceRepository from "./balanceRepository";
+import { TokenAddress } from "@/types/tokenAddress";
 
 export class PublicBalanceRepository extends BalanceRepository {
 
@@ -48,7 +48,7 @@ export class PublicBalanceRepository extends BalanceRepository {
         return results;
     }
 
-    private async balanceOf(accountAddress: AccountAddress, tokenAddress: string): Promise<bigint> {
+    private async balanceOf(accountAddress: AccountAddress, tokenAddress: TokenAddress): Promise<bigint> {
         const call: Call = {
             contractAddress: tokenAddress,
             entrypoint: "balance_of",

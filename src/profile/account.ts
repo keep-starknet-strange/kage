@@ -1,12 +1,14 @@
-import { Exclude, Type } from "class-transformer";
-import HDKeyInstance, { KeyInstance } from "./keyInstance";
-import { NetworkId } from "./misc";
-import { RpcProvider, Account as StarknetAccount } from "starknet";
-import { AccountSigner } from "./accountSigner";
 import { AccessVaultState } from "@/stores/accessVaultStore";
 import Identifiable from "@/types/Identifiable";
+import { Type } from "class-transformer";
+import { RpcProvider, Account as StarknetAccount } from "starknet";
+import { AccountSigner } from "./accountSigner";
+import HDKeyInstance, { KeyInstance } from "./keyInstance";
+import { NetworkId } from "./misc";
 
-export type AccountAddress = string;
+export type AccountAddress = string & {
+    __type: "account";
+}
 
 export default class Account implements Identifiable {
 

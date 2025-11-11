@@ -3,9 +3,8 @@ import { NetworkId } from "@/profile/misc";
 import NetworkDerfinition from "@/profile/settings/networkDefinition";
 import Token from "@/types/token";
 import { PublicTokenBalance } from "@/types/tokenBalance";
+import { LOG } from "@/utils/logs";
 import { RpcProvider } from "starknet";
-import {LOG} from "@/utils/logs";
-import PrivateBalanceRepository from "@/stores/balance/privateBalanceRepository";
 
 abstract class BalanceRepository {
     protected currentNetwork: NetworkId = "SN_MAIN";

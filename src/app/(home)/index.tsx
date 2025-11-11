@@ -1,5 +1,5 @@
 import { AddressView } from '@/components/address-view';
-import { BalanceCard } from '@/components/ui/balance-card';
+import { TotalBalanceCard } from '@/components/ui/total-balance-card';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
@@ -23,13 +23,9 @@ export default function HomeScreen() {
 
     const renderHeader = () => (
         <>
-            {/* Total Balance Section */}
-            <BalanceCard 
-                type="total"
-                accounts={accounts}
+            <TotalBalanceCard 
+                accounts={accounts as Account[]}
             />
-
-            {/* Section Title */}
             <Text style={styles.sectionTitle}>My Public Accounts</Text>
         </>
     );

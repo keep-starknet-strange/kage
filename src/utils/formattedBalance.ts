@@ -1,6 +1,20 @@
 import Token from "@/types/token";
 import { LOG } from "./logs";
 
+export function fiatBalanceToFormatted(
+    balance: number,
+    currency: string = 'USD',
+): string {
+    return new Intl.NumberFormat('default', {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(balance);
+}
+
+// TODO: Current implementation loses precision when converting to float
+// Better approach is to use Intl.NumberFormat.formatToParts but this currently seems to not be polyfilled for React Native
 export function tokenAmountToFormatted(
     compressed: boolean = false, 
     balance: bigint, 

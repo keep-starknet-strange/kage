@@ -1,13 +1,13 @@
 import Account from "@/profile/account";
-import {PrivateAmount, PublicAmount} from "@/types/amount";
-import {PrivateTokenRecipient} from "@/types/privateRecipient";
-import {PrivateTransaction} from "@/types/transaction";
-import {RollOverOperation, Account as TongoAccount} from "@fatsolutions/tongo-sdk";
-import {Call, Account as StarknetAccount} from "starknet";
-import {create} from "zustand";
-import {useAccessVaultStore} from "./accessVaultStore";
-import {useRpcStore} from "./useRpcStore";
-import {LOG} from "@/utils/logs";
+import { PrivateAmount, PublicAmount } from "@/types/amount";
+import { PrivateTokenRecipient } from "@/types/privateRecipient";
+import { PrivateTransaction } from "@/types/transaction";
+import { LOG } from "@/utils/logs";
+import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
+import { Account as StarknetAccount } from "starknet";
+import { create } from "zustand";
+import { useAccessVaultStore } from "./accessVaultStore";
+import { useRpcStore } from "./useRpcStore";
 
 export interface TxState {
     pendingTransactionsStack: PrivateTransaction[];
@@ -59,7 +59,7 @@ export const useTxStore = create<TxState>((set, get) => ({
         });
 
         LOG.info("[TX]: 🗝 Prooving funding...");
-        const fundOp = await tongoAccount.fund({amount: privateAmount.toSpendableSdkAmount()});
+        const fundOp = await tongoAccount.fund({amount: privateAmount.toSdkAmount()});
         await fundOp.populateApprove();
         LOG.info("[TX]: 🚀 Funding account execute...");
         const starknetTx = await signerAccount.execute([

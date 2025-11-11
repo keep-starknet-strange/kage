@@ -45,7 +45,7 @@ export default class PrivateBalanceRepository extends BalanceRepository {
 
         const allBalances = await Promise.all(promisesTuples.map((tuple) => tuple.balancePromise));
 
-        const results = new Map<string, PrivateTokenBalance[]>();
+        const results = new Map<AccountAddress, PrivateTokenBalance[]>();
 
         allBalances.forEach((balance, index) => {
             const accountAddress = promisesTuples[index].account;

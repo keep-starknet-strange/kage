@@ -1,8 +1,13 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { NetworkId } from "@/profile/misc";
+import { PrivateTokenAddress } from "@/types/privateRecipient";
 import Token from "@/types/token";
+import { TokenAddress } from "@/types/tokenAddress";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
+import { getTokenMetadata } from "@/utils/avnu";
+import { pubKeyFromData } from "@/utils/fatSolutions";
 import { LOG } from "@/utils/logs";
+import { MapUtils } from "@/utils/map";
 import tokensConfig from "res/config/tokens.json";
 import { hash, num, RpcProvider, SubscriptionStarknetEventsEvent } from "starknet";
 import { create } from "zustand";
@@ -10,10 +15,6 @@ import { useAccessVaultStore } from "../accessVaultStore";
 import { useRpcStore } from "../useRpcStore";
 import PrivateBalanceRepository from "./privateBalanceRepository";
 import { PublicBalanceRepository } from "./publicBalanceRepository";
-import { MapUtils } from "@/utils/map";
-import { pubKeyAffineToBase58, pubKeyFromData } from "@/utils/fatSolutions";
-import { PrivateTokenAddress } from "@/types/privateRecipient";
-import { TongoAddress } from "@fatsolutions/tongo-sdk/dist/types";
 
 type PresetNetworkId = keyof typeof tokensConfig;
 
@@ -35,7 +36,10 @@ export interface BalanceState {
 
 export const useBalanceStore = create<BalanceState>((set, get) => {
 
-    const mainnetTokens = new Map(tokensConfig.SN_MAIN.tokens.map((token) => [token.erc20, new Token(token.erc20, token.tongo, token.symbol, token.decimals)]));
+    const mainnetTokens = new Map(tokensConfig.SN_MAIN.tokens.map((token) => {
+        const address = TokenAddress.create(token.erc20);
+        return [address, new Token(address, token.tongo, token.symbol, token.decimals)]
+    }));
 
     const privateBalanceRepository = new PrivateBalanceRepository();
     const publicBalanceRepository = new PublicBalanceRepository();
@@ -78,11 +82,10 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
     return {
         networkId: "SN_MAIN",
+        tokenMetadata: new Map(),
         unlockedPrivateBalances: new Set(),
         publicBalances: new Map(),
         privateBalances: new Map(),
-
-        subscriptions: new Map(),
 
         changeNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider) => {
             const { networkId: currentNetworkId } = get();
@@ -97,20 +100,28 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             publicBalanceRepository.setNetwork(networkId, rpcProvider);
 
             const presetExists = Object.prototype.hasOwnProperty.call(tokensConfig, networkId);
-            let tokens: Map<string, Token>;
+            let tokens: Map<TokenAddress, Token>;
             if (presetExists) {
                 const preset = tokensConfig[networkId as PresetNetworkId];
                 tokens = new Map(preset.tokens.map((token) => {
-                    return [token.erc20, new Token(token.erc20, token.tongo, token.symbol, token.decimals)]
+                    const address = TokenAddress.create(token.erc20);
+                    return [address, new Token(address, token.tongo, token.symbol, token.decimals)]
                 }));
-                if (!tokens.has(preset.feeTokenAddress)) {
+                const feeTokenAddress = TokenAddress.create(preset.feeTokenAddress);
+                if (!tokens.has(feeTokenAddress)) {
                     throw new Error("Fee token not found for network " + networkId + ". Make sure tokens.json is configured properly.");
                 }
             } else {
                 throw new Error("Network " + networkId + " is not configured in tokens.json. Dynamic presets not supported yet.");
             }
 
-            networkTokens = tokens
+            const tokenMetadata = await getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress));
+            console.log("Token metadata:", Array.from(tokenMetadata.values()).map(metadata => metadata.logo?.toString()));
+            networkTokens = new Map(Array.from(tokens.entries()).map(([address, token]) => {
+                const metadata = tokenMetadata.get(address);
+                return [address, metadata ? token.withMetadata(metadata) : token];
+            }));
+            
             set({
                 networkId: networkId,
                 publicBalances: new Map(),
@@ -245,8 +256,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                         return;
                     }
 
-                    const fromAccount = accountAddresses.get(data.data[0]);
-                    const toAccount = accountAddresses.get(data.data[1]);
+                    const fromAccount = accountAddresses.get(data.data[0] as AccountAddress);
+                    const toAccount = accountAddresses.get(data.data[1] as AccountAddress);
 
                     if (fromAccount) {
                         MapUtils.update(publicBalancesNeedingUpdate, fromAccount, token)
