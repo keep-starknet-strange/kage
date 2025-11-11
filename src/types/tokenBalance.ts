@@ -40,7 +40,7 @@ export class PrivateTokenBalance extends TokenBalance {
     /**
      * The pending balance of the token in ERC20 units
      */
-    private readonly pendingBalance: bigint;
+    readonly pendingBalance: bigint;
     
     /**
      * The rate of the token in ERC20 units per Tongo unit
@@ -65,7 +65,10 @@ export class PrivateTokenBalance extends TokenBalance {
         isUnlocked: boolean,
         privateTokenAddress: PrivateTokenAddress | null
     ) {
-        super(token, PrivateTokenBalance.convertToERC20Balance(decryptedBalance, rate, token.decimals));
+        const balance = PrivateTokenBalance.convertToERC20Balance(decryptedBalance, rate, token.decimals);
+        const pending = PrivateTokenBalance.convertToERC20Balance(decryptedPendingBalance, rate, token.decimals);
+        
+        super(token, balance + pending);
         
         this.rate = rate;
         this.decryptedBalance = decryptedBalance;
@@ -73,7 +76,7 @@ export class PrivateTokenBalance extends TokenBalance {
         this.isUnlocked = isUnlocked;
         this.privateTokenAddress = privateTokenAddress;
 
-        this.pendingBalance = PrivateTokenBalance.convertToERC20Balance(decryptedPendingBalance, rate, token.decimals);
+        this.pendingBalance = pending;
     }
 
     formattedPendingBalance(compressed: boolean = false): string {
@@ -102,6 +105,10 @@ export class PrivateTokenBalance extends TokenBalance {
 
     get minAcceptedBalance(): bigint {
         return PrivateTokenBalance.convertToERC20Balance(1n, this.rate, this.token.decimals);
+    }
+
+    get claimedBalance(): bigint {
+        return this.spendableBalance - this.pendingBalance;
     }
 
     private static convertToERC20Balance(decryptedBalance: bigint, rate: bigint, decimals: number): bigint {

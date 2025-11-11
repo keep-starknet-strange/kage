@@ -1,5 +1,6 @@
 import Token from "@/types/token";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
+import { max, min } from "@/utils/bigint";
 import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 
 export default abstract class Amount {
@@ -26,15 +27,23 @@ export class PublicAmount extends Amount {
     }
 
     intoPrivateAmount(rate: bigint): PrivateAmount {
-        return new PrivateAmount(this.amount, this.token, rate);
+        return new PrivateAmount(this.amount, 0n, this.token, rate);
     }
 }
 
 export class PrivateAmount extends Amount {
     private readonly rate: bigint;
+    readonly amountFromPendingBalance: bigint;
 
-    constructor(amount: bigint, token: Token, rate: bigint) {
-        super(amount, token);
+    constructor(
+        amount: bigint, 
+        amountFromPendingBalance: bigint,
+        token: Token, 
+        rate: bigint
+    ) {
+        const total = amount + amountFromPendingBalance;
+        super(total, token);
+        this.amountFromPendingBalance = amountFromPendingBalance;
         this.rate = rate;
     }
 
@@ -43,7 +52,13 @@ export class PrivateAmount extends Amount {
         return this.amount / this.rate;
     }
 
+    get needsRollover(): boolean {
+        return this.amountFromPendingBalance > 0n;
+    }
+    
     static fromTokenBalance(balance: PrivateTokenBalance, amount: bigint): PrivateAmount {
-        return new PrivateAmount(amount, balance.token, balance.rate);
+        const claimed = min(balance.claimedBalance, amount);
+        const amountFromPendingBalance = claimed < amount ? amount - claimed : 0n;
+        return new PrivateAmount(claimed, amountFromPendingBalance, balance.token, balance.rate);
     }
 }

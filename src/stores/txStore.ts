@@ -2,8 +2,8 @@ import Account from "@/profile/account";
 import {PrivateAmount, PublicAmount} from "@/types/amount";
 import {PrivateTokenRecipient} from "@/types/privateRecipient";
 import {PrivateTransaction} from "@/types/transaction";
-import {Account as TongoAccount} from "@fatsolutions/tongo-sdk";
-import {Account as StarknetAccount} from "starknet";
+import {RollOverOperation, Account as TongoAccount} from "@fatsolutions/tongo-sdk";
+import {Call, Account as StarknetAccount} from "starknet";
 import {create} from "zustand";
 import {useAccessVaultStore} from "./accessVaultStore";
 import {useRpcStore} from "./useRpcStore";
@@ -59,7 +59,7 @@ export const useTxStore = create<TxState>((set, get) => ({
         });
 
         LOG.info("[TX]: 🗝 Prooving funding...");
-        const fundOp = await tongoAccount.fund({amount: privateAmount.toSdkAmount()});
+        const fundOp = await tongoAccount.fund({amount: privateAmount.toSpendableSdkAmount()});
         await fundOp.populateApprove();
         LOG.info("[TX]: 🚀 Funding account execute...");
         const starknetTx = await signerAccount.execute([
@@ -105,6 +105,14 @@ export const useTxStore = create<TxState>((set, get) => ({
             signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
         });
 
+        if (amount.needsRollover) {
+            LOG.info("[TX]: 🗝 Prooving rollover...");
+            const rolloverOp = await tongoAccount.rollover();
+            LOG.info("[TX]: 🚀 Rollover execute...");
+            const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
+            await provider.waitForTransaction(rolloverTx.transaction_hash);
+        }
+
         LOG.info("[TX]: 🗝 Proving Transfer...");
         const transferOp = await tongoAccount.transfer({
             to: recipient.privateTokenAddress.pubKey,
@@ -127,8 +135,7 @@ export const useTxStore = create<TxState>((set, get) => ({
     withdraw: async (to: Account, amount: PrivateAmount, signer: Account) => {
         const {requestAccess} = useAccessVaultStore.getState();
         const {provider} = useRpcStore.getState();
-        const {appendPendingTransaction} = get();
-
+        const {appendPendingTransaction} = get(); 
 
         const result = await requestAccess({
             requestFor: "privateKeys",
@@ -145,7 +152,6 @@ export const useTxStore = create<TxState>((set, get) => ({
         if (!tokenKeyPairs) {
             throw new Error("Token key not found for account " + to.address);
         }
-
         // @ts-ignore
         const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
 
@@ -155,15 +161,22 @@ export const useTxStore = create<TxState>((set, get) => ({
             signer: signerKeyPairs.spendingKeyPair.privateSpendingKey,
         });
 
+        if (amount.needsRollover) {
+            LOG.info("[TX]: 🗝 Prooving rollover...");
+            const rolloverOp = await tongoAccount.rollover();
+            LOG.info("[TX]: 🚀 Rollover execute...");
+            const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
+            await provider.waitForTransaction(rolloverTx.transaction_hash);
+        }
+
         LOG.info("[TX]: 🗝 Prooving withdraw...");
         const withdrawOp = await tongoAccount.withdraw({
             to: to.address,
             amount: amount.toSdkAmount()
         });
+
         LOG.info("[TX]: 🚀 Withdraw execute...");
-        const starknetTx = await signerAccount.execute([
-            withdrawOp.toCalldata()
-        ]);
+        const starknetTx = await signerAccount.execute([withdrawOp.toCalldata()]);
 
         appendPendingTransaction({
             type: "withdraw",
