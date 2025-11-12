@@ -39,7 +39,7 @@ export abstract class TokenBalance implements Identifiable {
         this.fiatPrice = tokenAmount * usd;
     }
 
-    formattedFiatPrice(): string | null{
+    formattedFiatPrice(): string | null {
         if (this.fiatPrice === null) {
             return null;
         }
@@ -60,6 +60,10 @@ export class PublicTokenBalance extends TokenBalance {
     constructor(token: Token, balance: bigint) {
         super(token, balance);
     }
+
+    withUpdatedToken(token: Token): PublicTokenBalance {
+        return new PublicTokenBalance(token, this.spendableBalance);
+    }
 }
 
 export class PrivateTokenBalance extends TokenBalance {
@@ -69,7 +73,7 @@ export class PrivateTokenBalance extends TokenBalance {
      * The pending balance of the token in ERC20 units
      */
     readonly pendingBalance: bigint;
-    
+
     /**
      * The rate of the token in ERC20 units per Tongo unit
      */
@@ -86,8 +90,8 @@ export class PrivateTokenBalance extends TokenBalance {
     readonly privateTokenAddress: PrivateTokenAddress | null;
 
     constructor(
-        token: Token, 
-        rate: bigint, 
+        token: Token,
+        rate: bigint,
         decryptedBalance: bigint,
         decryptedPendingBalance: bigint,
         isUnlocked: boolean,
@@ -95,9 +99,9 @@ export class PrivateTokenBalance extends TokenBalance {
     ) {
         const balance = PrivateTokenBalance.convertToERC20Balance(decryptedBalance, rate, token.decimals);
         const pending = PrivateTokenBalance.convertToERC20Balance(decryptedPendingBalance, rate, token.decimals);
-        
+
         super(token, balance + pending);
-        
+
         this.rate = rate;
         this.decryptedBalance = decryptedBalance;
         this.decryptedPendingBalance = decryptedPendingBalance;
@@ -137,6 +141,17 @@ export class PrivateTokenBalance extends TokenBalance {
 
     get claimedBalance(): bigint {
         return this.spendableBalance - this.pendingBalance;
+    }
+
+    withUpdatedToken(token: Token): PrivateTokenBalance {
+        return new PrivateTokenBalance(
+            token,
+            this.rate,
+            this.decryptedBalance,
+            this.decryptedPendingBalance,
+            this.isUnlocked,
+            this.privateTokenAddress
+        );
     }
 
     private static convertToERC20Balance(decryptedBalance: bigint, rate: bigint, decimals: number): bigint {

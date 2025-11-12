@@ -4,7 +4,7 @@ import { PrivateTokenAddress } from "@/types/privateRecipient";
 import Token from "@/types/token";
 import { TokenAddress } from "@/types/tokenAddress";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
-import { getTokenMetadata } from "@/utils/avnu";
+import { getTokenMetadata, getTokenPrices } from "@/utils/avnu";
 import { pubKeyFromData } from "@/utils/fatSolutions";
 import { LOG } from "@/utils/logs";
 import { MapUtils } from "@/utils/map";
@@ -17,6 +17,8 @@ import PrivateBalanceRepository from "./privateBalanceRepository";
 import { PublicBalanceRepository } from "./publicBalanceRepository";
 
 type PresetNetworkId = keyof typeof tokensConfig;
+
+const PRICE_REFRESH_INTERVAL_MS = 60000;
 
 export interface BalanceState {
     networkId: NetworkId;
@@ -32,6 +34,9 @@ export interface BalanceState {
 
     subscribeToBalanceUpdates: (accounts: Account[]) => Promise<void>,
     unsubscribeFromBalanceUpdates: () => Promise<void>,
+
+    startPriceRefresh: () => Promise<void>,
+    stopPriceRefresh: () => void,
 }
 
 export const useBalanceStore = create<BalanceState>((set, get) => {
@@ -45,9 +50,10 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
     const publicBalanceRepository = new PublicBalanceRepository();
     let networkTokens = mainnetTokens;
 
-    const accountsSubscribedToBalanceUpdates = new Set<AccountAddress>();
     const publicTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
     const privateTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
+
+    let intervalId: NodeJS.Timeout | null = null;
 
     const updateBalancesWithTokens = async (
         publicBalances: Map<Account, Token[]>,
@@ -93,7 +99,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             if (currentNetworkId === networkId) {
                 return;
             }
-            
+
             LOG.info("Changing balance network to", networkId);
 
             privateBalanceRepository.setNetwork(networkId, rpcProvider);
@@ -116,12 +122,11 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             }
 
             const tokenMetadata = await getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress));
-            console.log("Token metadata:", Array.from(tokenMetadata.values()).map(metadata => metadata.logo?.toString()));
             networkTokens = new Map(Array.from(tokens.entries()).map(([address, token]) => {
                 const metadata = tokenMetadata.get(address);
                 return [address, metadata ? token.withMetadata(metadata) : token];
             }));
-            
+
             set({
                 networkId: networkId,
                 publicBalances: new Map(),
@@ -154,25 +159,18 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         subscribeToBalanceUpdates: async (accounts: Account[]) => {
-            const remainingAccounts = accounts.filter((account) => !accountsSubscribedToBalanceUpdates.has(account.address));
-            if (remainingAccounts.length === 0) {
-                return;
-            }
-
-            LOG.info("Listening for:", remainingAccounts.map((account) => account.name).join(", "));
-            remainingAccounts.forEach((account) => accountsSubscribedToBalanceUpdates.add(account.address));
+            await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            publicTokenSubscriptions.clear();
+            privateTokenSubscriptions.clear();
 
             const tokens = Array.from(networkTokens.values());
-            const { wsChannel } = useRpcStore.getState();
+            const { subscribeToWS } = useRpcStore.getState();
 
-            // Ensure WebSocket is connected before subscribing
-            if (!wsChannel.isConnected()) {
-                LOG.info("📣 WebSocket not connected, waiting for connection...");
-                await wsChannel.waitForConnection();
-                LOG.info("📣 WebSocket connected, proceeding with subscriptions");
-            }
+            const wsChannel = await subscribeToWS();
 
-            const accountAddresses = new Map(remainingAccounts.map((account) => [account.address, account]));
+            LOG.info(`Listening for: [${accounts.map((account) => account.name).join(", ")}]`);
+            const accountAddresses = new Map(accounts.map((account) => [account.address, account]));
 
             const transferEventKey = num.toHex(hash.starknetKeccak('Transfer'));
 
@@ -320,19 +318,75 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                     triggerUpdate();
                 })
             });
+
+            get().startPriceRefresh();
         },
 
         unsubscribeFromBalanceUpdates: async () => {
             LOG.info("Unsubscribing from balance updates");
-            const { wsChannel } = useRpcStore.getState();
-            accountsSubscribedToBalanceUpdates.clear();
+            const { unsubscribeFromWS } = useRpcStore.getState();
 
             await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
             await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
             publicTokenSubscriptions.clear();
             privateTokenSubscriptions.clear();
 
-            wsChannel.disconnect();
+            unsubscribeFromWS();
+
+            get().stopPriceRefresh();
         },
+
+        startPriceRefresh: async () => {
+            const { stopPriceRefresh } = get();
+
+            stopPriceRefresh();
+
+            intervalId = setInterval(async () => {
+                const tokenAddresses = Array.from(networkTokens.keys());
+                try {
+                    const prices = await getTokenPrices(tokenAddresses);
+                    const updatedTokens = new Map<TokenAddress, Token>();
+                    for (const [address, token] of networkTokens.entries()) {
+                        const price = prices.get(address);
+                        if (price) {
+                            updatedTokens.set(address, token.withUpdatedPrice(price));
+                        } else {
+                            updatedTokens.set(address, token);
+                        }
+                    }
+
+                    networkTokens = updatedTokens;
+
+                    console.log("Updating fiat prices...");
+                    const { publicBalances, privateBalances } = get();
+                    const newPublicBalances = new Map(Array.from(publicBalances.entries()).map(([account, balances]) => {
+                        return [account, balances.map((balance) => {
+                            const token = networkTokens.get(balance.token.contractAddress) ?? balance.token;
+                            return balance.withUpdatedToken(token);
+                        })];
+                    }));
+                    const newPrivateBalances = new Map(Array.from(privateBalances.entries()).map(([account, balances]) => {
+                        return [account, balances.map((balance) => {
+                            const token = networkTokens.get(balance.token.contractAddress) ?? balance.token;
+                            return balance.withUpdatedToken(token);
+                        })];
+                    }));
+
+                    set({
+                        publicBalances: newPublicBalances,
+                        privateBalances: newPrivateBalances
+                    });
+                } catch (error) {
+                    console.error("Error refreshing token prices:", error);
+                }
+            }, PRICE_REFRESH_INTERVAL_MS);
+        },
+
+        stopPriceRefresh: () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
     }
 });

@@ -58,18 +58,23 @@ type TokenPriceItem = {
 export async function getTokenPrices(tokenAddresses: TokenAddress[]): Promise<Map<TokenAddress, number | null>> {
     const response = await fetch(`${PRICES_URL}`, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
             tokens: tokenAddresses.map((a) => a.toString())
         })
     })
 
     if (!response.ok) {
-        LOG.error(`Failed to fetch token prices: ${response.statusText}`);
-        return new Map(tokenAddresses.map(address => [address, null]));
+        const error = await response.json();
+        throw new Error(`Failed to fetch token prices due to ${error.error}`);
     }
 
     const dataJson: TokenPriceItem[] = await response.json();
-    const data = new Map(dataJson.map((item: TokenPriceItem) => [TokenAddress.create(item.address), item.starknetMarket.usd]));
+    const data = new Map(dataJson.map((item: TokenPriceItem) => {
+        return [TokenAddress.create(item.address), item.starknetMarket.usd];
+    }));
 
     return new Map(tokenAddresses.map(address => {
         const price = data.get(address) ?? null;

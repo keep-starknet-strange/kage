@@ -39,7 +39,7 @@ export default class Account implements Identifiable {
     }
 
     get id(): string {
-        return this.address;
+        return this.networkId + "." + this.address;
     }
 
     toStarknetAccount(vault: AccessVaultState, provider: RpcProvider): StarknetAccount {

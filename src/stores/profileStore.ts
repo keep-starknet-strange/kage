@@ -15,90 +15,88 @@ export interface ProfileStoreState {
     delete: () => Promise<void>;
 }
 
-export const useProfileStore = create<ProfileStoreState>()(
-    subscribeWithSelector((set, get) => ({
-        profileState: "idle",
+export const useProfileStore = create<ProfileStoreState>((set, get) => ({
+    profileState: "idle",
+    initialize: async () => {
+        const { profileState } = get();
+        const { profileStorage } = useAppDependenciesStore.getState();
 
-        initialize: async () => {
-            const { profileState } = get();
-            const { profileStorage } = useAppDependenciesStore.getState();
+        if (!ProfileState.canChangeProfileState(profileState)) {
+            throw new Error(`Profile state cannot be updated: ${profileState}`);
+        }
 
-            if (!ProfileState.canChangeProfileState(profileState)) {
-                throw new Error(`Profile state cannot be updated: ${profileState}`);
+        set({ profileState: "retrieving" });
+        try {
+            const profile = await profileStorage.readProfile();
+
+            if (profile === null) {
+                set({ profileState: null });
+            } else {
+                set({ profileState: profile });
             }
+        } catch (error) {
+            set({ profileState: { type: "profileStateError", error: Error("Failed to initialize profile") } });
+            console.error("Failed to initialize profile", error);
+        }
+    },
 
-            set({ profileState: "retrieving" });
-            try {
-                const profile = await profileStorage.readProfile();
+    create: async (passphrase: string, accountName: string) => {
+        const { profileState } = get();
+        const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
 
-                if (profile === null) {
-                    set({ profileState: null });
-                } else {
-                    set({ profileState: profile });
-                }
-            } catch (error) {
-                set({ profileState: { type: "profileStateError", error: Error("Failed to initialize profile") } });
-                console.error("Failed to initialize profile", error);
-            }
-        },
+        if (!ProfileState.canCreateProfile(profileState)) {
+            throw new Error(`Profile state cannot be created: ${profileState}`);
+        }
 
-        create: async (passphrase: string, accountName: string) => {
-            const { profileState } = get();
-            const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
+        const seedPhraseWords = generateMnemonicWords();
+        const profile = Profile.createFromSeedPhrase(seedPhraseWords);
+        const updatedProfile = profile.addAccountOnCurrentNetwork(accountName, seedPhraseWords);
 
-            if (!ProfileState.canCreateProfile(profileState)) {
-                throw new Error(`Profile state cannot be created: ${profileState}`);
-            }
+        const created = await seedPhraseVault.setup(passphrase, seedPhraseWords);
+        if (!created) {
+            throw new Error("Failed to store seed phrase in vault");
+        }
 
-            const seedPhraseWords = generateMnemonicWords();
-            const profile = Profile.createFromSeedPhrase(seedPhraseWords);
-            const updatedProfile = profile.addAccountOnCurrentNetwork(accountName, seedPhraseWords);
+        await profileStorage.storeProfile(updatedProfile);
+        set({ profileState: updatedProfile });
+    },
 
-            const created = await seedPhraseVault.setup(passphrase, seedPhraseWords);
-            if (!created) {
-                throw new Error("Failed to store seed phrase in vault");
-            }
+    restore: async (passphrase: string, seedPhraseWords: string[]) => {
+        const { profileState } = get();
+        const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
 
-            await profileStorage.storeProfile(updatedProfile);
-            set({ profileState: updatedProfile });
-        },
+        if (!ProfileState.canCreateProfile(profileState)) {
+            throw new Error(`Profile state cannot be created: ${profileState}`);
+        }
 
-        restore: async (passphrase: string, seedPhraseWords: string[]) => {
-            const { profileState } = get();
-            const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
+        const profile = Profile.createFromSeedPhrase(seedPhraseWords);
+        const updatedProfile = profile.addAccountOnCurrentNetwork("Restored Account 1", seedPhraseWords);
+        await profileStorage.storeProfile(updatedProfile);
 
-            if (!ProfileState.canCreateProfile(profileState)) {
-                throw new Error(`Profile state cannot be created: ${profileState}`);
-            }
+        const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
+        if (!created) {
+            throw new Error("Failed to store seed phrase in vault");
+        }
 
-            const profile = Profile.createFromSeedPhrase(seedPhraseWords);
-            const updatedProfile = profile.addAccountOnCurrentNetwork("Restored Account 1", seedPhraseWords);
-            await profileStorage.storeProfile(updatedProfile);
+        set({ profileState: updatedProfile });
+    },
 
-            const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
-            if (!created) {
-                throw new Error("Failed to store seed phrase in vault");
-            }
+    update: async (profile: Profile) => {
+        set({ profileState: profile });
+    },
 
-            set({ profileState: updatedProfile });
-        },
+    delete: async () => {
+        const { profileState } = get();
+        const { profileStorage, seedPhraseVault, keyValueStorage } = useAppDependenciesStore.getState();
 
-        update: async (profile: Profile) => {
-            set({ profileState: profile });
-        },
+        if (!ProfileState.isProfile(profileState)) {
+            throw new Error(`Profile state cannot be deleted: ${profileState}`);
+        }
 
-        delete: async () => {
-            const { profileState } = get();
-            const { profileStorage, seedPhraseVault, keyValueStorage } = useAppDependenciesStore.getState();
+        await profileStorage.deleteProfile();
+        await keyValueStorage.clear();
+        await seedPhraseVault.reset(profileState.keySources.map(keySource => keySource.id));
 
-            if (!ProfileState.isProfile(profileState)) {
-                throw new Error(`Profile state cannot be deleted: ${profileState}`);
-            }
-
-            await profileStorage.deleteProfile();
-            await keyValueStorage.clear();
-            await seedPhraseVault.reset(profileState.keySources.map(keySource => keySource.id));
-
-            set({ profileState: null });
-        },
-    })));
+        set({ profileState: null });
+    },
+}));

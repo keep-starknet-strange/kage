@@ -54,6 +54,10 @@ export default class Token implements Identifiable {
     withMetadata(metadata: TokenMetadata): Token {
         return new Token(this.contractAddress, this.tongoAddress, this.symbol, this.decimals, metadata);
     }
+
+    withUpdatedPrice(priceInUsd: number): Token {
+        return this.withMetadata(new TokenMetadata(this.logo, this.name, priceInUsd));
+    }
 }
 
 export class TokenMetadata {
