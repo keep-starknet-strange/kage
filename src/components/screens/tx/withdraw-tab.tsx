@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {LOG} from "@/utils/logs";
+import { LibraryError, RpcError } from "starknet";
 
 type WithdrawTabProps = {
     account: Account;
@@ -44,7 +45,9 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
             try {
                 await withdraw(account, amount, account);
             } catch (error) {
-                LOG.error("[Withdraw]:", error)
+                if (error instanceof RpcError) {
+                    LOG.error("[Withdraw]:", error.baseError.code, error.baseError.message)
+                }
             } finally {
                 setIsWithdrawing(false);
             }

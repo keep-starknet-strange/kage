@@ -1,5 +1,6 @@
 import { AddressView } from '@/components/address-view';
 import { PrivateBalancesLocked } from '@/components/private-balances-locked';
+import { DeployButton } from '@/components/ui/deploy-button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
 import { PublicBalanceCard } from '@/components/ui/public-balance-card';
@@ -96,7 +97,10 @@ export default function AccountDetailScreen() {
 
                 {/* Account Info */}
                 <View style={styles.accountInfo}>
-                    <Text style={styles.accountName}>{account.name}</Text>
+                    <View style={styles.accountNameContainer}>
+                        <Text style={styles.accountName}>{account.name}</Text>
+                        <DeployButton account={account} />
+                    </View>
                     <AddressView address={account.address} variant="compact" />
                 </View>
             </View>
@@ -415,6 +419,11 @@ const styles = StyleSheet.create({
         color: colorTokens['text.inverted'],
         fontSize: 16,
         fontWeight: '600',
+    },
+    accountNameContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
 });
 

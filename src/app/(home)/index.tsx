@@ -1,9 +1,11 @@
 import { AddressView } from '@/components/address-view';
+import { DeployButton } from '@/components/ui/deploy-button';
 import { TotalBalanceCard } from '@/components/ui/total-balance-card';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
+import { useAccountsStore } from '@/stores/accountsStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -16,14 +18,14 @@ export default function HomeScreen() {
 
     // Get accounts from the current network
     const accounts = useMemo(() => {
-        return ProfileState.isProfile(profileState) 
-            ? profileState.currentNetwork.accounts 
+        return ProfileState.isProfile(profileState)
+            ? profileState.currentNetwork.accounts
             : [];
     }, [profileState]);
 
     const renderHeader = () => (
         <>
-            <TotalBalanceCard 
+            <TotalBalanceCard
                 accounts={accounts as Account[]}
             />
             <Text style={styles.sectionTitle}>My Public Accounts</Text>
@@ -31,15 +33,19 @@ export default function HomeScreen() {
     );
 
     const renderAccountCard = ({ item: account }: { item: Account }) => (
-        <TouchableOpacity 
+        <TouchableOpacity
             style={styles.accountCard}
             activeOpacity={0.7}
             onPress={() => {
                 router.push(`/account/${account.address}`);
             }}
         >
-            <Text style={styles.accountName}>{account.name}</Text>
-            <AddressView address={account.address} variant='compact'/>
+            <View style={styles.accountNameContainer}>
+                <Text style={styles.accountName}>{account.name}</Text>
+                <DeployButton account={account} />
+            </View>
+
+            <AddressView address={account.address} variant='compact' />
         </TouchableOpacity>
     );
 
@@ -50,7 +56,7 @@ export default function HomeScreen() {
     );
 
     const renderFooter = () => (
-        <TouchableOpacity 
+        <TouchableOpacity
             style={styles.createAccountButton}
             activeOpacity={0.7}
             onPress={() => {
@@ -146,5 +152,10 @@ const styles = StyleSheet.create({
         color: colorTokens['text.inverted'],
         fontSize: 16,
         fontWeight: '600',
+    },
+    accountNameContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
 });

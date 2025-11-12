@@ -13,6 +13,7 @@ import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
 import { symmetricDifference } from '@/utils/sets';
+import { useAccountsStore } from '@/stores/accountsStore';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -39,6 +40,11 @@ export default function RootLayout() {
         }
         const { initialize, profileState: profileStateOnMount } = useProfileStore.getState();
         const unsubscribe = useProfileStore.subscribe((state, prevState) => {
+            if (state.profileState === null) {
+                void useBalanceStore.getState().unsubscribeFromBalanceUpdates();
+                return;
+            }
+
             const prevNetworkId = ProfileState.isProfile(prevState.profileState) ? prevState.profileState.currentNetworkWithDefinition.networkDefinition.chainId : null;
             const newNetworkId = ProfileState.isProfile(state.profileState) ? state.profileState.currentNetworkWithDefinition.networkDefinition.chainId : null;
 
@@ -62,6 +68,8 @@ export default function RootLayout() {
             initialize().then(() => SplashScreen.hideAsync());
         } else if (ProfileState.isProfile(profileStateOnMount)) {
             startSubscriptions(profileStateOnMount);
+        } else if (profileStateOnMount === null) {
+            void useBalanceStore.getState().unsubscribeFromBalanceUpdates();
         }
 
         return () => {
@@ -77,6 +85,13 @@ export default function RootLayout() {
         return state.profileState.currentNetworkWithDefinition.networkDefinition;
     });
     const isOnboarded = useProfileStore(state => ProfileState.isOnboarded(state.profileState));
+
+    const accounts = useProfileStore(state => ProfileState.isProfile(state.profileState) ? state.profileState.currentNetwork.accounts : null);
+    useEffect(() => {
+        if (accounts) {
+            useAccountsStore.getState().checkAccountsDeployed(accounts as Account[]);
+        }
+    }, [accounts]);
 
     return (
         <AppProviders>
