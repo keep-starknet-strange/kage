@@ -55,6 +55,10 @@ export default class Network {
         return new Network(this.networkId, newAccounts);
     }
 
+    updateAccounts(updatedAccounts: Account[]): Network {
+        return new Network(this.networkId, updatedAccounts);
+    }
+
     static createEmpty(networkId: NetworkId): Network {
         return new Network(networkId, [])
     }

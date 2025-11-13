@@ -74,8 +74,21 @@ export default class Profile {
         const updatedNetworks = this.networks.map(network => network.networkId === updatedNetwork.networkId ? updatedNetwork : network);
 
         return new Profile(
-            this.header,
+            this.header.updateUsed(new Date()),
             keySources,
+            updatedNetworks,
+            this.settings
+        );
+    }
+
+    renameAccount(account: Account, newName: string): Profile {
+        const updatedAccounts = this.accountsOnCurrentNetwork.map(acc => acc.id === account.id ? acc.updateName(newName) : acc);
+        const updatedNetwork = this.currentNetwork.updateAccounts(updatedAccounts);
+        const updatedNetworks = this.networks.map(network => network.networkId === updatedNetwork.networkId ? updatedNetwork : network);
+
+        return new Profile(
+            this.header.updateUsed(new Date()),
+            this.keySources as KeySource[],
             updatedNetworks,
             this.settings
         );

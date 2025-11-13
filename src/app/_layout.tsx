@@ -102,8 +102,9 @@ export default function RootLayout() {
 
                 <Stack.Protected guard={isOnboarded}>
                     <Stack.Screen name="(home)" options={{ headerShown: false }} />
-                    <Stack.Screen name="account/[accountAddress]" options={{ headerShown: false }} />
-                    <Stack.Screen name="tx/[txType]/[accountAddress]" options={{ headerShown: false }} />
+                    <Stack.Screen name="account/[accountAddress]" options={{ headerShown: true }} />
+                    <Stack.Screen name="account/create" options={{ headerShown: true }} />
+                    <Stack.Screen name="tx/[txType]/[accountAddress]" options={{ headerShown: true }} />
                 </Stack.Protected>
             </Stack>
 

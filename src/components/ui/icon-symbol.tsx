@@ -36,6 +36,10 @@ const MAPPING = {
     'lock.shield.fill': 'shield',
     'document.on.document': 'content-copy',
     'arrow.up.right.square': 'output',
+    'pencil': 'edit',
+    'pencil.circle.fill': 'edit',
+    'ellipsis': 'more-horiz',
+    'ellipsis.circle': 'more-horiz',
 } as IconMapping;
 
 /**

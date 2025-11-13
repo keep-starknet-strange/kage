@@ -2,16 +2,18 @@ import Profile from "@/profile/profile";
 import { ProfileState } from "@/profile/profileState";
 import { generateMnemonicWords } from "@starkms/key-management";
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
 import { useAppDependenciesStore } from "./appDependenciesStore";
+import { useAccessVaultStore } from "./accessVaultStore";
+import Account from "@/profile/account";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
 
     initialize: () => Promise<void>;
     create: (passphrase: string, accountName: string) => Promise<void>;
-    update: (profile: Profile) => Promise<void>;
     restore: (passphrase: string, seedPhraseWords: string[]) => Promise<void>;
+    addAccount: (accountName: string) => Promise<void>;
+    renameAccount: (account: Account, newName: string) => Promise<void>;
     delete: () => Promise<void>;
 }
 
@@ -81,8 +83,37 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         set({ profileState: updatedProfile });
     },
 
-    update: async (profile: Profile) => {
-        set({ profileState: profile });
+    addAccount: async (accountName: string) => {
+        const { profileState } = get();
+        const { profileStorage } = useAppDependenciesStore.getState();
+        const { requestAccess } = useAccessVaultStore.getState();
+
+        if (!ProfileState.isProfile(profileState)) {
+            throw new Error(`Profile state cannot be updated: ${profileState}`);
+        }
+
+        const result = await requestAccess({
+            requestFor: "seedPhrase",
+            keySourceId: profileState.keySources[0].id,
+        });
+
+        const updatedProfile = profileState.addAccountOnCurrentNetwork(accountName, result.seedPhrase.getWords());
+        await profileStorage.storeProfile(updatedProfile);
+        
+        set({ profileState: updatedProfile });
+    },
+
+    renameAccount: async (account: Account, newName: string) => {
+        const { profileState } = get();
+        const { profileStorage } = useAppDependenciesStore.getState();
+
+        if (!ProfileState.isProfile(profileState)) {
+            throw new Error(`Profile state cannot be updated: ${profileState}`);
+        }
+      
+        const updatedProfile = profileState.renameAccount(account, newName);
+        await profileStorage.storeProfile(updatedProfile);
+        set({ profileState: updatedProfile });
     },
 
     delete: async () => {

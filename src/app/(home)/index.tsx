@@ -1,11 +1,11 @@
 import { AddressView } from '@/components/address-view';
+import { AccountContextMenu } from '@/components/ui/account-context-menu';
 import { DeployButton } from '@/components/ui/deploy-button';
 import { TotalBalanceCard } from '@/components/ui/total-balance-card';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
-import { useAccountsStore } from '@/stores/accountsStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -42,7 +42,8 @@ export default function HomeScreen() {
         >
             <View style={styles.accountNameContainer}>
                 <Text style={styles.accountName}>{account.name}</Text>
-                <DeployButton account={account} />
+                
+                <AccountContextMenu account={account} />
             </View>
 
             <AddressView address={account.address} variant='compact' />
@@ -60,7 +61,7 @@ export default function HomeScreen() {
             style={styles.createAccountButton}
             activeOpacity={0.7}
             onPress={() => {
-                // TODO: Navigate to create account screen
+                router.push('/account/create');
             }}
         >
             <Text style={styles.createAccountButtonText}>Add a new public account</Text>

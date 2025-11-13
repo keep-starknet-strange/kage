@@ -51,7 +51,6 @@ export namespace AccountAddress {
 }
 
 export default class Account implements Identifiable {
-
     readonly address: AccountAddress;
     readonly name: string
     readonly networkId: NetworkId;
@@ -88,5 +87,9 @@ export default class Account implements Identifiable {
             address: this.address,
             signer: new AccountSigner(this, vault),
         });
+    }
+
+    updateName(newName: string): Account {
+        return new Account(this.address, newName, this.networkId, this.keyInstance);
     }
 }

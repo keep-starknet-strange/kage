@@ -1,5 +1,6 @@
 import { AddressView } from '@/components/address-view';
 import { PrivateBalancesLocked } from '@/components/private-balances-locked';
+import AccountHeader from '@/components/ui/account-header';
 import { DeployButton } from '@/components/ui/deploy-button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
@@ -12,8 +13,8 @@ import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { PrivateTokenBalance, PublicTokenBalance } from '@/types/tokenBalance';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type TabType = 'public' | 'private';
@@ -21,6 +22,7 @@ type TabType = 'public' | 'private';
 export default function AccountDetailScreen() {
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
+    const navigation = useNavigation();
     const { accountAddress } = useLocalSearchParams<{ accountAddress: AccountAddress }>();
     const { profileState } = useProfileStore();
     const { requestRefresh, unlockPrivateBalances, lockPrivateBalances } = useBalanceStore();
@@ -66,10 +68,16 @@ export default function AccountDetailScreen() {
         }
     }, [account, unlockPrivateBalances]);
 
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            header: () => <AccountHeader account={account} />,
+        });
+    }, [navigation, account]);
+
     // If account not found, show error
     if (!account) {
         return (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
+            <View style={[styles.container]}>
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>Account not found</Text>
                     <Pressable
@@ -84,27 +92,7 @@ export default function AccountDetailScreen() {
     }
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-            {/* Header Section */}
-            <View style={styles.header}>
-                {/* Back Button */}
-                <Pressable
-                    style={styles.backIconButton}
-                    onPress={() => router.back()}
-                >
-                    <IconSymbol name="chevron.left" size={24} color={colorTokens['text.primary']} />
-                </Pressable>
-
-                {/* Account Info */}
-                <View style={styles.accountInfo}>
-                    <View style={styles.accountNameContainer}>
-                        <Text style={styles.accountName}>{account.name}</Text>
-                        <DeployButton account={account} />
-                    </View>
-                    <AddressView address={account.address} variant="compact" />
-                </View>
-            </View>
-
+        <View style={[styles.container]}>
             {/* Total Balance Section */}
             {activeTab === 'public' && (
                 <PublicBalanceCard
@@ -292,31 +280,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spaceTokens[4],
-        paddingVertical: spaceTokens[3],
-        gap: spaceTokens[3],
-    },
-    backIconButton: {
-        width: 40,
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: radiusTokens.md,
-        backgroundColor: colorTokens['bg.elevated'],
-    },
-    accountInfo: {
-        flex: 1,
-        gap: spaceTokens[1],
-    },
-    accountName: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: colorTokens['text.primary'],
-    },
     balanceCard: {
         marginHorizontal: spaceTokens[4],
         marginVertical: spaceTokens[1],
@@ -422,11 +385,6 @@ const styles = StyleSheet.create({
         color: colorTokens['text.inverted'],
         fontSize: 16,
         fontWeight: '600',
-    },
-    accountNameContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
     },
 });
 

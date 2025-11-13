@@ -3,14 +3,15 @@ import { FundTab } from "@/components/screens/tx/fund-tab";
 import { PublicTransferTab } from "@/components/screens/tx/public-transfer-tab";
 import { TransferTab } from "@/components/screens/tx/transfer-tab";
 import { WithdrawTab } from "@/components/screens/tx/withdraw-tab";
+import AccountHeader from "@/components/ui/account-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useProfileStore } from "@/stores/profileStore";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
@@ -18,6 +19,7 @@ type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
 const TransactionScreen = () => {
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
+    const navigation = useNavigation();
     const { txType, accountAddress } = useLocalSearchParams<{ txType: TxType, accountAddress: AccountAddress }>();
     const { profileState } = useProfileStore();
 
@@ -30,6 +32,12 @@ const TransactionScreen = () => {
         }
         return profileState.getAccountOnCurrentNetwork(accountAddress);
     }, [profileState, accountAddress]);
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            header: () => <AccountHeader account={account} />,
+        });
+    }, [navigation, account]);
 
     if (!account) {
         return (
@@ -48,25 +56,8 @@ const TransactionScreen = () => {
     }
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={[styles.container]}>
             <ScrollView style={styles.content}>
-                {/* Header Section */}
-                <View style={styles.header}>
-                    {/* Back Button */}
-                    <Pressable
-                        style={styles.backIconButton}
-                        onPress={() => router.back()}
-                    >
-                        <IconSymbol name="chevron.left" size={24} color={colorTokens['text.primary']} />
-                    </Pressable>
-
-                    {/* Account Info */}
-                    <View style={styles.accountInfo}>
-                        <Text style={styles.accountName}>{account.name}</Text>
-                        <AddressView address={account.address} variant="compact" />
-                    </View>
-                </View>
-
                 {activeTab !== 'publicTransfer' && (
                     <>
                         < View style={styles.tabContainer}>
