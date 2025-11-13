@@ -9,7 +9,7 @@ import { IconSymbol } from './ui/icon-symbol';
 
 export type AddressViewProps = {
     address: AccountAddress;
-    variant?: 'default' | 'compact';
+    variant?: 'default' | 'compact' | 'full';
 }
 
 export function AddressView({ address, variant = 'default' }: AddressViewProps) {
@@ -18,7 +18,11 @@ export function AddressView({ address, variant = 'default' }: AddressViewProps) 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
     const displayedAddress = useMemo(() => {
-        return formattedAddress(address, variant);
+        if (variant === "full") {
+            return address;
+        } else {
+            return formattedAddress(address, variant);
+        }
     }, [address, variant]);
 
     const copyToClipboard = async () => {

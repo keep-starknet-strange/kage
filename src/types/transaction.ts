@@ -1,5 +1,5 @@
-import Account from "@/profile/account";
-import {PrivateAmount} from "./amount";
+import Account, { AccountAddress } from "@/profile/account";
+import {PrivateAmount, PublicAmount} from "./amount";
 import {PrivateTokenRecipient} from "./privateRecipient";
 
 export type PrivateTransaction = {
@@ -20,6 +20,12 @@ export type PrivateTransaction = {
     to: Account,
     amount: PrivateAmount,
     signer: Account,
+    txHash: string,
+} | {
+    type: "publicTransfer",
+    from: Account,
+    amount: PublicAmount,
+    recipient: AccountAddress,
     txHash: string,
 }
 

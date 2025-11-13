@@ -1,18 +1,19 @@
 import { AddressView } from "@/components/address-view";
 import { FundTab } from "@/components/screens/tx/fund-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { PublicTransferTab } from "@/components/screens/tx/public-transfer-tab";
 import { TransferTab } from "@/components/screens/tx/transfer-tab";
 import { WithdrawTab } from "@/components/screens/tx/withdraw-tab";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-type TxType = 'fund' | 'transfer' | 'withdraw';
+type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
 
 const TransactionScreen = () => {
     const { insets } = useDynamicSafeAreaInsets();
@@ -21,8 +22,6 @@ const TransactionScreen = () => {
     const { profileState } = useProfileStore();
 
     const [activeTab, setActiveTab] = useState<TxType>(txType as TxType || 'fund');
-    const [withdrawAmount, setWithdrawAmount] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
 
     // Find the account from the profile state
     const account = useMemo(() => {
@@ -31,25 +30,6 @@ const TransactionScreen = () => {
         }
         return profileState.getAccountOnCurrentNetwork(accountAddress);
     }, [profileState, accountAddress]);
-
-    const handleWithdraw = useCallback(async () => {
-        if (!withdrawAmount) {
-            Alert.alert('Error', 'Please enter an amount');
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            // TODO: Implement withdraw logic
-            Alert.alert('Success', `Withdrawn ${withdrawAmount} tokens`);
-            setWithdrawAmount("");
-        } catch (error) {
-            console.error('Error withdrawing:', error);
-            Alert.alert('Error', 'Failed to withdraw tokens');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [withdrawAmount]);
 
     if (!account) {
         return (
@@ -87,67 +67,74 @@ const TransactionScreen = () => {
                     </View>
                 </View>
 
-                {/* Tab Navigation */}
-                <View style={styles.tabContainer}>
-                    <Pressable
-                        style={[styles.tab, activeTab === 'fund' && styles.activeTab]}
-                        onPress={() => setActiveTab('fund')}
-                    >
-                        <IconSymbol
-                            name="plus.circle"
-                            size={20}
-                            color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
-                        />
-                        <Text style={[styles.tabText, activeTab === 'fund' && styles.activeTabText]}>
-                            Fund
-                        </Text>
-                    </Pressable>
+                {activeTab !== 'publicTransfer' && (
+                    <>
+                        < View style={styles.tabContainer}>
+                            <Pressable
+                                style={[styles.tab, activeTab === 'fund' && styles.activeTab]}
+                                onPress={() => setActiveTab('fund')}
+                            >
+                                <IconSymbol
+                                    name="plus.circle"
+                                    size={20}
+                                    color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
+                                />
+                                <Text style={[styles.tabText, activeTab === 'fund' && styles.activeTabText]}>
+                                    Shield
+                                </Text>
+                            </Pressable>
 
-                    <Pressable
-                        style={[styles.tab, activeTab === 'transfer' && styles.activeTab]}
-                        onPress={() => setActiveTab('transfer')}
-                    >
-                        <IconSymbol
-                            name="arrow.right.circle"
-                            size={20}
-                            color={activeTab === 'transfer' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
-                        />
-                        <Text style={[styles.tabText, activeTab === 'transfer' && styles.activeTabText]}>
-                            Transfer
-                        </Text>
-                    </Pressable>
+                            <Pressable
+                                style={[styles.tab, activeTab === 'transfer' && styles.activeTab]}
+                                onPress={() => setActiveTab('transfer')}
+                            >
+                                <IconSymbol
+                                    name="arrow.right.circle"
+                                    size={20}
+                                    color={activeTab === 'transfer' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
+                                />
+                                <Text style={[styles.tabText, activeTab === 'transfer' && styles.activeTabText]}>
+                                    Transfer
+                                </Text>
+                            </Pressable>
 
-                    <Pressable
-                        style={[styles.tab, activeTab === 'withdraw' && styles.activeTab]}
-                        onPress={() => setActiveTab('withdraw')}
-                    >
-                        <IconSymbol
-                            name="arrow.up.circle"
-                            size={20}
-                            color={activeTab === 'withdraw' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
-                        />
-                        <Text style={[styles.tabText, activeTab === 'withdraw' && styles.activeTabText]}>
-                            Withdraw
-                        </Text>
-                    </Pressable>
-                </View>
+                            <Pressable
+                                style={[styles.tab, activeTab === 'withdraw' && styles.activeTab]}
+                                onPress={() => setActiveTab('withdraw')}
+                            >
+                                <IconSymbol
+                                    name="arrow.up.circle"
+                                    size={20}
+                                    color={activeTab === 'withdraw' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
+                                />
+                                <Text style={[styles.tabText, activeTab === 'withdraw' && styles.activeTabText]}>
+                                    Unshield
+                                </Text>
+                            </Pressable>
+                        </View>
 
-                {/* Tab Content */}
-                <View style={styles.tabContent}>
-                    {activeTab === 'fund' && (
-                        <FundTab account={account} />
-                    )}
 
-                    {activeTab === 'transfer' && (
-                        <TransferTab account={account} />
-                    )}
+                        <View style={styles.tabContent}>
+                            {activeTab === 'fund' && (
+                                <FundTab account={account} />
+                            )}
 
-                    {activeTab === 'withdraw' && (
-                        <WithdrawTab account={account} />
-                    )}
-                </View>
-            </ScrollView>
-        </View>
+                            {activeTab === 'transfer' && (
+                                <TransferTab account={account} />
+                            )}
+
+                            {activeTab === 'withdraw' && (
+                                <WithdrawTab account={account} />
+                            )}
+                        </View>
+                    </>
+                )}
+
+                {activeTab === 'publicTransfer' && (
+                    <PublicTransferTab account={account} />
+                )}
+            </ScrollView >
+        </View >
     );
 };
 

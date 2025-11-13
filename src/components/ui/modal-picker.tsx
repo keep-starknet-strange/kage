@@ -13,6 +13,7 @@ type ModalPickerProps<T extends Identifiable> = {
     disabled?: boolean;
     pickerButtonStyle?: StyleProp<ViewStyle>;
     renderItem: (item: T) => ReactNode;
+    renderModalItem: (item: T) => ReactNode;
 };
 
 export function ModalPicker<T extends Identifiable>({
@@ -23,6 +24,7 @@ export function ModalPicker<T extends Identifiable>({
     placeholder,
     disabled,
     renderItem,
+    renderModalItem = renderItem,
     pickerButtonStyle,
 }: ModalPickerProps<T>) {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -88,7 +90,7 @@ export function ModalPicker<T extends Identifiable>({
                                 ]}
                                 onPress={() => handleSelectItem(item)}
                             >
-                                {renderItem(item)}
+                                {renderModalItem(item)}
 
                                 {selectedItem?.id === item.id && (
                                     <IconSymbol
@@ -180,6 +182,7 @@ const styles = StyleSheet.create({
         padding: spaceTokens[4],
         borderBottomWidth: 1,
         borderBottomColor: colorTokens['border.subtle'],
+        gap: spaceTokens[2],
     },
     itemSelected: {
         backgroundColor: colorTokens['bg.sunken'],

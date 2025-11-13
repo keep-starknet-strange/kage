@@ -10,6 +10,46 @@ export type AccountAddress = string & {
     __type: "account";
 }
 
+export namespace AccountAddress {
+    export function fromHex(hex: string): AccountAddress {
+        // Validate hex format
+        if (!hex.startsWith('0x')) {
+            throw new Error(`Invalid account address: must start with 0x`);
+        }
+        
+        // Validate hex characters (case-insensitive) and length
+        const hexPart = hex.slice(2);
+        if (hexPart.length === 0) {
+            throw new Error(`Invalid account address: missing hex digits after 0x`);
+        }
+        
+        if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+            throw new Error(`Invalid account address: contains non-hex characters`);
+        }
+        
+        // Starknet addresses can be up to 64 hex characters (256 bits) but can be shorter
+        if (hexPart.length > 64) {
+            throw new Error(`Invalid account address: too long (max 64 hex characters)`);
+        }
+        
+        // Pad with leading zeros to 64 characters and normalize to lowercase
+        const paddedHex = hexPart.padStart(64, '0');
+        return `0x${paddedHex}`.toLowerCase() as AccountAddress;
+    }
+
+    export function fromHexOrNull(hex: string): AccountAddress | null {
+        try {
+            return AccountAddress.fromHex(hex);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    export function correlate(address1: AccountAddress, address2: AccountAddress): boolean {
+        return address1.toLowerCase() === address2.toLowerCase();
+    }
+}
+
 export default class Account implements Identifiable {
 
     readonly address: AccountAddress;

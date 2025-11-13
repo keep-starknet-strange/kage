@@ -109,6 +109,9 @@ export default function AccountDetailScreen() {
             {activeTab === 'public' && (
                 <PublicBalanceCard
                     account={account}
+                    onTransferPress={() => {
+                        router.push(`/tx/publicTransfer/${accountAddress}`);
+                    }}
                     style={styles.balanceCard}
                 />
             )}

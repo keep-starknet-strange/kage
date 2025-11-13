@@ -1,0 +1,117 @@
+import { AccountAddressInput } from "@/components/ui/account-address-input";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { TokenAmountInput } from "@/components/ui/token-amount-input";
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import Account, { AccountAddress } from "@/profile/account";
+import { useBalanceStore } from "@/stores/balance/balanceStore";
+import { useTxStore } from "@/stores/txStore";
+import { PublicAmount } from "@/types/amount";
+import { PublicTokenBalance } from "@/types/tokenBalance";
+import { LOG } from "@/utils/logs";
+import { useIsFocused } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+
+type PublicTransferTabProps = {
+    account: Account;
+};
+
+export function PublicTransferTab({
+    account,
+}: PublicTransferTabProps) {
+    const { publicTransfer } = useTxStore();
+    const router = useRouter();
+
+    const isFocused = useIsFocused();
+    const isFocusedRef = useRef(isFocused);
+
+    const [recipientAddress, setRecipientAddress] = useState<AccountAddress | null>(null);
+    const [amount, setAmount] = useState<PublicAmount | null>(null);
+    const [isTransferring, setIsTransferring] = useState(false);
+
+    const publicBalances: PublicTokenBalance[] | null = useBalanceStore(state => state.publicBalances.get(account.address) ?? null);
+
+    const handleTransfer = useCallback(() => {
+        if (!recipientAddress || !amount) {
+            return;
+        }
+
+        const transferAsync = async () => {
+            setIsTransferring(true);
+            try {
+                await publicTransfer(account, amount, recipientAddress);
+            } catch (error) {
+                LOG.error("[Transfer]:", error)
+            } finally {
+                setIsTransferring(false);
+            }
+        }
+
+        transferAsync().then(() => {
+            // Only navigate back if the screen is still focused/visible
+            if (isFocusedRef.current) {
+                router.back();
+            }
+        });
+    }, [recipientAddress, amount, publicTransfer, account, router]);
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.description}>
+                Transfer tokens to another address.
+            </Text>
+
+            <AccountAddressInput
+                label="Recipient Address"
+                placeholder="Enter recipient's account address..."
+                from={account.address}
+                onAddressChange={setRecipientAddress}
+            />
+
+            <TokenAmountInput
+                label="Amount"
+                placeholder="0.0"
+                balances={publicBalances ?? []}
+                onAmountChange={setAmount}
+            />
+
+            <PrimaryButton
+                title="Send"
+                onPress={handleTransfer}
+                disabled={!recipientAddress || !amount}
+                loading={isTransferring}
+            />
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        gap: spaceTokens[3],
+        paddingHorizontal: spaceTokens[3],
+    },
+    description: {
+        fontSize: 14,
+        color: colorTokens['text.secondary'],
+        lineHeight: 20,
+    },
+    inputGroup: {
+        gap: spaceTokens[1],
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colorTokens['text.primary'],
+    },
+    input: {
+        backgroundColor: colorTokens['bg.elevated'],
+        borderWidth: 1,
+        borderColor: colorTokens['border.subtle'],
+        borderRadius: radiusTokens.sm,
+        padding: spaceTokens[3],
+        fontSize: 16,
+        color: colorTokens['text.primary'],
+    },
+});
+

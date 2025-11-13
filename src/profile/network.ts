@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import Account from "./account";
+import Account, { AccountAddress } from "./account";
 import { NetworkId } from "./misc";
 import { KeySourceId } from "./keys/keySource";
 import HDKeyInstance from "./keyInstance";
@@ -48,7 +48,7 @@ export default class Network {
         ).address;
 
         const keyInstance = new HDKeyInstance(keySourceId, publicKey, newIndex);
-        const newAccount = new Account(accountAddress, accountName, this.networkId, keyInstance);
+        const newAccount = new Account(AccountAddress.fromHex(accountAddress), accountName, this.networkId, keyInstance);
 
         const newAccounts = [...this.accounts, newAccount];
 

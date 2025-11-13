@@ -2,11 +2,12 @@ import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
 import { stringToBigint, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, StyleSheet, Text, TextInput, View } from "react-native";
 import { ModalPicker } from "./modal-picker";
 import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
+import { IconSymbol } from "./icon-symbol";
 
-type AmountType<T extends TokenBalance> = 
+type AmountType<T extends TokenBalance> =
     T extends PrivateTokenBalance ? PrivateAmount :
     T extends PublicTokenBalance ? PublicAmount :
     Amount;
@@ -75,7 +76,8 @@ export function TokenAmountInput<T extends TokenBalance>({
         if (amountDecimal > maxRange) {
             setError("Exceeds balance")
             return;
-        } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {6
+        } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {
+            6
             setError(`Private ${selectedBalance.token.symbol} amount must be at least ${tokenAmountToFormatted(true, minRange, selectedBalance.token)}`)
             return;
         } else if (amountDecimal < minRange) {
@@ -111,6 +113,38 @@ export function TokenAmountInput<T extends TokenBalance>({
         );
     };
 
+    const renderModalItem = (balance: T) => {
+        const token = balance.token;
+        const hasLogo = token.logo !== null;
+
+        return (
+            <View style={styles.tokenItemContainer}>
+                <View style={styles.tokenLeftSection}>
+                    {hasLogo ? (
+                        <Image
+                            source={{ uri: token.logo!.toString() }}
+                            style={styles.tokenLogo}
+                        />
+                    ) : (
+                        <View style={styles.tokenLogoPlaceholder}>
+                            <IconSymbol
+                                name="wallet.bifold.fill"
+                                size={16}
+                                color={colorTokens['text.muted']}
+                            />
+                        </View>
+                    )}
+                    <Text style={styles.tokenName}>
+                        {token.name || token.symbol}
+                    </Text>
+                </View>
+                <Text style={styles.tokenSymbol}>
+                    {token.symbol}
+                </Text>
+            </View>
+        );
+    };
+
     return (
         <View style={styles.container}>
             {label && <Text style={styles.label}>{label}</Text>}
@@ -136,6 +170,7 @@ export function TokenAmountInput<T extends TokenBalance>({
                     placeholder="Token"
                     disabled={disabled}
                     renderItem={renderItem}
+                    renderModalItem={renderModalItem}
                     pickerButtonStyle={styles.tokenPickerButton}
                 />
             </View>
@@ -204,6 +239,38 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spaceTokens[0],
+    },
+    tokenItemContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    tokenLeftSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spaceTokens[2],
+        flex: 1,
+    },
+    tokenLogo: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+    },
+    tokenLogoPlaceholder: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: colorTokens['bg.sunken'],
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    tokenName: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colorTokens['text.primary'],
+        flex: 1,
     },
     tokenText: {
         fontSize: 14,

@@ -4,9 +4,11 @@ import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { getAggregatedFiatBalance } from "@/types/tokenBalance";
 import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
-import { StyleProp, StyleSheet, View, ViewStyle, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle, Text, TouchableOpacity, ActivityIndicator, Modal, Pressable, ScrollView } from "react-native";
 import { IconSymbol } from "./icon-symbol";
 import ActionButton from "./action-buttons";
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { AddressView } from "../address-view";
 
 export interface PrivateBalanceCardProps {
     account: Account;
@@ -74,7 +76,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
             <View style={styles.actionsContainer}>
                 <ActionButton
                     icon="plus.circle.fill"
-                    label="Fund"
+                    label="Shield"
                     onPress={() => {
                         props.onFundPress();
                     }}
@@ -90,7 +92,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                 />
                 <ActionButton
                     icon="arrow.up.circle.fill"
-                    label="Withdraw"
+                    label="Unshield"
                     onPress={() => {
                         props.onWithdrawPress();
                     }}
