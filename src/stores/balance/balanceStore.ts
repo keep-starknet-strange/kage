@@ -254,14 +254,16 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                         return;
                     }
 
-                    const fromAccount = accountAddresses.get(data.data[0] as AccountAddress);
-                    const toAccount = accountAddresses.get(data.data[1] as AccountAddress);
+                    const fromAccount = accountAddresses.get(AccountAddress.fromHex(data.data[0]));
+                    const toAccount = accountAddresses.get(AccountAddress.fromHex(data.data[1]));
 
                     if (fromAccount) {
+                        LOG.info("Public transfer event received for token", address, "from", fromAccount.name);
                         MapUtils.update(publicBalancesNeedingUpdate, fromAccount, token)
                     }
 
                     if (toAccount) {
+                        LOG.info("Public transfer event received for token", address, "to", toAccount.name);
                         MapUtils.update(publicBalancesNeedingUpdate, toAccount, token)
                     }
 
