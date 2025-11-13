@@ -4,9 +4,10 @@ import Account from "@/profile/account";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { getAggregatedFiatBalance } from "@/types/tokenBalance";
 import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
+import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
 import React, { useEffect, useState } from "react";
-import { Linking, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { AddressView } from "../address-view";
 import ActionButton from "./action-buttons";
 import { IconSymbol } from "./icon-symbol";
@@ -49,11 +50,8 @@ const FundModal = (
                             onPress={() => {
                                 const openFaucet = async () => {
                                     const url = "https://starknet-faucet.vercel.app/";
-                                    const supported = await Linking.canOpenURL(url);
-                                    if (supported) {
-                                        await Clipboard.setStringAsync(account.address);
-                                        await Linking.openURL(url);
-                                    }
+                                    await Clipboard.setStringAsync(account.address);
+                                    await WebBrowser.openBrowserAsync(url)
                                     onRequestClose()
                                 }
 
