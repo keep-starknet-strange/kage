@@ -11,6 +11,8 @@ import { useAccessVaultStore } from "./accessVaultStore";
 import { useRpcStore } from "./useRpcStore";
 import { AppError } from "@/types/appError";
 import { showToastError, showToastTransaction } from "@/components/ui/toast";
+import { useAppDependenciesStore } from "./appDependenciesStore";
+import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
 
@@ -42,6 +44,19 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
         const updated = new Map(status);
         updated.set(account.address, newStatus);
         return updated;
+    }
+
+    const readStoredClassHashes = async (keyValueStorage: KeyValueStorage): Promise<Map<AccountAddress, string>> => {
+        const stored = await keyValueStorage.get("accounts.classHashes")
+        if (stored) {
+            return new Map(Object.entries(stored).map(([address, classHash]) => [AccountAddress.fromHex(address), classHash]));
+        } else {
+            return new Map();
+        }
+    }
+
+    const writeStoredClassHashes = async (keyValueStorage: KeyValueStorage, classHashes: Map<AccountAddress, string>) => {
+        await keyValueStorage.set("accounts.classHashes", Object.fromEntries(classHashes.entries()));
     }
 
     return {
@@ -250,30 +265,47 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         checkAccountsDeployed: async (accounts: Account[]) => {
             const { provider } = useRpcStore.getState();
+            const { keyValueStorage } = useAppDependenciesStore.getState();
 
             const deployedAccounts: Map<AccountAddress, DeployedStatus> = new Map();
             try {
+                const storedClassHashes = await readStoredClassHashes(keyValueStorage);
                 const classHashes = await Promise.all(
-                    accounts.map(account => provider
-                        .getClassHashAt(account.address)
-                        .catch(error => {
-                            if (error instanceof RpcError && error.isType("CONTRACT_NOT_FOUND")) {
-                                console.log("Contract not found for account", account.address);
-                                return null;
-                            } else {
-                                throw error;
-                            }
-                        }))
+                    accounts.map(account => {
+                        const storedClassHash = storedClassHashes.get(account.address);
+                        if (storedClassHash) {
+                            return Promise.resolve(storedClassHash);
+                        }
+
+                        console.log("Getting class hash for account", account.address);
+                        return provider
+                            .getClassHashAt(account.address)
+                            .catch(error => {
+                                if (error instanceof RpcError && error.isType("CONTRACT_NOT_FOUND")) {
+                                    console.log("Contract not found for account", account.address);
+                                    return null;
+                                } else {
+                                    throw error;
+                                }
+                            })
+                    })
                 );
 
+                storedClassHashes.clear();
                 for (const [i, classHash] of classHashes.entries()) {
+                    if (classHash) {
+                        storedClassHashes.set(accounts[i].address, classHash);
+                    }
+
                     deployedAccounts.set(accounts[i].address, classHash ? "deployed" : "not-deployed");
                 }
+
+                await writeStoredClassHashes(keyValueStorage, storedClassHashes);
             } catch (error) {
-                LOG.error("[Accounts]:", error);
                 for (const account of accounts) {
                     deployedAccounts.set(account.address, "unknown");
                 }
+                showToastError(error);
             }
 
             set({ deployStatus: deployedAccounts });
