@@ -5,12 +5,15 @@ import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { useProfileStore } from "@/stores/profileStore";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { StyleSheet, Switch, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 
 export default function SettingsScreen() {
     const { insets } = useDynamicSafeAreaInsets();
+    const router = useRouter();
     const { keyValueStorage, seedPhraseVault, biometricsProvider } = useAppDependenciesStore();
     const { requestAccess } = useAccessVaultStore();
     const { delete: deleteProfile } = useProfileStore();
@@ -85,41 +88,128 @@ export default function SettingsScreen() {
         }
     }
 
+    const getBiometryIcon = () => {
+        switch (supportedBiometryType) {
+            case BiometryType.FACE_ID:
+            case BiometryType.FACE:
+                return "faceid" as const;
+            case BiometryType.TOUCH_ID:
+            case BiometryType.FINGERPRINT:
+                return "touchid" as const;
+            case BiometryType.OPTIC_ID:
+                return "opticid" as const;
+            case BiometryType.IRIS:
+                return "eye.fill" as const;
+            default:
+                return "lock.shield.fill" as const;
+        }
+    };
+
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-            <Text style={styles.title}>Settings</Text>
+        <ScrollView 
+            style={styles.container}
+            contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
+        >
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.title}>Settings</Text>
+                <Text style={styles.subtitle}>Manage your wallet preferences</Text>
+            </View>
 
-            <View style={styles.row}>
-                <View>
-                    <Text style={styles.label}>Enable Biometrics</Text>
+            {/* Keys Section */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Security</Text>
+                
+                <TouchableOpacity 
+                    style={styles.settingsItem}
+                    onPress={() => router.push('/keys')}
+                    activeOpacity={0.7}
+                >
+                    <View style={styles.itemLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: colorTokens['brand.glow'] }]}>
+                            <IconSymbol
+                                name="key"
+                                size={20}
+                                color={colorTokens['brand.accent']}
+                            />
+                        </View>
+                        <View style={styles.itemTextContainer}>
+                            <Text style={styles.itemTitle}>Keys</Text>
+                            <Text style={styles.itemDescription}>View and backup your keys</Text>
+                        </View>
+                    </View>
+                    <IconSymbol
+                        name="chevron.right"
+                        size={20}
+                        color={colorTokens['text.muted']}
+                    />
+                </TouchableOpacity>
 
-                    {!supportedBiometryType && (
-                        <Text style={styles.error}>Biometrics Unavailable</Text>
-                    )}
-
-                    {supportedBiometryType && (
-                        <Text style={styles.labelSecondary}>Using {biometryTypeToString(supportedBiometryType)}</Text>
+                {/* Biometrics Toggle */}
+                <View style={styles.settingsItem}>
+                    <View style={styles.itemLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: supportedBiometryType ? 'rgba(47, 185, 132, 0.16)' : 'rgba(108, 114, 133, 0.16)' }]}>
+                            <IconSymbol
+                                name={supportedBiometryType ? getBiometryIcon() : "lock.fill"}
+                                size={20}
+                                color={supportedBiometryType ? colorTokens['status.success'] : colorTokens['text.muted']}
+                            />
+                        </View>
+                        <View style={styles.itemTextContainer}>
+                            <Text style={styles.itemTitle}>
+                                {supportedBiometryType ? biometryTypeToString(supportedBiometryType) : 'Biometrics'}
+                            </Text>
+                            <Text style={styles.itemDescription}>
+                                {!supportedBiometryType && 'Not available on this device'}
+                                {supportedBiometryType && isBiometricsEnabled && 'Enabled for quick access'}
+                                {supportedBiometryType && !isBiometricsEnabled && 'Disabled'}
+                            </Text>
+                        </View>
+                    </View>
+                    {isResolvingBiometrics ? (
+                        <ActivityIndicator size="small" color={colorTokens['brand.accent']} />
+                    ) : (
+                        <Switch
+                            value={isBiometricsEnabled}
+                            onValueChange={handleBiometricsChange}
+                            disabled={!supportedBiometryType}
+                            trackColor={{ 
+                                false: colorTokens['border.strong'], 
+                                true: colorTokens['brand.accent'] 
+                            }}
+                            thumbColor={colorTokens['bg.elevated']}
+                        />
                     )}
                 </View>
-
-                <Switch
-                    value={isBiometricsEnabled}
-                    onValueChange={(enabled) => {
-                        void handleBiometricsChange(enabled);
-                    }}
-                    disabled={isResolvingBiometrics || !supportedBiometryType}
-                />
-
             </View>
 
-            <View style={styles.dangerZone}>
-                <DangerButton
-                    title="Delete Wallet"
-                    onPress={handleDeleteWallet}
-                    loading={isDeletingProfile}
-                />
+            {/* Danger Zone */}
+            <View style={styles.dangerSection}>
+                <Text style={styles.dangerSectionTitle}>Danger Zone</Text>
+                <View style={styles.dangerCard}>
+                    <View style={styles.dangerContent}>
+                        <View style={styles.dangerIconContainer}>
+                            <IconSymbol
+                                name="exclamationmark.circle.fill"
+                                size={24}
+                                color={colorTokens['status.error']}
+                            />
+                        </View>
+                        <View style={styles.dangerTextContainer}>
+                            <Text style={styles.dangerTitle}>Delete Wallet</Text>
+                            <Text style={styles.dangerDescription}>
+                                Permanently delete your wallet. Make sure you have backed up your recovery phrase.
+                            </Text>
+                        </View>
+                    </View>
+                    <DangerButton
+                        title="Delete Wallet"
+                        onPress={handleDeleteWallet}
+                        loading={isDeletingProfile}
+                    />
+                </View>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -144,32 +234,130 @@ function biometryTypeToString(biometryType: BiometryType): string {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
-        gap: 8,
+        flex: 1,
+        backgroundColor: colorTokens['bg.default'],
+    },
+    scrollContent: {
+        paddingHorizontal: spaceTokens[5],
+        paddingBottom: spaceTokens[8],
+    },
+    header: {
+        marginTop: spaceTokens[5],
+        marginBottom: spaceTokens[6],
     },
     title: {
-        fontSize: 22,
+        fontSize: 32,
+        fontWeight: '700',
+        color: colorTokens['text.primary'],
+        marginBottom: spaceTokens[1],
+    },
+    subtitle: {
+        fontSize: 16,
+        color: colorTokens['text.secondary'],
+    },
+    section: {
+        marginBottom: spaceTokens[6],
+    },
+    sectionTitle: {
+        fontSize: 13,
         fontWeight: '600',
+        color: colorTokens['text.muted'],
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: spaceTokens[3],
+        paddingHorizontal: spaceTokens[1],
     },
-    row: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
+    settingsItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.md,
+        padding: spaceTokens[4],
+        marginBottom: spaceTokens[2],
+        shadowColor: colorTokens['shadow.primary'],
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
-    label: {
-        fontSize: 17,
+    itemLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        gap: spaceTokens[3],
     },
-    labelSecondary: {
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: radiusTokens.sm,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    itemTextContainer: {
+        flex: 1,
+        gap: spaceTokens[1],
+    },
+    itemTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colorTokens['text.primary'],
+    },
+    itemDescription: {
         fontSize: 14,
+        color: colorTokens['text.secondary'],
+        lineHeight: 18,
     },
-    error: {
+    dangerSection: {
+        marginTop: spaceTokens[4],
+    },
+    dangerSectionTitle: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: colorTokens['status.error'],
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: spaceTokens[3],
+        paddingHorizontal: spaceTokens[1],
+    },
+    dangerCard: {
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.md,
+        padding: spaceTokens[4],
+        borderWidth: 1,
+        borderColor: 'rgba(233, 75, 101, 0.2)',
+        shadowColor: colorTokens['status.error'],
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    dangerContent: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: spaceTokens[4],
+        gap: spaceTokens[3],
+    },
+    dangerIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: radiusTokens.sm,
+        backgroundColor: 'rgba(233, 75, 101, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dangerTextContainer: {
+        flex: 1,
+        gap: spaceTokens[1],
+    },
+    dangerTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: colorTokens['status.error'],
+    },
+    dangerDescription: {
         fontSize: 14,
-        color: 'red',
+        color: colorTokens['text.secondary'],
+        lineHeight: 20,
     },
-    dangerZone: {
-        marginTop: 32,
-        paddingTop: 24,
-        borderTopWidth: 1,
-        borderTopColor: '#E4E6EF',
-    }
 });

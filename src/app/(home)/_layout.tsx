@@ -21,13 +21,6 @@ export default function WalletLayout() {
                 }}
             />
             <Tabs.Screen
-                name="keys"
-                options={{
-                    title: 'Keys',
-                    tabBarIcon: ({color}) => <IconSymbol size={28} name="key" color={color}/>,
-                }}
-            />
-            <Tabs.Screen
                 name="settings"
                 options={{
                     title: 'Settings',
