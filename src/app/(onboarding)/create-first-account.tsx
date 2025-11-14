@@ -1,12 +1,13 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { appTheme } from "@/design/theme";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 import { AppError } from "@/types/appError";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateFirstAccountScreen() {
@@ -15,6 +16,8 @@ export default function CreateFirstAccountScreen() {
     const [isCreating, setIsCreating] = useState(false);
     const { create } = useProfileStore();
     const { consumeTempPassphrase } = useTempPassphraseStore();
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -63,7 +66,7 @@ export default function CreateFirstAccountScreen() {
                             value={accountName}
                             onChangeText={setAccountName}
                             placeholder="e.g., My Main Account"
-                            placeholderTextColor={appTheme.colors.textMuted}
+                            placeholderTextColor={colorTokens['text.muted']}
                             autoCapitalize="words"
                             autoCorrect={false}
                             autoFocus
@@ -93,59 +96,59 @@ export default function CreateFirstAccountScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
-        backgroundColor: appTheme.colors.background,
+        backgroundColor: colorTokens['bg.default'],
     },
     content: {
         flex: 1,
-        paddingHorizontal: appTheme.spacing[4],
+        paddingHorizontal: spaceTokens[4],
     },
     headerSection: {
-        paddingTop: appTheme.spacing[5],
-        paddingBottom: appTheme.spacing[6],
-        gap: appTheme.spacing[2],
+        paddingTop: spaceTokens[5],
+        paddingBottom: spaceTokens[6],
+        gap: spaceTokens[2],
     },
     title: {
         fontSize: 28,
         fontWeight: "700",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     subtitle: {
         fontSize: 15,
-        color: appTheme.colors.textSecondary,
+        color: colorTokens['text.secondary'],
         lineHeight: 22,
     },
     inputSection: {
-        gap: appTheme.spacing[5],
+        gap: spaceTokens[5],
     },
     inputGroup: {
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     label: {
         fontSize: 15,
         fontWeight: "600",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     input: {
-        backgroundColor: appTheme.colors.surface,
-        borderRadius: appTheme.radii.md,
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.md,
         borderWidth: 1.5,
-        borderColor: appTheme.colors.border,
-        paddingVertical: appTheme.spacing[4],
-        paddingHorizontal: appTheme.spacing[4],
+        borderColor: colorTokens['border.subtle'],
+        paddingVertical: spaceTokens[4],
+        paddingHorizontal: spaceTokens[4],
         fontSize: 16,
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     helperText: {
         fontSize: 13,
-        color: appTheme.colors.success,
-        marginTop: -appTheme.spacing[1],
+        color: colorTokens['status.success'],
+        marginTop: -spaceTokens[1],
     },
     buttonSection: {
-        paddingBottom: appTheme.spacing[4],
+        paddingBottom: spaceTokens[4],
     },
-});
+}));
 

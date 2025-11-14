@@ -2,17 +2,17 @@ import { AccountAddressInput } from "@/components/ui/account-address-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account, { AccountAddress } from "@/profile/account";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useOnChainStore } from "@/stores/onChainStore";
 import { PublicAmount } from "@/types/amount";
 import { PublicTokenBalance } from "@/types/tokenBalance";
-import { LOG } from "@/utils/logs";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 type PublicTransferTabProps = {
     account: Account;
@@ -30,6 +30,7 @@ export function PublicTransferTab({
     const [recipientAddress, setRecipientAddress] = useState<AccountAddress | null>(null);
     const [amount, setAmount] = useState<PublicAmount | null>(null);
     const [isTransferring, setIsTransferring] = useState(false);
+    const styles = useThemedStyle(themedStyleSheet);
 
     const publicBalances: PublicTokenBalance[] | null = useBalanceStore(state => state.publicBalances.get(account.address) ?? null);
 
@@ -87,7 +88,7 @@ export function PublicTransferTab({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[3],
         paddingHorizontal: spaceTokens[3],
@@ -114,5 +115,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colorTokens['text.primary'],
     },
-});
+}));
 

@@ -1,13 +1,14 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrimaryButton } from '@/components/ui/primary-button';
-import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { radiusTokens, spaceTokens } from '@/design/tokens';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
+import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { useAccessVaultStore } from '@/stores/accessVaultStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { LOG } from '@/utils/logs';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 
 export default function CreateAccountScreen() {
     const router = useRouter();
@@ -19,6 +20,8 @@ export default function CreateAccountScreen() {
     const [accountName, setAccountName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     const handleCreate = async () => {
         // Validate account name
@@ -135,7 +138,7 @@ export default function CreateAccountScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -235,4 +238,4 @@ const styles = StyleSheet.create({
     createButton: {
         marginTop: spaceTokens[4],
     },
-});
+}));

@@ -1,5 +1,6 @@
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useState } from "react";
-import { StyleSheet, Text, TextInput, View, Pressable, Button } from "react-native";
+import { Button, Pressable, Text, TextInput, View } from "react-native";
 
 interface PassphraseInputProps {
     onPassphraseSet: (passphrase: string) => void;
@@ -18,6 +19,8 @@ export function PassphraseInput({
     const [isVisible, setIsVisible] = useState(false);
     const [isConfirmVisible, setIsConfirmVisible] = useState(false);
     
+    const styles = useThemedStyle(themedStyleSheet);
+
     const isValid = passphrase.length >= 7;
     const showValidation = passphrase.length > 0;
     const showConfirmValidation = confirmPassphrase.length > 0;
@@ -95,7 +98,7 @@ export function PassphraseInput({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: 8,
     },
@@ -142,5 +145,5 @@ const styles = StyleSheet.create({
     invalid: {
         color: '#c0392b',
     },
-});
+}));
 

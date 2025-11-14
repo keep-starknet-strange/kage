@@ -1,18 +1,19 @@
 import { DangerButton } from "@/components/ui/danger-button";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { showToastError } from "@/components/ui/toast";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
+import { useBalanceStore } from "@/stores/balance/balanceStore";
+import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
+import { useRpcStore } from "@/stores/useRpcStore";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
-import { useOnChainStore } from "@/stores/onChainStore";
-import { useRpcStore } from "@/stores/useRpcStore";
-import { useBalanceStore } from "@/stores/balance/balanceStore";
+import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
 export default function SettingsScreen() {
     const { insets } = useDynamicSafeAreaInsets();
@@ -28,6 +29,9 @@ export default function SettingsScreen() {
     const [supportedBiometryType, setSupportedBiometryType] = useState<BiometryType | null>(null);
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
     const [isDeletingProfile, setIsDeletingProfile] = useState(false);
+
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     const resolveBiometricsStatus = useCallback(() => {
         setIsResolvingBiometrics(true);
@@ -242,7 +246,7 @@ function biometryTypeToString(biometryType: BiometryType): string {
     }
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -370,4 +374,4 @@ const styles = StyleSheet.create({
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },
-});
+}));

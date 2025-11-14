@@ -1,74 +1,74 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
-import { colorTokens, spaceTokens } from "@/design/tokens";
-import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { spaceTokens } from "@/design/tokens";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { Image } from 'expo-image';
-import { useAssets } from "expo-asset";
+import { useRouter } from "expo-router";
+import { Text, View } from "react-native";
 
 export default function WelcomeScreen() {
     const router = useRouter();
+    const { insets } = useDynamicSafeAreaInsets();
+    const styles = useThemedStyle(themedStyleSheet);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.content}>
-                {/* Logo and Branding Section */}
-                <View style={styles.brandingContainer}>
-                    <View style={styles.logoWrapper}>
+        <View style={[styles.content, { paddingTop: insets.top + spaceTokens[3], paddingBottom: insets.bottom + spaceTokens[3] }]}>
+            {/* Logo and Branding Section */}
+            <View style={styles.brandingContainer}>
+                <View style={styles.logoWrapper}>
+                    <Image
+                        source={require("res/logo/kage-outline.png")}
+                        style={styles.logo}
+                        contentFit="contain"
+                    />
+                </View>
+
+                <View style={styles.textContainer}>
+                    <Text style={styles.appName}>KAGE</Text>
+                    <View style={styles.taglineContainer}>
+                        <Text style={styles.tagline}>Privacy is</Text>
                         <Image
-                            source={require("res/logo/kage-outline.png")}
-                            style={styles.logo}
+                            source={require("res/logo/starknet.png")}
+                            style={styles.starknetLogo}
                             contentFit="contain"
                         />
+                        <Text style={styles.tagline}>Normal</Text>
                     </View>
-
-                    <View style={styles.textContainer}>
-                        <Text style={styles.appName}>KAGE</Text>
-                        <View style={styles.taglineContainer}>
-                            <Text style={styles.tagline}>Privacy is</Text>
-                            <Image
-                                source={require("res/logo/starknet.png")}
-                                style={styles.starknetLogo}
-                                contentFit="contain"
-                            />
-                            <Text style={styles.tagline}>Normal</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Spacer to push buttons to bottom */}
-                <View style={{ flex: 1 }} />
-
-                {/* Buttons Section */}
-                <View style={styles.buttonsContainer}>
-                    <PrimaryButton
-                        title="Create new wallet"
-                        onPress={() => {
-                            router.navigate("set-passphrase");
-                        }}
-                    />
-
-                    <SecondaryButton
-                        title="Restore wallet"
-                        onPress={() => {
-                            router.navigate("restore");
-                        }}
-                    />
-                </View>
-
-                {/* Footnote */}
-                <View style={styles.footnoteContainer}>
-                    <Text style={styles.footnote}>
-                        Brought to you by the Starkware Exploration team
-                    </Text>
                 </View>
             </View>
-        </SafeAreaView>
+
+            {/* Spacer to push buttons to bottom */}
+            <View style={{ flex: 1 }} />
+
+            {/* Buttons Section */}
+            <View style={styles.buttonsContainer}>
+                <PrimaryButton
+                    title="Create new wallet"
+                    onPress={() => {
+                        router.navigate("set-passphrase");
+                    }}
+                />
+
+                <SecondaryButton
+                    title="Restore wallet"
+                    onPress={() => {
+                        router.navigate("restore");
+                    }}
+                />
+            </View>
+
+            {/* Footnote */}
+            <View style={styles.footnoteContainer}>
+                <Text style={styles.footnote}>
+                    Brought to you by the Starkware Exploration team
+                </Text>
+            </View>
+        </View>
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingHorizontal: spaceTokens[5],
-        paddingBottom: spaceTokens[6],
     },
     brandingContainer: {
         flex: 1,
@@ -135,4 +134,4 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontWeight: "400",
     },
-}); 
+})); 

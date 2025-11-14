@@ -1,8 +1,9 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { PrivateTokenAddress } from "@/types/privateRecipient";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 type PrivateAddressInputProps = {
     label?: string;
@@ -17,6 +18,8 @@ export function PrivateAddressInput({
     disabled = false,
     onAddressChange,
 }: PrivateAddressInputProps) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const [addressText, setAddressText] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [isValid, setIsValid] = useState<boolean>(false);
@@ -107,7 +110,7 @@ export function PrivateAddressInput({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[1],
     },
@@ -174,5 +177,5 @@ const styles = StyleSheet.create({
         color: colorTokens['status.success'],
         marginStart: spaceTokens[0],
     },
-});
+}));
 

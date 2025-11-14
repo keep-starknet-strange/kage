@@ -1,9 +1,10 @@
-import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { radiusTokens, spaceTokens } from '@/design/tokens';
+import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { PrivateTokenAddress } from '@/types/privateRecipient';
 import formattedAddress from '@/utils/formattedAddress';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from './icon-symbol';
 
 export type PrivateAddressViewProps = {
@@ -12,6 +13,8 @@ export type PrivateAddressViewProps = {
 }
 
 export function PrivateAddressView({ address, variant = 'default' }: PrivateAddressViewProps) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const [isCopied, setIsCopied] = useState(false);
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -119,7 +122,7 @@ export function PrivateAddressView({ address, variant = 'default' }: PrivateAddr
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flexDirection: "row",
         backgroundColor: colorTokens['bg.sunken'],
@@ -174,5 +177,5 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
     },
-});
+}));
 

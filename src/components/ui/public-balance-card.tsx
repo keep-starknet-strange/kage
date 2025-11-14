@@ -1,13 +1,13 @@
-import { appTheme } from "@/design/theme";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { getAggregatedFiatBalance } from "@/types/tokenBalance";
 import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
-import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Modal, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
 import { AddressView } from "../address-view";
 import ActionButton from "./action-buttons";
 import { IconSymbol } from "./icon-symbol";
@@ -21,6 +21,8 @@ export interface PublicBalanceCardProps {
 const FundModal = (
     { account, isVisible, onRequestClose }: { account: Account, isVisible: boolean, onRequestClose: () => void }
 ) => {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     return (
         <Modal
             visible={isVisible}
@@ -79,10 +81,11 @@ const FundModal = (
 }
 
 export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
-    const { account, style, onTransferPress } = props;
+    const { account, style } = props;
     const { publicBalances } = useBalanceStore()
     const [fiatBalance, setFiatBalance] = useState<string | null>(null);
     const [isFundModalVisible, setIsFundModalVisible] = useState(false);
+    const styles = useThemedStyle(themedStyleSheet);
 
     useEffect(() => {
         const aggregated = getAggregatedFiatBalance([account], publicBalances);
@@ -123,43 +126,43 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
-        backgroundColor: appTheme.colors.surfaceElevated,
-        borderRadius: appTheme.radii.lg,
-        padding: appTheme.spacing[5],
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.lg,
+        padding: spaceTokens[5],
         alignItems: 'center',
-        shadowColor: appTheme.colors.shadowPrimary,
+        shadowColor: colorTokens['shadow.primary'],
         shadowOffset: {
             width: 0,
             height: 2
         },
         shadowOpacity: 1,
-        shadowRadius: appTheme.spacing[0],
+        shadowRadius: spaceTokens[0],
         elevation: 2,
     },
     label: {
         fontSize: 14,
-        color: appTheme.colors.textMuted,
-        marginBottom: appTheme.spacing[1],
+        color: colorTokens['text.muted'],
+        marginBottom: spaceTokens[1],
         fontWeight: '500',
     },
     amountRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     amount: {
         fontSize: 48,
         fontWeight: '700',
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     actionsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: appTheme.spacing[4],
-        marginTop: appTheme.spacing[2],
+        gap: spaceTokens[4],
+        marginTop: spaceTokens[2],
     },
     modalContent: {
         flex: 1,
@@ -213,4 +216,4 @@ const styles = StyleSheet.create({
         flex: 1,
         gap: spaceTokens[2],
     },
-});
+}));

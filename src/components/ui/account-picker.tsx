@@ -1,8 +1,9 @@
 import { AddressView } from "@/components/address-view";
-import { colorTokens, spaceTokens } from "@/design/tokens";
+import { spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { StyleSheet, Text, View } from "react-native";
 import { ModalPicker } from "./modal-picker";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 
 type AccountPickerProps = {
     accounts: Account[];
@@ -21,6 +22,8 @@ export function AccountPicker({
     placeholder = "Choose an account",
     disabled = false,
 }: AccountPickerProps) {
+    const styles = useThemedStyle(themedStyleSheet);
+    
     const renderItem = (account: Account) => {
         return (
             <View style={styles.selectedAccountContent}>
@@ -39,11 +42,12 @@ export function AccountPicker({
             placeholder={placeholder}
             disabled={disabled}
             renderItem={renderItem}
+            renderModalItem={renderItem}
         />
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     selectedAccountContent: {
         flex: 1,
         gap: spaceTokens[1],
@@ -53,5 +57,5 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: colorTokens['text.primary'],
     },
-});
+}));
 

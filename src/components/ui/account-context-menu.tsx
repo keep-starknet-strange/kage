@@ -1,9 +1,10 @@
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
 import { useState } from "react";
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
 import { RenameAccountModal } from "./rename-account-modal";
 import { showToastError } from "./toast";
@@ -13,6 +14,9 @@ export interface AccountContextMenuProps {
 }
 
 export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+
     const [showModal, setShowModal] = useState(false);
     const [showRenameModal, setShowRenameModal] = useState(false);
     const { deployAccount } = useOnChainStore();
@@ -116,7 +120,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     iconButton: {
         position: 'relative',
     },
@@ -165,4 +169,4 @@ const styles = StyleSheet.create({
         backgroundColor: colorTokens['border.subtle'],
         marginVertical: spaceTokens[1],
     },
-});
+}));

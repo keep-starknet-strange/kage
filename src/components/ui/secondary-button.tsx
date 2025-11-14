@@ -1,5 +1,6 @@
-import { Pressable, Text, StyleSheet, PressableProps, ViewStyle, View, ActivityIndicator } from "react-native";
-import { appTheme } from "@/design/theme";
+import { opacityTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
 
 export interface SecondaryButtonProps extends Omit<PressableProps, 'style'> {
     title: string;
@@ -10,6 +11,8 @@ export interface SecondaryButtonProps extends Omit<PressableProps, 'style'> {
 }
 
 export const SecondaryButton = ({ title, onPress, disabled, loading, style, ...props }: SecondaryButtonProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const isDisabled = disabled || loading;
 
     return (
@@ -27,7 +30,7 @@ export const SecondaryButton = ({ title, onPress, disabled, loading, style, ...p
                 {loading && (
                     <ActivityIndicator
                         size="small"
-                        color={appTheme.colors.text}
+                        color={colorTokens['text.primary']}
                         style={styles.loader}
                     />
                 )}
@@ -45,20 +48,20 @@ export const SecondaryButton = ({ title, onPress, disabled, loading, style, ...p
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     button: {
-        backgroundColor: appTheme.colors.surface,
-        paddingVertical: appTheme.spacing[4],
-        paddingHorizontal: appTheme.spacing[6],
-        borderRadius: appTheme.radii.md,
+        backgroundColor: colorTokens['bg.elevated'],
+        paddingVertical: spaceTokens[4],
+        paddingHorizontal: spaceTokens[6],
+        borderRadius: radiusTokens.md,
         alignItems: "center",
         borderWidth: 1.5,
-        borderColor: appTheme.colors.border,
+        borderColor: colorTokens['border.subtle'],
     },
     buttonDisabled: {
-        backgroundColor: appTheme.colors.surfaceSunken,
-        borderColor: appTheme.colors.border,
-        opacity: appTheme.opacity.disabled,
+        backgroundColor: colorTokens['bg.sunken'],
+        borderColor: colorTokens['border.subtle'],
+        opacity: opacityTokens.disabled,
     },
     content: {
         flexDirection: "row",
@@ -66,19 +69,19 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     loader: {
-        marginRight: appTheme.spacing[2],
+        marginRight: spaceTokens[2],
     },
     buttonText: {
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         fontSize: 17,
         fontWeight: "600",
         letterSpacing: 0.3,
     },
     buttonTextDisabled: {
-        color: appTheme.colors.textMuted,
+        color: colorTokens['text.muted'],
     },
     buttonTextLoading: {
         opacity: 0.8,
     },
-});
+}));
 

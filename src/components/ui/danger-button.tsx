@@ -1,5 +1,6 @@
-import { Pressable, Text, StyleSheet, PressableProps, ViewStyle, View, ActivityIndicator } from "react-native";
-import { appTheme } from "@/design/theme";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
 
 export interface DangerButtonProps extends Omit<PressableProps, 'style'> {
     title: string;
@@ -10,6 +11,8 @@ export interface DangerButtonProps extends Omit<PressableProps, 'style'> {
 }
 
 export const DangerButton = ({ title, onPress, disabled, loading, style, ...props }: DangerButtonProps) => {
+    const styles = useThemedStyle(themedStyleSheet);    
+    const { colors: colorTokens } = useTheme();
     const isDisabled = disabled || loading;
 
     return (
@@ -27,7 +30,7 @@ export const DangerButton = ({ title, onPress, disabled, loading, style, ...prop
                 {loading && (
                     <ActivityIndicator
                         size="small"
-                        color={appTheme.colors.textInverted}
+                        color={colorTokens['text.inverted']}
                         style={styles.loader}
                     />
                 )}
@@ -45,14 +48,14 @@ export const DangerButton = ({ title, onPress, disabled, loading, style, ...prop
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     button: {
-        backgroundColor: appTheme.colors.error,
-        paddingVertical: appTheme.spacing[4],
-        paddingHorizontal: appTheme.spacing[6],
-        borderRadius: appTheme.radii.md,
+        backgroundColor: colorTokens['status.error'],
+        paddingVertical: spaceTokens[4],
+        paddingHorizontal: spaceTokens[6],
+        borderRadius: radiusTokens.md,
         alignItems: "center",
-        shadowColor: appTheme.colors.error,
+        shadowColor: colorTokens['status.error'],
         shadowOffset: {
             width: 0,
             height: 4,
@@ -62,7 +65,7 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     buttonDisabled: {
-        backgroundColor: appTheme.colors.surfaceSunken,
+        backgroundColor: colorTokens['bg.sunken'],
         shadowOpacity: 0,
         elevation: 0,
     },
@@ -72,19 +75,19 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     loader: {
-        marginRight: appTheme.spacing[2],
+        marginRight: spaceTokens[2],
     },
     buttonText: {
-        color: appTheme.colors.textInverted,
+        color: colorTokens['text.inverted'],
         fontSize: 17,
         fontWeight: "600",
         letterSpacing: 0.3,
     },
     buttonTextDisabled: {
-        color: appTheme.colors.textMuted,
+        color: colorTokens['text.muted'],
     },
     buttonTextLoading: {
         opacity: 0.8,
     },
-});
+}));
 

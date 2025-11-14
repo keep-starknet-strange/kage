@@ -1,7 +1,8 @@
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { useMemo } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { PrivateAddressView } from "./private-address-view";
 
 export interface PublicTokenBalanceViewProps {
@@ -9,6 +10,7 @@ export interface PublicTokenBalanceViewProps {
 }
 
 export const PublicTokenBalanceView = ({ balance }: PublicTokenBalanceViewProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
     const fiatPriceFormatted = useMemo(() => {
         return balance.formattedFiatPrice();
     }, [balance.fiatPrice]);
@@ -39,6 +41,7 @@ export interface PrivateTokenBalanceViewProps {
 }
 
 export const PrivateTokenBalanceView = ({ balance }: PrivateTokenBalanceViewProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
     const fiatPriceFormatted = useMemo(() => {
         return balance.formattedFiatPrice();
     }, [balance.fiatPrice]);
@@ -70,7 +73,7 @@ export const PrivateTokenBalanceView = ({ balance }: PrivateTokenBalanceViewProp
     )
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     tokenCard: {
         backgroundColor: colorTokens['bg.elevated'],
         borderRadius: radiusTokens.md,
@@ -118,4 +121,4 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: colorTokens['text.muted'],
     },
-});
+}));

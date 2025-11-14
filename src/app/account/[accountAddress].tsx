@@ -5,16 +5,17 @@ import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
 import { PublicBalanceCard } from '@/components/ui/public-balance-card';
 import { showToastError } from '@/components/ui/toast';
 import { PrivateTokenBalanceView, PublicTokenBalanceView } from '@/components/ui/token-balance-view';
-import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
+import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { PrivateTokenBalance, PublicTokenBalance } from '@/types/tokenBalance';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
 type TabType = 'public' | 'private';
 
@@ -31,6 +32,8 @@ export default function AccountDetailScreen() {
 
     const [isLoadingBalances, setIsLoadingBalances] = useState(false);
     const [activeTab, setActiveTab] = useState<TabType>('public');
+
+    const styles = useThemedStyle(themedStyleSheet);
 
     // Find the account from the profile state
     const account = useMemo(() => {
@@ -178,6 +181,9 @@ function PublicTab({
     isLoading: boolean;
     onRefresh: () => void;
 }) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+
     const renderTokenItem = ({ item }: { item: PublicTokenBalance }) => {
         return <PublicTokenBalanceView balance={item} />
     };
@@ -232,6 +238,9 @@ function PrivateTab({
     onRefresh: () => void;
     onLock: () => void;
 }) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+
     const renderTokenItem = ({ item }: { item: PrivateTokenBalance }) => {
         return <PrivateTokenBalanceView balance={item} />
     };
@@ -274,7 +283,7 @@ function PrivateTab({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -385,5 +394,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
-});
+}));
 

@@ -1,10 +1,10 @@
-import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from "@/profile/account";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import formattedAddress from '@/utils/formattedAddress';
-import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from './ui/icon-symbol';
 
 export type AddressViewProps = {
@@ -16,6 +16,8 @@ export function AddressView({ address, variant = 'default' }: AddressViewProps) 
     const [isCopied, setIsCopied] = useState(false);
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     const displayedAddress = useMemo(() => {
         if (variant === "full") {
@@ -116,7 +118,7 @@ export function AddressView({ address, variant = 'default' }: AddressViewProps) 
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flexDirection: "row",
         backgroundColor: colorTokens['bg.sunken'],
@@ -171,4 +173,4 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
     },
-});
+}));

@@ -1,6 +1,7 @@
-import { appTheme } from '@/design/theme';
+import { opacityTokens, spaceTokens } from '@/design/tokens';
+import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { SymbolViewProps } from 'expo-symbols';
-import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Pressable, Text, View, ViewStyle } from 'react-native';
 import { IconSymbol } from './icon-symbol';
 
 export interface ActionButtonProps {
@@ -18,6 +19,9 @@ export interface ActionButtonsRowProps {
 }
 
 const ActionButton = ({ icon, label, onPress, disabled = false }: ActionButtonProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+    
     return (
         <Pressable
             style={({ pressed }) => [
@@ -35,7 +39,7 @@ const ActionButton = ({ icon, label, onPress, disabled = false }: ActionButtonPr
                 <IconSymbol
                     name={icon}
                     size={24}
-                    color={appTheme.colors.background}
+                    color={colorTokens['bg.default']}
                 />
             </View>
             <Text style={[
@@ -50,25 +54,25 @@ const ActionButton = ({ icon, label, onPress, disabled = false }: ActionButtonPr
 
 export default ActionButton;
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     actionButton: {
         alignItems: 'center',
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     actionButtonPressed: {
         opacity: 0.7,
     },
     actionButtonDisabled: {
-        opacity: appTheme.opacity.disabled,
+        opacity: opacityTokens.disabled,
     },
     iconCircle: {
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: appTheme.colors.accent,
+        backgroundColor: colorTokens['brand.accent'],
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: appTheme.colors.shadowPrimary,
+        shadowColor: colorTokens['shadow.primary'],
         shadowOffset: {
             width: 0,
             height: 2,
@@ -77,21 +81,21 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 3,
         borderWidth: 1,
-        borderColor: appTheme.colors.border,
+        borderColor: colorTokens['border.subtle'],
     },
     iconCircleDisabled: {
-        backgroundColor: appTheme.colors.textMuted,
+        backgroundColor: colorTokens['text.muted'],
         shadowOpacity: 0,
         elevation: 0,
     },
     label: {
         fontSize: 14,
         fontWeight: '600',
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         textAlign: 'center',
     },
     labelDisabled: {
-        color: appTheme.colors.textMuted,
+        color: colorTokens['text.muted'],
     },
-});
+}));
 

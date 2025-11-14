@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet } from "react-native";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { Text, View } from "react-native";
 import { IconSymbol } from "./ui/icon-symbol";
 import { PrimaryButton } from "./ui/primary-button";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 
 export interface PrivateBalancesLockedProps {
     isLoadingBalances: boolean;
@@ -13,6 +14,9 @@ export function PrivateBalancesLocked({
     isLoadingBalances,
     handleUnlockPrivateBalances,
 }: PrivateBalancesLockedProps) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+    
     return (
         <View style={styles.container}>
             <IconSymbol name="lock.fill" size={48} color={colorTokens['text.muted']} />
@@ -28,7 +32,7 @@ export function PrivateBalancesLocked({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         alignItems: 'center',
@@ -54,4 +58,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     }
-});
+}));

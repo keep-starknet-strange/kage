@@ -1,18 +1,18 @@
-import { AddressView } from "@/components/address-view";
 import { FundTab } from "@/components/screens/tx/fund-tab";
 import { PublicTransferTab } from "@/components/screens/tx/public-transfer-tab";
 import { TransferTab } from "@/components/screens/tx/transfer-tab";
 import { WithdrawTab } from "@/components/screens/tx/withdraw-tab";
 import AccountHeader from "@/components/ui/account-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
 
@@ -24,6 +24,9 @@ const TransactionScreen = () => {
     const { profileState } = useProfileStore();
 
     const [activeTab, setActiveTab] = useState<TxType>(txType as TxType || 'fund');
+
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     // Find the account from the profile state
     const account = useMemo(() => {
@@ -131,7 +134,7 @@ const TransactionScreen = () => {
 
 export default TransactionScreen;
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -236,4 +239,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colorTokens['text.primary'],
     },
-});
+}));

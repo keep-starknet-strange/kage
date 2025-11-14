@@ -1,12 +1,13 @@
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import { ProfileState } from "@/profile/profileState";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { SerializableTransaction } from "@/types/transaction";
 import formattedAddress from "@/utils/formattedAddress";
 import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
 
 export interface TransactionToastProps {
@@ -19,7 +20,8 @@ export const TransactionToast = ({ transaction, pending = false, onPress }: Tran
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const currentNetworkDefinition = useProfileStore(state => ProfileState.isProfile(state.profileState) ? state.profileState.currentNetworkWithDefinition.networkDefinition : null);
-    
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     // Progress bar animation
     const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -251,7 +253,7 @@ export const TransactionToast = ({ transaction, pending = false, onPress }: Tran
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         width: '90%',
         maxWidth: 400,
@@ -392,5 +394,5 @@ const styles = StyleSheet.create({
         color: colorTokens['text.inverted'],
         lineHeight: 16,
     },
-});
+}));
 

@@ -1,16 +1,16 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { appTheme } from "@/design/theme";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { mnemonicToWords, validateMnemonic, wordlist } from "@starkms/key-management";
 import * as Clipboard from "expo-clipboard";
-import { useNavigation, useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 export default function RestoreScreen() {
-    const router = useRouter();
     const navigation = useNavigation();
     const { insets } = useDynamicSafeAreaInsets();
     const { restore } = useProfileStore();
@@ -26,6 +26,9 @@ export default function RestoreScreen() {
     const [isSeedPhraseValid, setIsSeedPhraseValid] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
 
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+    
     const MIN_PASSPHRASE_LENGTH = 7;
 
     useLayoutEffect(() => {
@@ -107,7 +110,7 @@ export default function RestoreScreen() {
                         style={styles.seedPhraseInput}
                         value={seedPhrase}
                         placeholder="word1 word2 word3 ..."
-                        placeholderTextColor={appTheme.colors.textMuted}
+                        placeholderTextColor={colorTokens['text.muted']}
                         onChangeText={setSeedPhrase}
                         multiline
                         autoCapitalize="none"
@@ -168,7 +171,7 @@ export default function RestoreScreen() {
                                 value={passphrase}
                                 onChangeText={setPassphrase}
                                 placeholder="Enter your passphrase"
-                                placeholderTextColor={appTheme.colors.textMuted}
+                                placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showPassphrase}
                                 autoCapitalize="none"
                                 autoCorrect={false}
@@ -205,7 +208,7 @@ export default function RestoreScreen() {
                                 value={confirmPassphrase}
                                 onChangeText={setConfirmPassphrase}
                                 placeholder="Confirm your passphrase"
-                                placeholderTextColor={appTheme.colors.textMuted}
+                                placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showConfirmPassphrase}
                                 autoCapitalize="none"
                                 autoCorrect={false}
@@ -246,69 +249,69 @@ export default function RestoreScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
-        backgroundColor: appTheme.colors.background,
+        backgroundColor: colorTokens['bg.default'],
     },
     content: {
         flex: 1,
     },
     scrollContent: {
-        paddingHorizontal: appTheme.spacing[4],
-        paddingBottom: appTheme.spacing[4],
+        paddingHorizontal: spaceTokens[4],
+        paddingBottom: spaceTokens[4],
     },
     headerSection: {
-        paddingTop: appTheme.spacing[5],
-        paddingBottom: appTheme.spacing[4],
-        gap: appTheme.spacing[2],
+        paddingTop: spaceTokens[5],
+        paddingBottom: spaceTokens[4],
+        gap: spaceTokens[2],
     },
     title: {
         fontSize: 28,
         fontWeight: "700",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     subtitle: {
         fontSize: 15,
-        color: appTheme.colors.textSecondary,
+        color: colorTokens['text.secondary'],
         lineHeight: 22,
     },
     section: {
-        gap: appTheme.spacing[3],
-        marginBottom: appTheme.spacing[4],
+        gap: spaceTokens[3],
+        marginBottom: spaceTokens[4],
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: "600",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     label: {
         fontSize: 15,
         fontWeight: "600",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     helperText: {
         fontSize: 13,
-        color: appTheme.colors.textSecondary,
+        color: colorTokens['text.secondary'],
         lineHeight: 18,
     },
     seedPhraseInput: {
         minHeight: 120,
         borderWidth: 1.5,
-        borderColor: appTheme.colors.border,
-        borderRadius: appTheme.radii.md,
-        padding: appTheme.spacing[4],
+        borderColor: colorTokens['border.subtle'],
+        borderRadius: radiusTokens.md,
+        padding: spaceTokens[4],
         fontSize: 16,
-        backgroundColor: appTheme.colors.surface,
-        color: appTheme.colors.text,
+        backgroundColor: colorTokens['bg.elevated'],
+        color: colorTokens['text.primary'],
     },
     inlineActions: {
         flexDirection: 'row',
-        gap: appTheme.spacing[4],
+        gap: spaceTokens[4],
     },
     link: {
-        color: appTheme.colors.accent,
+        color: colorTokens['brand.accent'],
         fontWeight: '600',
         fontSize: 15,
     },
@@ -321,40 +324,40 @@ const styles = StyleSheet.create({
         fontSize: 13,
     },
     validationSuccess: {
-        color: appTheme.colors.success,
+        color: colorTokens['status.success'],
     },
     validationError: {
-        color: appTheme.colors.error,
+        color: colorTokens['status.error'],
     },
     inputGroup: {
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     inputWrapper: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: appTheme.colors.surface,
-        borderRadius: appTheme.radii.md,
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.md,
         borderWidth: 1.5,
-        borderColor: appTheme.colors.border,
+        borderColor: colorTokens['border.subtle'],
     },
     input: {
         flex: 1,
-        paddingVertical: appTheme.spacing[4],
-        paddingHorizontal: appTheme.spacing[4],
+        paddingVertical: spaceTokens[4],
+        paddingHorizontal: spaceTokens[4],
         fontSize: 16,
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     eyeButton: {
-        paddingHorizontal: appTheme.spacing[4],
-        paddingVertical: appTheme.spacing[2],
+        paddingHorizontal: spaceTokens[4],
+        paddingVertical: spaceTokens[2],
     },
     eyeButtonText: {
         fontSize: 14,
         fontWeight: "600",
-        color: appTheme.colors.accent,
+        color: colorTokens['brand.accent'],
     },
     buttonSection: {
-        paddingHorizontal: appTheme.spacing[3],
+        paddingHorizontal: spaceTokens[3],
     },
-});
+}));
 

@@ -1,11 +1,12 @@
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
 import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
 import { stringToBigint, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TextInput, View } from "react-native";
-import { ModalPicker } from "./modal-picker";
-import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
+import { Image, Text, TextInput, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
+import { ModalPicker } from "./modal-picker";
 
 type AmountType<T extends TokenBalance> =
     T extends PrivateTokenBalance ? PrivateAmount :
@@ -27,6 +28,8 @@ export function TokenAmountInput<T extends TokenBalance>({
     disabled = false,
     balances
 }: TokenAmountInputProps<T>) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const [selectedBalance, setSelectedBalance] = useState<T | null>(null);
     const [amountText, setAmountText] = useState<string>("");
     const [amountDecimal, setAmountDecimal] = useState<bigint | null>(null);
@@ -180,7 +183,7 @@ export function TokenAmountInput<T extends TokenBalance>({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[1],
     },
@@ -277,5 +280,5 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: colorTokens['text.primary']
     }
-});
+}));
 

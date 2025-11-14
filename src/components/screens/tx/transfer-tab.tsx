@@ -1,20 +1,20 @@
 import { PrivateBalancesLocked } from "@/components/private-balances-locked";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { PrivateAddressInput } from "@/components/ui/private-address-input";
+import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
+import { useOnChainStore } from "@/stores/onChainStore";
 import { PrivateAmount } from "@/types/amount";
 import { PrivateTokenAddress, PrivateTokenRecipient } from "@/types/privateRecipient";
 import { PrivateTokenBalance } from "@/types/tokenBalance";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import {LOG} from "@/utils/logs";
-import { showToastError } from "@/components/ui/toast";
-import { useOnChainStore } from "@/stores/onChainStore";
+import { Text, View } from "react-native";
 
 type TransferTabProps = {
     account: Account;
@@ -35,7 +35,7 @@ export function TransferTab({
     const [isTransferring, setIsTransferring] = useState(false);
     const [isUnlockingBalances, setIsUnlockingBalances] = useState(false);
 
-
+    const styles = useThemedStyle(themedStyleSheet);
     const isLocked = useBalanceStore(state => !state.unlockedPrivateBalances.has(account.address));
     const privateBalances: PrivateTokenBalance[] | null = useBalanceStore(state => state.privateBalances.get(account.address) ?? null);
 
@@ -115,7 +115,7 @@ export function TransferTab({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[3],
     },
@@ -141,5 +141,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colorTokens['text.primary'],
     },
-});
+}));
 

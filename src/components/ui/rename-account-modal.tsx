@@ -1,9 +1,10 @@
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
-import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { PrimaryButton } from "./primary-button";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { LOG } from "@/utils/logs";
+import { useState } from "react";
+import { Modal, Pressable, Text, TextInput, View } from "react-native";
+import { PrimaryButton } from "./primary-button";
 
 export interface RenameAccountModalProps {
     account: Account;
@@ -13,6 +14,8 @@ export interface RenameAccountModalProps {
 }
 
 export const RenameAccountModal = ({ account, visible, onClose, onRename }: RenameAccountModalProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const [accountName, setAccountName] = useState(account.name);
     const [isRenaming, setIsRenaming] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -125,7 +128,7 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -217,5 +220,5 @@ const styles = StyleSheet.create({
     buttonDisabled: {
         opacity: 0.6,
     },
-});
+}));
 

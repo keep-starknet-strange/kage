@@ -1,8 +1,9 @@
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { AddressView } from "../address-view";
 import { AccountContextMenu } from "./account-context-menu";
 import { IconSymbol } from "./icon-symbol";
@@ -13,6 +14,8 @@ interface AccountHeaderProps {
 
 const AccountHeader = ({ account }: AccountHeaderProps) => {
     const router = useRouter();
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const { insets } = useDynamicSafeAreaInsets();
 
     return (
@@ -44,7 +47,7 @@ const AccountHeader = ({ account }: AccountHeaderProps) => {
 
 export default AccountHeader;
 
-export const styles = StyleSheet.create({
+export const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     header: {
         backgroundColor: colorTokens['bg.default'],
         flexDirection: 'row',
@@ -76,4 +79,4 @@ export const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-});
+}));

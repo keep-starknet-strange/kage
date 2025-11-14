@@ -1,10 +1,11 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { showToastError } from "@/components/ui/toast";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import KeySource from "@/profile/keys/keySource";
 import { ProfileState } from "@/profile/profileState";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useProfileStore } from "@/stores/profileStore";
@@ -14,7 +15,7 @@ import { LOG } from "@/utils/logs";
 import * as Clipboard from 'expo-clipboard';
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 export default function KeysScreen() {
@@ -29,7 +30,9 @@ export default function KeysScreen() {
     const [seedPhraseWords, setSeedPhraseWords] = useState<string[]>([]);
     const [loadingSeedPhrase, setLoadingSeedPhrase] = useState(false);
     const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
-
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
+    
     const profile = useMemo(() => ProfileState.getProfileOrNull(profileState), [profileState]);
 
     const keysData = useMemo(() => {
@@ -208,6 +211,8 @@ function KeySourceItem({
     onCopySeedPhrase,
     isCopied
 }: KeySourceItemProps) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const rotateValue = useSharedValue(isExpanded ? 180 : 0);
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -350,6 +355,8 @@ interface AccountItemProps {
 
 function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
     const { unlockPrivateBalances } = useBalanceStore();
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     const handleUnlock = async () => {
         try {
@@ -428,7 +435,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -759,5 +766,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         paddingHorizontal: spaceTokens[6],
     },
-});
+}));
 

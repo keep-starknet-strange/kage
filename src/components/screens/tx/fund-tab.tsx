@@ -1,19 +1,19 @@
 import { AccountPicker } from "@/components/ui/account-picker";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { colorTokens, spaceTokens } from "@/design/tokens";
+import { spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
+import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
 import { PublicAmount } from "@/types/amount";
+import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { useIsFocused } from "@react-navigation/native";
-import {LOG} from "@/utils/logs";
-import { showToastError } from "@/components/ui/toast";
-import { useOnChainStore } from "@/stores/onChainStore";
+import { Text, View } from "react-native";
 
 type FundTabProps = {
     account: Account;
@@ -31,6 +31,8 @@ export function FundTab({
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
     const [amount, setAmount] = useState<PublicAmount | null>(null);
     const [isFunding, setIsFunding] = useState<boolean>(false);
+
+    const styles = useThemedStyle(themedStyleSheet);
 
     // Keep the ref updated with the current focus state
     isFocusedRef.current = isFocused;
@@ -110,7 +112,7 @@ export function FundTab({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[3],
     },
@@ -119,5 +121,5 @@ const styles = StyleSheet.create({
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },
-});
+}));
 

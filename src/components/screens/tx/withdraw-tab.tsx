@@ -2,8 +2,9 @@ import { PrivateBalancesLocked } from "@/components/private-balances-locked";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { colorTokens, spaceTokens } from "@/design/tokens";
+import { spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
+import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useOnChainStore } from "@/stores/onChainStore";
 import { PrivateAmount } from "@/types/amount";
@@ -11,7 +12,7 @@ import { PrivateTokenBalance } from "@/types/tokenBalance";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 type WithdrawTabProps = {
     account: Account;
@@ -21,6 +22,7 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
     const { unlockPrivateBalances } = useBalanceStore();
     const { withdraw } = useOnChainStore();
     const router = useRouter();
+    const styles = useThemedStyle(themedStyleSheet);
 
     const isFocused = useIsFocused();
     const isFocusedRef = useRef(isFocused);
@@ -103,7 +105,7 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[3],
     },
@@ -112,5 +114,5 @@ const styles = StyleSheet.create({
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },
-});
+}));
 

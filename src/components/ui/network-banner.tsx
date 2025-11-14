@@ -1,10 +1,10 @@
-import { appTheme } from "@/design/theme";
-import { colorTokens, spaceTokens } from "@/design/tokens";
+import { spaceTokens } from "@/design/tokens";
 import NetworkDerfinition from "@/profile/settings/networkDefinition";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
+import { useTheme } from "@/providers/ThemeProvider";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface NetworkBannerProps {
@@ -14,6 +14,7 @@ interface NetworkBannerProps {
 export default function NetworkBanner({ network }: NetworkBannerProps) {
     const appInsets = useSafeAreaInsets();
     const { setAdditionalInsets } = useDynamicSafeAreaInsets();
+    const { colors: colorTokens } = useTheme();
 
     const [bannerHeight, setBannerHeight] = useState(0);
 
@@ -61,7 +62,7 @@ export default function NetworkBanner({ network }: NetworkBannerProps) {
                     setBannerHeight(event.nativeEvent.layout.height);
                 }}
             >
-                <Text style={{ color: appTheme.colors.textInverted }}>{`Test Network ${networkDisplayName}`}</Text>
+                <Text style={{ color: colorTokens['text.inverted'] }}>{`Test Network ${networkDisplayName}`}</Text>
             </View>
         </View>
     ) || null;

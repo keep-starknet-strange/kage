@@ -2,10 +2,11 @@ import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultSt
 import { useState, useEffect } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 
 export default function AccessVaultModal() {
     const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
@@ -15,6 +16,8 @@ export default function AccessVaultModal() {
     const [biometryType, setBiometryType] = useState<BiometryType | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const insets = useSafeAreaInsets();
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     // Get biometry type when modal opens
     useEffect(() => {
@@ -226,7 +229,7 @@ export default function AccessVaultModal() {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
@@ -344,4 +347,4 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colorTokens['text.inverted'],
     },
-});
+}));

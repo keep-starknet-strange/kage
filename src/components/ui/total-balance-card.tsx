@@ -1,11 +1,12 @@
+import { radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
-import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
-import { IconSymbol } from "./icon-symbol";
-import { appTheme } from "@/design/theme";
 import { getAggregatedFiatBalance } from "@/types/tokenBalance";
 import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
+import { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, StyleProp, Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import { IconSymbol } from "./icon-symbol";
 import { showToastError } from "./toast";
 
 export interface TotalBalanceCardProps {
@@ -14,6 +15,8 @@ export interface TotalBalanceCardProps {
 }
 
 export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const { accounts, style } = props;
     const [fiatPublicBalance, setFiatPublicBalance] = useState<string | null>(null);
     const [fiatPrivateBalance, setFiatPrivateBalance] = useState<string | null>(null);
@@ -84,13 +87,13 @@ export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
                         update(hasUnlockedPrivateBalances);
                     }} style={styles.lockIcon}>
                         {isUpdatingLockState && (
-                            <ActivityIndicator size="small" color={appTheme.colors.textMuted} />
+                            <ActivityIndicator size="small" color={colorTokens['text.muted']} />
                         )}
                         {!isUpdatingLockState && (
                             <IconSymbol
                                 name={hasUnlockedPrivateBalances ? "lock.open.fill" : "lock.fill"}
                                 size={24}
-                                color={appTheme.colors.textMuted}
+                                color={colorTokens['text.muted']}
                             />
                         )}
                     </TouchableOpacity>
@@ -101,40 +104,40 @@ export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
     );
 };
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
-        backgroundColor: appTheme.colors.surfaceElevated,
-        borderRadius: appTheme.radii.lg,
-        padding: appTheme.spacing[5],
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.lg,
+        padding: spaceTokens[5],
         flexDirection: 'row',
-        shadowColor: appTheme.colors.shadowPrimary,
+        shadowColor: colorTokens['shadow.primary'],
         shadowOffset: {
             width: 0,
             height: 2
         },
         shadowOpacity: 1,
-        shadowRadius: appTheme.spacing[0],
+        shadowRadius: spaceTokens[0],
         elevation: 2,
     },
     section: {
         flex: 1,
         alignItems: 'center',
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     sectionLabel: {
         fontSize: 14,
-        color: appTheme.colors.textMuted,
+        color: colorTokens['text.muted'],
         fontWeight: '500',
     },
     sectionAmount: {
         fontSize: 32,
         fontWeight: '700',
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     amountRow: {
@@ -144,12 +147,12 @@ const styles = StyleSheet.create({
     divider: {
         width: 1,
         height: '100%',
-        backgroundColor: appTheme.colors.border,
-        marginHorizontal: appTheme.spacing[4],
+        backgroundColor: colorTokens['border.subtle'],
+        marginHorizontal: spaceTokens[4],
     },
     lockIcon: {
         position: 'absolute',
         alignSelf: 'center',
-        right: -appTheme.spacing[6],
+        right: -spaceTokens[6],
     },
-});
+}));

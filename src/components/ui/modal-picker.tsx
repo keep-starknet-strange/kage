@@ -1,8 +1,9 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import Identifiable from "@/types/Identifiable";
 import { ReactNode, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Modal, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
 
 type ModalPickerProps<T extends Identifiable> = {
     items: T[];
@@ -23,10 +24,12 @@ export function ModalPicker<T extends Identifiable>({
     label,
     placeholder,
     disabled,
+    pickerButtonStyle,
     renderItem,
     renderModalItem = renderItem,
-    pickerButtonStyle,
 }: ModalPickerProps<T>) {
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
     const [isModalVisible, setIsModalVisible] = useState(false);
 
     const handleSelectItem = (item: T) => {
@@ -108,7 +111,7 @@ export function ModalPicker<T extends Identifiable>({
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         gap: spaceTokens[1],
     },
@@ -187,5 +190,5 @@ const styles = StyleSheet.create({
     itemSelected: {
         backgroundColor: colorTokens['bg.sunken'],
     },
-});
+}));
 

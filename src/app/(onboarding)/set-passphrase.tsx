@@ -1,10 +1,11 @@
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
-import { Text, View, TextInput, Pressable, StyleSheet } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { appTheme } from "@/design/theme";
-import { PrimaryButton } from "@/components/ui/primary-button";
-import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 
 const MIN_PASSPHRASE_LENGTH = 7;
 
@@ -16,6 +17,9 @@ export default function SetPassphraseScreen() {
     const [showPassphrase, setShowPassphrase] = useState(false);
     const [showConfirmPassphrase, setShowConfirmPassphrase] = useState(false);
     const { setTempPassphrase } = useTempPassphraseStore();
+
+    const styles = useThemedStyle(themedStyleSheet);
+    const { colors: colorTokens } = useTheme();
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -60,7 +64,7 @@ export default function SetPassphraseScreen() {
                                 value={passphrase}
                                 onChangeText={setPassphrase}
                                 placeholder="Enter your passphrase"
-                                placeholderTextColor={appTheme.colors.textMuted}
+                                placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showPassphrase}
                                 autoCapitalize="none"
                                 autoCorrect={false}
@@ -97,7 +101,7 @@ export default function SetPassphraseScreen() {
                                 value={confirmPassphrase}
                                 onChangeText={setConfirmPassphrase}
                                 placeholder="Confirm your passphrase"
-                                placeholderTextColor={appTheme.colors.textMuted}
+                                placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showConfirmPassphrase}
                                 autoCapitalize="none"
                                 autoCorrect={false}
@@ -140,77 +144,77 @@ export default function SetPassphraseScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
-        backgroundColor: appTheme.colors.background,
+        backgroundColor: colorTokens['bg.default'],
     },
     content: {
         flex: 1,
-        paddingHorizontal: appTheme.spacing[4],
+        paddingHorizontal: spaceTokens[4],
     },
     headerSection: {
-        paddingTop: appTheme.spacing[5],
-        paddingBottom: appTheme.spacing[6],
-        gap: appTheme.spacing[2],
+        paddingTop: spaceTokens[5],
+        paddingBottom: spaceTokens[6],
+        gap: spaceTokens[2],
     },
     title: {
         fontSize: 28,
         fontWeight: "700",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     subtitle: {
         fontSize: 15,
-        color: appTheme.colors.textSecondary,
+        color: colorTokens['text.secondary'],
         lineHeight: 22,
     },
     inputSection: {
-        gap: appTheme.spacing[5],
+        gap: spaceTokens[5],
     },
     inputGroup: {
-        gap: appTheme.spacing[2],
+        gap: spaceTokens[2],
     },
     label: {
         fontSize: 15,
         fontWeight: "600",
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     inputWrapper: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: appTheme.colors.surface,
-        borderRadius: appTheme.radii.md,
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.md,
         borderWidth: 1.5,
-        borderColor: appTheme.colors.border,
+        borderColor: colorTokens['border.subtle'],
     },
     input: {
         flex: 1,
-        paddingVertical: appTheme.spacing[4],
-        paddingHorizontal: appTheme.spacing[4],
+        paddingVertical: spaceTokens[4],
+        paddingHorizontal: spaceTokens[4],
         fontSize: 16,
-        color: appTheme.colors.text,
+        color: colorTokens['text.primary'],
     },
     eyeButton: {
-        paddingHorizontal: appTheme.spacing[4],
-        paddingVertical: appTheme.spacing[2],
+        paddingHorizontal: spaceTokens[4],
+        paddingVertical: spaceTokens[2],
     },
     eyeButtonText: {
         fontSize: 14,
         fontWeight: "600",
-        color: appTheme.colors.accent,
+        color: colorTokens['brand.accent'],
     },
     helperText: {
         fontSize: 13,
-        marginTop: -appTheme.spacing[1],
+        marginTop: -spaceTokens[1],
     },
     helperSuccess: {
-        color: appTheme.colors.success,
+        color: colorTokens['status.success'],
     },
     helperError: {
-        color: appTheme.colors.error,
+        color: colorTokens['status.error'],
     },
     buttonSection: {
-        paddingBottom: appTheme.spacing[4],
+        paddingBottom: spaceTokens[4],
     },
-});
+}));

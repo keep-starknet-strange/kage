@@ -1,4 +1,4 @@
-export const colorTokens = {
+export const lightColorTokens = {
   'bg.default': '#F6F7FB',
   'bg.elevated': '#FFFFFF',
   'bg.sunken': '#EEF0F5',
@@ -19,6 +19,29 @@ export const colorTokens = {
   'border.strong': '#C9CCDA',
   'shadow.primary': 'rgba(20,24,36,0.12)',
   'shadow.deep': 'rgba(20,24,36,0.24)',
+} as const;
+
+export const darkColorTokens = {
+  'bg.default': '#0F1117',
+  'bg.elevated': '#1A1D28',
+  'bg.sunken': '#080A0F',
+  'surface.glass': 'rgba(26,29,40,0.56)',
+  'surface.overlay': 'rgba(255,255,255,0.12)',
+  'text.primary': '#F6F7FB',
+  'text.secondary': '#C9CCDA',
+  'text.muted': '#8B8FA3',
+  'text.inverted': '#141824',
+  'brand.accent': '#7260F2',
+  'brand.accentSoft': '#9B8DF5',
+  'brand.glow': 'rgba(114,96,242,0.24)',
+  'status.success': '#3FD99D',
+  'status.info': '#5B9EFF',
+  'status.warning': '#FFB84D',
+  'status.error': '#FF6B87',
+  'border.subtle': '#2A2E3C',
+  'border.strong': '#3E4354',
+  'shadow.primary': 'rgba(0,0,0,0.24)',
+  'shadow.deep': 'rgba(0,0,0,0.48)',
 } as const;
 
 export const radiusTokens = {
@@ -49,5 +72,3 @@ export const opacityTokens = {
   disabled: 0.38,
   overlay: 0.22,
 } as const;
-
-export type ColorTokenKey = keyof typeof colorTokens;
