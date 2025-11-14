@@ -1,134 +1,347 @@
 import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
-import { useState } from "react";
-import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useState, useEffect } from "react";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
+import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
 
 export default function AccessVaultModal() {
     const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
+    const { biometricsProvider } = useAppDependenciesStore();
     const [inputPassphrase, setInputPassphrase] = useState("");
     const [isInputVisible, setIsInputVisible] = useState(false);
+    const [biometryType, setBiometryType] = useState<BiometryType | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const insets = useSafeAreaInsets();
 
+    // Get biometry type when modal opens
+    useEffect(() => {
+        if (prompt?.validateWith === "biometrics") {
+            biometricsProvider.getBiometricsType().then(setBiometryType);
+        }
+    }, [prompt, biometricsProvider]);
+
     const onRequestClose = () => {
-        void handlePassphraseReject("Cancelled");
-    }
-
-    const onPassphraseSubmit = (passphrase: string) => {
-        void handlePassphraseSubmit(passphrase);
-    }
-
-    const explanation = (prompt: RequestAccessPrompt) => {
-        if (prompt.input.requestFor === "passphrase") {
-            return "Your passphrase is needed for enabling biometrics.";
-        } else if (prompt.input.requestFor === "keySources") {
-            if (prompt.validateWith === "biometrics") {
-                return "Please authenticate using biometrics to unlock your wallet. Your biometric information is only used on your device to unlock your encrypted keys.";
-            } else if (prompt.validateWith === "passphrase") {
-                return "Please authenticate using your passphrase to unlock your wallet. Your passphrase is used to decrypt your encrypted keys.";
-            }
+        if (!isSubmitting) {
+            void handlePassphraseReject("Cancelled");
         }
     }
 
-    let innerContent = null;
-    if (prompt && prompt.validateWith === "biometrics") {
-        innerContent = (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <Text style={styles.label}>Biometric Authentication</Text>
-
-                
-                <Text style={styles.hint}>{explanation(prompt)}</Text>
-            </View>
-        );
-    } else if (prompt && prompt.validateWith === "passphrase") { 
-        innerContent = (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <Text style={styles.label}>Enter Passphrase</Text>
-
-                <Text style={styles.hint}>{explanation(prompt)}</Text>
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={inputPassphrase}
-                        onChangeText={setInputPassphrase}
-                        placeholder="Enter your passphrase..."
-                        secureTextEntry={!isInputVisible}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        returnKeyType="done"
-                    />
-                    <Pressable 
-                        onPress={() => setIsInputVisible((state) => !state)}
-                        style={styles.toggleButton}
-                        accessibilityRole="button"
-                        accessibilityLabel={isInputVisible ? "Hide passphrase" : "Show passphrase"}
-                    >
-                        <Text style={styles.toggleText}>{isInputVisible ? "Hide" : "Show"}</Text>
-                    </Pressable>
-                </View>
-
-                <Button 
-                    title="Submit" 
-                    disabled={inputPassphrase.length === 0}
-                    onPress={() => {
-                        setInputPassphrase("");
-                        onPassphraseSubmit(inputPassphrase)
-                    }} 
-                />
-            </View>
-        );
+    const onPassphraseSubmit = async (passphrase: string) => {
+        setIsSubmitting(true);
+        try {
+            await handlePassphraseSubmit(passphrase);
+        } finally {
+            setIsSubmitting(false);
+            setInputPassphrase("");
+        }
     }
+
+    const getTitle = (prompt: RequestAccessPrompt): string => {
+        if (prompt.input.requestFor === "passphrase") {
+            return "Enable Biometrics";
+        } else if (prompt.input.requestFor === "keySources") {
+            if (prompt.validateWith === "biometrics") {
+                return "Unlock Wallet";
+            } else if (prompt.validateWith === "passphrase") {
+                return "Enter Passphrase";
+            }
+        }
+        return "Authentication Required";
+    }
+
+    const getDescription = (prompt: RequestAccessPrompt): string => {
+        if (prompt.input.requestFor === "passphrase") {
+            return "Enter your passphrase to enable biometric authentication for future access.";
+        } else if (prompt.input.requestFor === "keySources") {
+            if (prompt.validateWith === "biometrics") {
+                const biometryName = getBiometryName(biometryType);
+                return `Authenticate with ${biometryName} to access your private keys.`;
+            } else if (prompt.validateWith === "passphrase") {
+                return "Enter your passphrase to access your private keys.";
+            }
+        }
+        return "";
+    }
+
+    const getBiometryName = (type: BiometryType | null): string => {
+        switch (type) {
+            case BiometryType.FACE_ID:
+                return "Face ID";
+            case BiometryType.TOUCH_ID:
+                return "Touch ID";
+            case BiometryType.OPTIC_ID:
+                return "Optic ID";
+            case BiometryType.FINGERPRINT:
+                return "Fingerprint";
+            case BiometryType.FACE:
+                return "Face Recognition";
+            case BiometryType.IRIS:
+                return "Iris Recognition";
+            default:
+                return "Biometrics";
+        }
+    }
+
+    const getBiometryIcon = (type: BiometryType | null) => {
+        switch (type) {
+            case BiometryType.FACE_ID:
+            case BiometryType.FACE:
+                return "faceid" as const;
+            case BiometryType.TOUCH_ID:
+            case BiometryType.FINGERPRINT:
+                return "touchid" as const;
+            case BiometryType.OPTIC_ID:
+                return "opticid" as const;
+            case BiometryType.IRIS:
+                return "eye.fill" as const;
+            default:
+                return "lock.shield.fill" as const;
+        }
+    }
+
+    if (!prompt) {
+        return null;
+    }
+
+    const title = getTitle(prompt);
+    const description = getDescription(prompt);
+
     return (
         <Modal
             visible={prompt !== null}
             animationType="slide"
             onRequestClose={onRequestClose}
-
-            // iOS only
             presentationStyle="pageSheet"
-            allowSwipeDismissal={true}
         >
-            {innerContent}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.container}
+            >
+                <ScrollView 
+                    contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <View style={styles.iconContainer}>
+                            <IconSymbol
+                                name={prompt.validateWith === "biometrics" ? getBiometryIcon(biometryType) : "key.fill"}
+                                size={40}
+                                color={colorTokens['brand.accent']}
+                            />
+                        </View>
+                        <Text style={styles.title}>{title}</Text>
+                        <Text style={styles.description}>{description}</Text>
+                    </View>
+
+                    {/* Biometrics View */}
+                    {prompt.validateWith === "biometrics" && (
+                        <View style={styles.biometricsContainer}>
+                            <ActivityIndicator 
+                                size="large" 
+                                color={colorTokens['brand.accent']}
+                            />
+                            <Text style={styles.biometricsHint}>
+                                Waiting for authentication...
+                            </Text>
+                        </View>
+                    )}
+
+                    {/* Passphrase View */}
+                    {prompt.validateWith === "passphrase" && (
+                        <View style={styles.passphraseContainer}>
+                            <View style={styles.inputWrapper}>
+                                <View style={styles.inputIconContainer}>
+                                    <IconSymbol
+                                        name="lock.fill"
+                                        size={18}
+                                        color={colorTokens['text.muted']}
+                                    />
+                                </View>
+                                <TextInput
+                                    style={styles.input}
+                                    value={inputPassphrase}
+                                    onChangeText={setInputPassphrase}
+                                    placeholder="Enter your passphrase"
+                                    placeholderTextColor={colorTokens['text.muted']}
+                                    secureTextEntry={!isInputVisible}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    autoFocus
+                                    returnKeyType="done"
+                                    onSubmitEditing={() => {
+                                        if (inputPassphrase.length > 0 && !isSubmitting) {
+                                            onPassphraseSubmit(inputPassphrase);
+                                        }
+                                    }}
+                                    editable={!isSubmitting}
+                                />
+                                <TouchableOpacity 
+                                    onPress={() => setIsInputVisible((state) => !state)}
+                                    style={styles.toggleButton}
+                                    disabled={isSubmitting}
+                                >
+                                    <IconSymbol
+                                        name={isInputVisible ? "eye.slash.fill" : "eye.fill"}
+                                        size={18}
+                                        color={colorTokens['text.muted']}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Action Buttons */}
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity
+                                    style={[styles.button, styles.cancelButton]}
+                                    onPress={onRequestClose}
+                                    disabled={isSubmitting}
+                                >
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.button, 
+                                        styles.submitButton,
+                                        (inputPassphrase.length === 0 || isSubmitting) && styles.submitButtonDisabled
+                                    ]}
+                                    onPress={() => onPassphraseSubmit(inputPassphrase)}
+                                    disabled={inputPassphrase.length === 0 || isSubmitting}
+                                >
+                                    {isSubmitting ? (
+                                        <ActivityIndicator size="small" color={colorTokens['text.inverted']} />
+                                    ) : (
+                                        <Text style={styles.submitButtonText}>Unlock</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
+                </ScrollView>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        gap: 8,
-        paddingHorizontal: 16,
+        flex: 1,
+        backgroundColor: colorTokens['bg.default'],
     },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
+    scrollContent: {
+        flexGrow: 1,
+        paddingHorizontal: spaceTokens[5],
+        paddingBottom: spaceTokens[6],
     },
-    hint: {
-        fontSize: 13,
-        color: '#666',
+    header: {
+        alignItems: 'center',
+        marginTop: spaceTokens[5],
+        marginBottom: spaceTokens[6],
     },
-    inputContainer: {
+    iconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: radiusTokens.pill,
+        backgroundColor: colorTokens['brand.glow'],
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spaceTokens[4],
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: colorTokens['text.primary'],
+        marginBottom: spaceTokens[2],
+        textAlign: 'center',
+    },
+    description: {
+        fontSize: 15,
+        color: colorTokens['text.secondary'],
+        textAlign: 'center',
+        lineHeight: 22,
+        paddingHorizontal: spaceTokens[2],
+    },
+    biometricsContainer: {
+        alignItems: 'center',
+        paddingVertical: spaceTokens[6],
+        gap: spaceTokens[4],
+    },
+    biometricsHint: {
+        fontSize: 14,
+        color: colorTokens['text.muted'],
+        textAlign: 'center',
+    },
+    passphraseContainer: {
+        gap: spaceTokens[4],
+    },
+    inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#d0d0d0',
-        borderRadius: 10,
-        backgroundColor: '#fafafa',
-        overflow: 'hidden',
+        backgroundColor: colorTokens['bg.sunken'],
+        borderRadius: radiusTokens.md,
+        borderWidth: 2,
+        borderColor: colorTokens['border.subtle'],
+        paddingHorizontal: spaceTokens[3],
+        gap: spaceTokens[2],
+    },
+    inputIconContainer: {
+        width: 24,
+        alignItems: 'center',
     },
     input: {
         flex: 1,
-        padding: 12,
         fontSize: 16,
+        color: colorTokens['text.primary'],
+        paddingVertical: spaceTokens[3],
         minHeight: 48,
     },
     toggleButton: {
-        paddingHorizontal: 12,
-        paddingVertical: 12,
+        padding: spaceTokens[2],
+        width: 40,
+        alignItems: 'center',
     },
-    toggleText: {
-        color: '#007AFF',
-        fontWeight: '500',
-        fontSize: 14,
-    }
+    buttonContainer: {
+        flexDirection: 'row',
+        gap: spaceTokens[3],
+        marginTop: spaceTokens[2],
+    },
+    button: {
+        flex: 1,
+        height: 52,
+        borderRadius: radiusTokens.md,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cancelButton: {
+        backgroundColor: colorTokens['bg.sunken'],
+        borderWidth: 1,
+        borderColor: colorTokens['border.strong'],
+    },
+    cancelButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: colorTokens['text.secondary'],
+    },
+    submitButton: {
+        backgroundColor: colorTokens['brand.accent'],
+        shadowColor: colorTokens['brand.accent'],
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    submitButtonDisabled: {
+        backgroundColor: colorTokens['text.muted'],
+        opacity: 0.5,
+        shadowOpacity: 0,
+        elevation: 0,
+    },
+    submitButtonText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: colorTokens['text.inverted'],
+    },
 });

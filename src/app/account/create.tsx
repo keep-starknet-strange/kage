@@ -2,6 +2,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
+import { useAccessVaultStore } from '@/stores/accessVaultStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { LOG } from '@/utils/logs';
 import { useNavigation, useRouter } from 'expo-router';
@@ -13,6 +14,7 @@ export default function CreateAccountScreen() {
     const navigation = useNavigation();
     const { insets } = useDynamicSafeAreaInsets();
     const { addAccount } = useProfileStore();
+    const { requestAccess } = useAccessVaultStore();
 
     const [accountName, setAccountName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
@@ -39,7 +41,7 @@ export default function CreateAccountScreen() {
         setError(null);
 
         try {
-            await addAccount(accountName.trim());
+            await addAccount(accountName.trim(), requestAccess);
             LOG.info('Account created successfully:', accountName);
             router.back();
         } catch (err) {

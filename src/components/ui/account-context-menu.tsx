@@ -1,12 +1,11 @@
+import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
+import { useOnChainStore } from "@/stores/onChainStore";
+import { useProfileStore } from "@/stores/profileStore";
+import { useState } from "react";
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
-import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
-import { useAccountsStore } from "@/stores/accountsStore";
-import { useState } from "react";
-import { LOG } from "@/utils/logs";
 import { RenameAccountModal } from "./rename-account-modal";
-import { useProfileStore } from "@/stores/profileStore";
 import { showToastError } from "./toast";
 
 export interface AccountContextMenuProps {
@@ -16,9 +15,9 @@ export interface AccountContextMenuProps {
 export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
     const [showModal, setShowModal] = useState(false);
     const [showRenameModal, setShowRenameModal] = useState(false);
-    const { deployAccount } = useAccountsStore();
+    const { deployAccount } = useOnChainStore();
     const { renameAccount } = useProfileStore();
-    const status = useAccountsStore((state) => state.status.get(account.address) ?? "unknown");
+    const status = useOnChainStore((state) => state.deployStatus.get(account.address) ?? "unknown");
 
     const deployButtonVisible = status === "not-deployed" || status === "deploying";
     const isDeploying = status === "deploying";

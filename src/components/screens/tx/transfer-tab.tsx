@@ -5,7 +5,6 @@ import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
-import { useTxStore } from "@/stores/txStore";
 import { PrivateAmount } from "@/types/amount";
 import { PrivateTokenAddress, PrivateTokenRecipient } from "@/types/privateRecipient";
 import { PrivateTokenBalance } from "@/types/tokenBalance";
@@ -15,6 +14,7 @@ import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {LOG} from "@/utils/logs";
 import { showToastError } from "@/components/ui/toast";
+import { useOnChainStore } from "@/stores/onChainStore";
 
 type TransferTabProps = {
     account: Account;
@@ -24,7 +24,7 @@ export function TransferTab({
     account,
 }: TransferTabProps) {
     const { unlockPrivateBalances } = useBalanceStore();
-    const { transfer } = useTxStore();
+    const { transfer } = useOnChainStore();
     const router = useRouter();
 
     const isFocused = useIsFocused();

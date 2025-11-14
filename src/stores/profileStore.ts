@@ -3,10 +3,9 @@ import { ProfileState } from "@/profile/profileState";
 import { generateMnemonicWords } from "@starkms/key-management";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
-import { useAccessVaultStore } from "./accessVaultStore";
 import Account from "@/profile/account";
 import { AppError } from "@/types/appError";
-import { LOG } from "@/utils/logs";
+import { RequestAccessFn } from "./accessVaultStore";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
@@ -14,7 +13,7 @@ export interface ProfileStoreState {
     initialize: () => Promise<void>;
     create: (passphrase: string, accountName: string) => Promise<void>;
     restore: (passphrase: string, seedPhraseWords: string[]) => Promise<void>;
-    addAccount: (accountName: string) => Promise<void>;
+    addAccount: (accountName: string, requestAccess: RequestAccessFn) => Promise<void>;
     renameAccount: (account: Account, newName: string) => Promise<void>;
     delete: () => Promise<void>;
 }
@@ -82,10 +81,9 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         set({ profileState: updatedProfile });
     },
 
-    addAccount: async (accountName: string) => {
+    addAccount: async (accountName: string, requestAccess: RequestAccessFn) => {
         const { profileState } = get();
         const { profileStorage } = useAppDependenciesStore.getState();
-        const { requestAccess } = useAccessVaultStore.getState();
 
         if (!ProfileState.isProfile(profileState)) {
             throw new AppError("Profile state cannot be updated", profileState);

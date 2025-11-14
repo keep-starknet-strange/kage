@@ -42,6 +42,12 @@ const MAPPING = {
     'ellipsis.circle': 'more-horiz',
     'exclamationmark.circle.fill': 'error',
     'paperplane': 'send',
+    'faceid': 'face',
+    'touchid': 'fingerprint',
+    'opticid': 'visibility',
+    'eye.fill': 'visibility',
+    'eye.slash.fill': 'visibility-off',
+    'key.fill': 'vpn-key',
 } as IconMapping;
 
 /**

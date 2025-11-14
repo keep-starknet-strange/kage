@@ -8,7 +8,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
-import { LOG } from "@/utils/logs";
 
 export interface TransactionToastProps {
     transaction: SerializableTransaction;
@@ -75,20 +74,23 @@ export const TransactionToast = ({ transaction, pending = false, onPress }: Tran
                 return "Withdrawal";
             case "publicTransfer":
                 return "Public Transfer";
+            case "deployAccount":
+                return "Deploy Transaction";
         }
     };
 
     const getSubtitle = () => {
-        const amount = transaction.amountFormatted;
         switch (transaction.type) {
             case "fund":
-                return `Funded ${amount}`;
+                return `Funded ${transaction.amountFormatted}`;
             case "transfer":
-                return `Transferred ${amount}`;
+                return `Transferred ${transaction.amountFormatted}`;
             case "withdraw":
-                return `Withdrew ${amount}`;
+                return `Withdrew ${transaction.amountFormatted}`;
             case "publicTransfer":
-                return `Sent ${amount}`;
+                return `Sent ${transaction.amountFormatted}`;
+            case "deployAccount":
+                return pending ? `Account "${transaction.account.name}" deploying on Starknet` : `Account "${transaction.account.name}" deployed on Starknet`;
         }
     };
 

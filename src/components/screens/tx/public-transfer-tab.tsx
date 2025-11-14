@@ -5,7 +5,7 @@ import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account, { AccountAddress } from "@/profile/account";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
-import { useTxStore } from "@/stores/txStore";
+import { useOnChainStore } from "@/stores/onChainStore";
 import { PublicAmount } from "@/types/amount";
 import { PublicTokenBalance } from "@/types/tokenBalance";
 import { LOG } from "@/utils/logs";
@@ -21,7 +21,7 @@ type PublicTransferTabProps = {
 export function PublicTransferTab({
     account,
 }: PublicTransferTabProps) {
-    const { publicTransfer } = useTxStore();
+    const { publicTransfer } = useOnChainStore();
     const router = useRouter();
 
     const isFocused = useIsFocused();

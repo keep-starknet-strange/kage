@@ -6,7 +6,6 @@ import Account from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useProfileStore } from "@/stores/profileStore";
-import { useTxStore } from "@/stores/txStore";
 import { PublicAmount } from "@/types/amount";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -14,6 +13,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import {LOG} from "@/utils/logs";
 import { showToastError } from "@/components/ui/toast";
+import { useOnChainStore } from "@/stores/onChainStore";
 
 type FundTabProps = {
     account: Account;
@@ -23,7 +23,7 @@ export function FundTab({
     account,
 }: FundTabProps) {
     const { profileState } = useProfileStore();
-    const { fund } = useTxStore();
+    const { fund } = useOnChainStore();
     const router = useRouter();
     const isFocused = useIsFocused();
     const isFocusedRef = useRef(isFocused);

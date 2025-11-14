@@ -22,6 +22,10 @@ export type Transaction = {
     signer: Account,
     txHash: string,
 } | {
+    type: "deployAccount",
+    account: Account,
+    txHash: string,
+} | {
     type: "publicTransfer",
     from: Account,
     amount: PublicAmount,
@@ -47,6 +51,10 @@ export type SerializableTransaction = {
     to: Account,
     amountFormatted: string,
     signer: Account,
+    txHash: string,
+} | {
+    type: "deployAccount",
+    account: Account,
     txHash: string,
 } | {
     type: "publicTransfer",
@@ -82,6 +90,12 @@ export namespace Transaction {
                     to: transaction.to,
                     amountFormatted: transaction.amount.formatted(),
                     signer: transaction.signer,
+                    txHash: transaction.txHash,
+                };
+            case "deployAccount":
+                return {
+                    type: "deployAccount",
+                    account: transaction.account,
                     txHash: transaction.txHash,
                 };
             case "publicTransfer":

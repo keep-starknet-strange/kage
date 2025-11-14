@@ -1,17 +1,17 @@
-import KeySource, { KeySourceId } from "@/profile/keys/keySource";
-import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
-import { deriveStarknetKeyPairs, mnemonicToWords, pathHash, StarknetKeyPair } from "@starkms/key-management";
-import { create } from "zustand";
-import { useAppDependenciesStore } from "./appDependenciesStore";
-import HDKeyInstance, { KeyInstance } from "@/profile/keyInstance";
-import { useProfileStore } from "./profileStore";
-import { ProfileState } from "@/profile/profileState";
-import { KeySourceKind } from "@/profile/keys/keySourceKind";
 import Account from "@/profile/account";
+import HDKeyInstance from "@/profile/keyInstance";
+import { KeySourceId } from "@/profile/keys/keySource";
+import { KeySourceKind } from "@/profile/keys/keySourceKind";
+import { ProfileState } from "@/profile/profileState";
+import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
+import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import Token from "@/types/token";
 import { groupBy } from "@/utils/collections";
-import { AppError } from "@/types/appError";
+import { deriveStarknetKeyPairs, pathHash, StarknetKeyPair } from "@starkms/key-management";
+import { create } from "zustand";
+import { useAppDependenciesStore } from "./appDependenciesStore";
+import { useProfileStore } from "./profileStore";
 
 export type AuthorizationType = "passphrase" | "biometrics";
 

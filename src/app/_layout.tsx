@@ -1,20 +1,20 @@
 import NetworkBanner from '@/components/ui/network-banner';
+import KageToast, { showToastError } from '@/components/ui/toast';
 import Account, { AccountAddress } from '@/profile/account';
 import Profile from '@/profile/profile';
 import { ProfileState } from '@/profile/profileState';
 import { AppProviders } from '@/providers/AppProviders';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
+import { useOnChainStore } from '@/stores/onChainStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { useRpcStore } from '@/stores/useRpcStore';
 import { LOG } from '@/utils/logs';
+import { symmetricDifference } from '@/utils/sets';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
-import { symmetricDifference } from '@/utils/sets';
-import { useAccountsStore } from '@/stores/accountsStore';
-import KageToast, { showToastError } from '@/components/ui/toast';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -94,7 +94,7 @@ export default function RootLayout() {
     const accounts = useProfileStore(state => ProfileState.isProfile(state.profileState) ? state.profileState.currentNetwork.accounts : null);
     useEffect(() => {
         if (accounts) {
-            useAccountsStore.getState().checkAccountsDeployed(accounts as Account[]);
+            useOnChainStore.getState().checkAccountsDeployed(accounts as Account[]);
         }
     }, [accounts]);
 
