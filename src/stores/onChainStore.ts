@@ -279,12 +279,10 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                             return Promise.resolve(storedClassHash);
                         }
 
-                        console.log("Getting class hash for account", account.address);
                         return provider
                             .getClassHashAt(account.address)
                             .catch(error => {
                                 if (error instanceof RpcError && error.isType("CONTRACT_NOT_FOUND")) {
-                                    console.log("Contract not found for account", account.address);
                                     return null;
                                 } else {
                                     throw error;

@@ -1,9 +1,11 @@
-import { useRouter } from "expo-router";
-import { View, StyleSheet, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { appTheme } from "@/design/theme";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
+import { colorTokens, spaceTokens } from "@/design/tokens";
+import { useRouter } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image } from 'expo-image';
+import { useAssets } from "expo-asset";
 
 export default function WelcomeScreen() {
     const router = useRouter();
@@ -11,13 +13,28 @@ export default function WelcomeScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
-                {/* Logo Section */}
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require("../../../kage-logo.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+                {/* Logo and Branding Section */}
+                <View style={styles.brandingContainer}>
+                    <View style={styles.logoWrapper}>
+                        <Image
+                            source={require("res/logo/kage-outline.png")}
+                            style={styles.logo}
+                            contentFit="contain"
+                        />
+                    </View>
+
+                    <View style={styles.textContainer}>
+                        <Text style={styles.appName}>KAGE</Text>
+                        <View style={styles.taglineContainer}>
+                            <Text style={styles.tagline}>Privacy is</Text>
+                            <Image
+                                source={require("res/logo/starknet.png")}
+                                style={styles.starknetLogo}
+                                contentFit="contain"
+                            />
+                            <Text style={styles.tagline}>Normal</Text>
+                        </View>
+                    </View>
                 </View>
 
                 {/* Spacer to push buttons to bottom */}
@@ -39,6 +56,13 @@ export default function WelcomeScreen() {
                         }}
                     />
                 </View>
+
+                {/* Footnote */}
+                <View style={styles.footnoteContainer}>
+                    <Text style={styles.footnote}>
+                        Brought to you by the Starkware Exploration team
+                    </Text>
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -47,25 +71,68 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: appTheme.colors.background,
+        backgroundColor: colorTokens['bg.default'],
     },
     content: {
         flex: 1,
-        paddingHorizontal: appTheme.spacing[4],
-        paddingBottom: appTheme.spacing[6],
+        paddingHorizontal: spaceTokens[5],
+        paddingBottom: spaceTokens[6],
     },
-    logoContainer: {
+    brandingContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        paddingTop: appTheme.spacing[8],
+        paddingTop: spaceTokens[8],
+        gap: spaceTokens[6],
+    },
+    logoWrapper: {
+        alignItems: "center",
+        justifyContent: "center",
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: 160,
+        height: 160,
+    },
+    starknetLogo: {
+        width: 20,
+        height: 20,
+    },
+    textContainer: {
+        alignItems: "center",
+        gap: spaceTokens[2],
+    },
+    appName: {
+        fontSize: 48,
+        fontWeight: "800",
+        color: colorTokens['text.primary'],
+        letterSpacing: 2,
+        textAlign: "center",
+    },
+    taglineContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: spaceTokens[1],
+    },
+    tagline: {
+        fontSize: 18,
+        fontWeight: "500",
+        color: colorTokens['text.secondary'],
+        textAlign: "center",
     },
     buttonsContainer: {
-        gap: appTheme.spacing[3],
-        paddingBottom: appTheme.spacing[4],
+        gap: spaceTokens[3],
+    },
+    footnoteContainer: {
+        paddingTop: spaceTokens[4],
+        paddingBottom: spaceTokens[2],
+        alignItems: "center",
+    },
+    footnote: {
+        fontSize: 12,
+        color: colorTokens['text.muted'],
+        textAlign: "center",
+        fontWeight: "400",
     },
 }); 

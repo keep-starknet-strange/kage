@@ -361,8 +361,6 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                     }
 
                     networkTokens = updatedTokens;
-
-                    console.log("Updating fiat prices...");
                     const { publicBalances, privateBalances } = get();
                     const newPublicBalances = new Map(Array.from(publicBalances.entries()).map(([account, balances]) => {
                         return [account, balances.map((balance) => {
@@ -399,7 +397,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             await unsubscribeFromBalanceUpdates();
             stopPriceRefresh();
             networkTokens = mainnetTokens;
-            
+
             set({
                 networkId: "SN_MAIN",
                 unlockedPrivateBalances: new Set(),
