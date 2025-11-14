@@ -13,6 +13,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import {LOG} from "@/utils/logs";
+import { showToastError } from "@/components/ui/toast";
 
 type FundTabProps = {
     account: Account;
@@ -55,7 +56,7 @@ export function FundTab({
             try {
                 await fund(account, amount, account);
             } catch (error) {
-                LOG.error("[FUND]:", error);
+                showToastError(error);
             } finally {
                 setIsFunding(false);
             }

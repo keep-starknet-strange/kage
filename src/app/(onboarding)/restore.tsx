@@ -1,4 +1,5 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { showToastError } from "@/components/ui/toast";
 import { appTheme } from "@/design/theme";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useProfileStore } from "@/stores/profileStore";
@@ -71,8 +72,7 @@ export default function RestoreScreen() {
 
             await restore(passphrase, words);
         } catch (error) {
-            console.error("Failed to restore wallet:", error);
-            // TODO: Show error message to user
+            showToastError(error);
         } finally {
             setIsRestoring(false);
         }

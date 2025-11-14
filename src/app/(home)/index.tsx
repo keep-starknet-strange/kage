@@ -1,6 +1,5 @@
 import { AddressView } from '@/components/address-view';
 import { AccountContextMenu } from '@/components/ui/account-context-menu';
-import { DeployButton } from '@/components/ui/deploy-button';
 import { TotalBalanceCard } from '@/components/ui/total-balance-card';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';

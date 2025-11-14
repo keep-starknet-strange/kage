@@ -12,6 +12,7 @@ export const colorTokens = {
   'brand.accentSoft': '#7260F2',
   'brand.glow': 'rgba(93,62,247,0.16)',
   'status.success': '#2FB984',
+  'status.info': '#3B82F6',
   'status.warning': '#F5A623',
   'status.error': '#E94B65',
   'border.subtle': '#E4E6EF',

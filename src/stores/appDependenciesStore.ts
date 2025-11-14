@@ -19,6 +19,7 @@ import { create } from "zustand";
 import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
 import { Platform } from "react-native";
+import { AppError } from "@/types/appError";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -35,13 +36,13 @@ function getApplicationId(): string {
     if (Platform.OS === "android") {
         const packageName = Constants.expoConfig?.android?.package;
         if (!packageName) {
-            throw new Error("Android package not found in app.json");
+            throw new AppError("Android package not found in app.json");
         }
         return packageName;
     } else if (Platform.OS === "ios") {
         const bundleId = Constants.expoConfig?.ios?.bundleIdentifier
         if (!bundleId) {
-            throw new Error("iOS bundle identifier not found in app.json");
+            throw new AppError("iOS bundle identifier not found in app.json");
         }
         return bundleId
     } else {

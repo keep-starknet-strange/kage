@@ -13,6 +13,7 @@ import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {LOG} from "@/utils/logs";
 import { LibraryError, RpcError } from "starknet";
+import { showToastError } from "@/components/ui/toast";
 
 type WithdrawTabProps = {
     account: Account;
@@ -45,9 +46,7 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
             try {
                 await withdraw(account, amount, account);
             } catch (error) {
-                if (error instanceof RpcError) {
-                    LOG.error("[Withdraw]:", error.baseError.code, error.baseError.message)
-                }
+                showToastError(error);
             } finally {
                 setIsWithdrawing(false);
             }
@@ -67,7 +66,7 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
         try {
             await unlockPrivateBalances([account]);
         } catch (error) {
-            console.error('Error unlocking private balances:', error);
+            showToastError(error);
         } finally {
             setIsUnlockingBalances(false);
         }

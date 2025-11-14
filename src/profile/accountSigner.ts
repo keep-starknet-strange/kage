@@ -1,6 +1,7 @@
 import { AccessVaultState } from "@/stores/accessVaultStore";
 import { ec, Signature, Signer } from "starknet";
 import Account from "./account";
+import { AppError } from "@/types/appError";
 
 export class AccountSigner extends Signer {
 
@@ -29,7 +30,7 @@ export class AccountSigner extends Signer {
         const keyPairs = result.signing.get(this.account);
 
         if (!keyPairs) {
-            throw new Error("Signing key not found for account " + this.account.address);
+            throw new AppError("Signing key not found for account ", this.account.address);
         }
 
         return keyPairs.spendingKeyPair.privateSpendingKey;

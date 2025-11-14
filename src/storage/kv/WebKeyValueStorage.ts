@@ -1,5 +1,6 @@
 import KeyValueStorage from './KeyValueStorage';
 import { KeyValueSchema } from './KeyValueSchema';
+import { LOG } from '@/utils/logs';
 
 /**
  * WebKeyValueStorage implements KeyValueStorage using localStorage.
@@ -19,14 +20,14 @@ export default class WebKeyValueStorage implements KeyValueStorage {
                 return null;
             }
         } catch (e) {
-            console.error(`Failed to get value for key ${key}:`, e);
+            LOG.error(`Failed to get value for key ${key}:`, e);
             return null;
         }
 
         try {
             return JSON.parse(serializedValue) as KeyValueSchema[K];
         } catch (e) {
-            console.error(`Failed to deserialize value ${serializedValue} for key "${key}":`, e);
+            LOG.error(`Failed to deserialize value ${serializedValue} for key "${key}":`, e);
             return null;
         }
     }
@@ -53,7 +54,7 @@ export default class WebKeyValueStorage implements KeyValueStorage {
             try {
                 await this.remove(key);
             } catch (e) {
-                console.error(`Failed to remove item ${key}:`, e);
+                LOG.error(`Failed to remove item ${key}:`, e);
             }
             return;
         }
@@ -62,14 +63,14 @@ export default class WebKeyValueStorage implements KeyValueStorage {
         try {
             serializedValue = JSON.stringify(value);
         } catch (e) {
-            console.error(`Failed to serialize value ${value} for key "${key}":`, e);
+            LOG.error(`Failed to serialize value ${value} for key "${key}":`, e);
             return;
         }
 
         try {
             await localStorage.setItem(key, serializedValue);
         } catch (e) {
-            console.error(`WebKeyValueStorage.setItem error:`, e);
+            LOG.error(`WebKeyValueStorage.setItem error:`, e);
         }
     }
 
@@ -81,7 +82,7 @@ export default class WebKeyValueStorage implements KeyValueStorage {
         try {
             await localStorage.removeItem(key);
         } catch (e) {
-            console.error(`WebKeyValueStorage.removeItem error:`, e);
+            LOG.error(`WebKeyValueStorage.removeItem error:`, e);
         }
     }
 
@@ -92,7 +93,7 @@ export default class WebKeyValueStorage implements KeyValueStorage {
         try {
             await localStorage.clear();
         } catch (e) {
-            console.error(`WebKeyValueStorage.clear error:`, e);
+            LOG.error(`WebKeyValueStorage.clear error:`, e);
         }
     }
 }

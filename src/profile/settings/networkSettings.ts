@@ -1,6 +1,7 @@
 import { Type } from "class-transformer";
 import { NetworkId } from "../misc";
 import NetworkDerfinition from "./networkDefinition";
+import { AppError } from "@/types/appError";
 
 export default class NetworkSettings {
     readonly current: NetworkId;
@@ -25,7 +26,7 @@ export default class NetworkSettings {
 
     addNetwork(definition: NetworkDerfinition): NetworkSettings {
         if (this.definitions.some(def => def.chainId === definition.chainId)) {
-            throw new Error(`NetworkSettings already contains a definition for chain ${definition.chainId}.`);
+            throw new AppError(`NetworkSettings already contains a definition for chain ${definition.chainId}.`);
         }
 
         return new NetworkSettings(
@@ -36,7 +37,7 @@ export default class NetworkSettings {
 
     updateCurrentNetwork(network: NetworkId): NetworkSettings {
         if (!this.definitions.some(def => def.chainId === network)) {
-            throw new Error(`NetworkSettings does not contain a definition for chain ${network}.`);
+            throw new AppError(`NetworkSettings does not contain a definition for chain ${network}.`);
         }
 
         return new NetworkSettings(
@@ -48,7 +49,7 @@ export default class NetworkSettings {
     get currentNetworkDefinition(): NetworkDerfinition {
         const currentDefinition = this.definitions.find((definition) => definition.chainId == this.current)
         if (!currentDefinition) {
-            throw new Error(`Network ${this.current} is not yet defined.`)
+            throw new AppError(`Network ${this.current} is not yet defined.`)
         }
 
         return currentDefinition;

@@ -1,7 +1,7 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { PrivateAmount, PublicAmount } from "@/types/amount";
 import { PrivateTokenRecipient } from "@/types/privateRecipient";
-import { PrivateTransaction } from "@/types/transaction";
+import { Transaction } from "@/types/transaction";
 import { LOG } from "@/utils/logs";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
@@ -9,9 +9,11 @@ import { cairo, Contract, Account as StarknetAccount } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
 import { useRpcStore } from "./useRpcStore";
+import { AppError } from "@/types/appError";
+import { showToastError, showToastTransaction } from "@/components/ui/toast";
 
 export interface TxState {
-    pendingTransactionsStack: PrivateTransaction[];
+    pendingTransactionsStack: Transaction[];
 
     fund: (from: Account, amount: PublicAmount, signer: Account) => Promise<void>;
 
@@ -22,7 +24,7 @@ export interface TxState {
 
     withdraw: (to: Account, amount: PrivateAmount, signer: Account) => Promise<void>;
 
-    appendPendingTransaction: (transaction: PrivateTransaction) => void;
+    appendPendingTransaction: (transaction: Transaction) => void;
 
     removePendingTransaction: (transactionHash: string) => void;
 }
@@ -43,12 +45,12 @@ export const useTxStore = create<TxState>((set, get) => ({
 
         const signerKeyPairs = result.signing.get(signer);
         if (!signerKeyPairs) {
-            throw new Error("Signing key not found for account " + signer.address);
+            throw new AppError("Signing key not found for account", signer.address);
         }
 
         const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
         if (!tokenKeyPairs) {
-            throw new Error("Token key not found for account " + from.address);
+            throw new AppError("Token key not found for account", from.address);
         }
 
         // @ts-ignore
@@ -94,7 +96,7 @@ export const useTxStore = create<TxState>((set, get) => ({
 
         const signerKeyPairs = result.signing.get(from);
         if (!signerKeyPairs) {
-            throw new Error("Signing key not found for account " + from.address);
+            throw new AppError("Signing key not found for account", from.address);
         }
 
         const fromAccount = new StarknetAccount({
@@ -132,12 +134,12 @@ export const useTxStore = create<TxState>((set, get) => ({
 
         const signerKeyPairs = result.signing.get(signer);
         if (!signerKeyPairs) {
-            throw new Error("Signing key not found for account " + signer.address);
+            throw new AppError("Signing key not found for account", signer.address);
         }
 
         const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
         if (!tokenKeyPairs) {
-            throw new Error("Token key not found for account " + from.address);
+            throw new AppError("Token key not found for account", from.address);
         }
 
         // @ts-ignore
@@ -188,12 +190,12 @@ export const useTxStore = create<TxState>((set, get) => ({
 
         const signerKeyPairs = result.signing.get(signer);
         if (!signerKeyPairs) {
-            throw new Error("Signing key not found for account " + signer.address);
+            throw new AppError("Signing key not found for account", signer.address);
         }
 
         const tokenKeyPairs = result.tokens.get(to)?.keyPairs;
         if (!tokenKeyPairs) {
-            throw new Error("Token key not found for account " + to.address);
+            throw new AppError("Token key not found for account", to.address);
         }
         // @ts-ignore
         const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
@@ -230,11 +232,11 @@ export const useTxStore = create<TxState>((set, get) => ({
         });
     },
 
-    appendPendingTransaction: (transaction: PrivateTransaction) => {
+    appendPendingTransaction: (transaction: Transaction) => {
         const {removePendingTransaction} = get();
         const {provider} = useRpcStore.getState();
 
-        LOG.info(`[TX]: 🤝 ${transaction.type}:`, transaction.txHash);
+        showToastTransaction(transaction, true);
 
         set((state) => ({
             pendingTransactionsStack: [transaction, ...state.pendingTransactionsStack],
@@ -242,13 +244,14 @@ export const useTxStore = create<TxState>((set, get) => ({
 
         provider.waitForTransaction(transaction.txHash)
             .then((receipt) => {
+                showToastTransaction(transaction);
                 removePendingTransaction(transaction.txHash);
                 LOG.info("[TX]: ✅ Completed: ", transaction.txHash);
                 LOG.debug("---- 🧾 Receipt: ", receipt, "for", transaction.txHash);
             }).catch((error) => {
-            removePendingTransaction(transaction.txHash);
-            console.error("Error waiting for transaction", error);
-        });
+                removePendingTransaction(transaction.txHash);
+                showToastError(error);
+            });
     },
 
     removePendingTransaction: (transactionHash: string) => {

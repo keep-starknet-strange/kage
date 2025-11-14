@@ -7,6 +7,7 @@ import { useState } from "react";
 import { LOG } from "@/utils/logs";
 import { RenameAccountModal } from "./rename-account-modal";
 import { useProfileStore } from "@/stores/profileStore";
+import { showToastError } from "./toast";
 
 export interface AccountContextMenuProps {
     account: Account;
@@ -31,7 +32,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
             setShowModal(false);
             await deployAccount(account);
         } catch (error) {
-            LOG.error(`Failed to deploy account ${account.address}:`, error);
+            showToastError(error);
         }
     };
 

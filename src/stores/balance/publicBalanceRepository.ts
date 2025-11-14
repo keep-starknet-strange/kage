@@ -4,6 +4,7 @@ import { PublicTokenBalance } from "@/types/tokenBalance";
 import { Call, uint256 } from "starknet";
 import BalanceRepository from "./balanceRepository";
 import { TokenAddress } from "@/types/tokenAddress";
+import { AppError } from "@/types/appError";
 
 export class PublicBalanceRepository extends BalanceRepository {
 
@@ -17,7 +18,7 @@ export class PublicBalanceRepository extends BalanceRepository {
         const promisesTuples = Array.from(accounts.entries()).map(([account, tokens]) => {
             const tokenAddresses = tokens.map((token) => token.contractAddress);
             if (account.networkId !== this.currentNetwork) {
-                throw new Error(`Balance repository is set to ${this.currentNetwork} but account ${account.address} is on ${account.networkId}`);
+                throw new AppError(`Balance repository is set to ${this.currentNetwork} but account ${account.address} is on ${account.networkId}`);
             }
 
             return tokenAddresses.map((tokenAddress) => {
@@ -37,7 +38,7 @@ export class PublicBalanceRepository extends BalanceRepository {
             const tokenAddress = promisesTuples[index].token;
             const token = allRequestedTokens.get(tokenAddress);
             if (!token) {
-                throw new Error(`Token ${tokenAddress} not found on current network ${this.currentNetwork}`);
+                throw new AppError(`Token ${tokenAddress} not found on current network ${this.currentNetwork}`);
             }
 
             const tokenBalancesForAccount = results.get(accountAddress) ?? [];
@@ -60,7 +61,7 @@ export class PublicBalanceRepository extends BalanceRepository {
             // ERC-20 returns u256, which is 2 felts (low and high)
             return uint256.uint256ToBN({ low: response[0], high: response[1] });
         } else {
-            throw new Error(`Error fetching balance of ${tokenAddress} for account ${accountAddress}. RAW RESPONSE: ${response}`);
+            throw new AppError(`Error fetching balance of ${tokenAddress} for account ${accountAddress}`, response);
         }
     }
 

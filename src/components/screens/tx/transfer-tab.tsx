@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {LOG} from "@/utils/logs";
+import { showToastError } from "@/components/ui/toast";
 
 type TransferTabProps = {
     account: Account;
@@ -50,7 +51,7 @@ export function TransferTab({
                 console.log("recipientAddress", recipientAddress.base58);
                 await transfer(account, amount, account, new PrivateTokenRecipient(recipientAddress));
             } catch (error) {
-                LOG.error("[Transfer]:", error)
+                showToastError(error);
             } finally {
                 setIsTransferring(false);
             }
@@ -69,7 +70,7 @@ export function TransferTab({
         try {
             await unlockPrivateBalances([account]);
         } catch (error) {
-            console.error('Error unlocking private balances:', error);
+            showToastError(error);
         } finally {
             setIsUnlockingBalances(false);
         }

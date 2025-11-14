@@ -14,6 +14,7 @@ import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
 import { symmetricDifference } from '@/utils/sets';
 import { useAccountsStore } from '@/stores/accountsStore';
+import KageToast, { showToastError } from '@/components/ui/toast';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,7 +56,7 @@ export default function RootLayout() {
 
             const prevAccounts = ProfileState.isProfile(prevState.profileState) ? new Set(prevState.profileState.accountsOnCurrentNetwork.map((account) => account.id)) : new Set<AccountAddress>();
             const newAccounts = ProfileState.isProfile(state.profileState) ? new Set(state.profileState.accountsOnCurrentNetwork.map((account) => account.id)) : new Set<AccountAddress>();
-            
+
             if (symmetricDifference(newAccounts, prevAccounts).size > 0 && ProfileState.isProfile(state.profileState)) {
                 LOG.info("Starting subscriptions for new accounts");
                 startSubscriptions(state.profileState);
@@ -65,7 +66,11 @@ export default function RootLayout() {
 
         if (!ProfileState.isInitialized(profileStateOnMount)) {
             LOG.info("Initializing profile");
-            initialize().then(() => SplashScreen.hideAsync());
+            initialize()
+                .then(() => SplashScreen.hideAsync())
+                .catch(error => {
+                    showToastError(error);
+                });
         } else if (ProfileState.isProfile(profileStateOnMount)) {
             startSubscriptions(profileStateOnMount);
         } else if (profileStateOnMount === null) {
@@ -110,6 +115,7 @@ export default function RootLayout() {
 
             <AccessVaultModal />
             <NetworkBanner network={currentNetworkDefinition} />
+            <KageToast />
         </AppProviders>
     );
 }

@@ -11,6 +11,7 @@ import Account from "@/profile/account";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import Token from "@/types/token";
 import { groupBy } from "@/utils/collections";
+import { AppError } from "@/types/appError";
 
 export type AuthorizationType = "passphrase" | "biometrics";
 
@@ -93,7 +94,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
             const profileState = useProfileStore.getState().profileState;
             if (!ProfileState.isProfile(profileState)) {
-                throw new Error("Profile state is not initialized");
+                throw new AppError("Profile state is not initialized", profileState);
             }
 
             const allAccounts = new Set(input.signing.concat(Array.from(input.tokens.keys())));
@@ -145,7 +146,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                         for (const signingAccount of relatedSigningAccounts) {
                             const seedPhrase = seedPhrasesMap.get(signingAccount.keyInstance.keySourceId)?.toString();
                             if (!seedPhrase) {
-                                throw new Error(`Seed phrase not found for account ${signingAccount.address}`);
+                                throw new AppError(`Seed phrase not found for account ${signingAccount.address}`);
                             }
 
                             const keyPairs = deriveStarknetKeyPairs({
@@ -158,7 +159,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                         for (const [account, tokens] of relatedTokens) {
                             const seedPhrase = seedPhrasesMap.get(account.keyInstance.keySourceId)?.toString();
                             if (!seedPhrase) {
-                                throw new Error(`Seed phrase not found for account ${account.address}`);
+                                throw new AppError(`Seed phrase not found for account ${account.address}`);
                             }
 
                             for (const token of tokens) {
@@ -173,7 +174,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
                         break;
                     default:
-                        throw new Error("Unsupported key source kind");
+                        throw new AppError("Unsupported key source kind", kind);
                 }
             }
 
@@ -203,7 +204,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                 const seedPhrases = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, [input.keySourceId])
                 const seedPhrase = seedPhrases.get(input.keySourceId);
                 if (!seedPhrase) {
-                    throw new Error(`Seed phrase not found for key source ${input.keySourceId}`);
+                    throw new AppError(`Seed phrase not found for key source ${input.keySourceId}`);
                 }
 
                 output = {
@@ -225,7 +226,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
                 const seedPhrase = seedPhrases.get(input.keySourceId);
                 if (!seedPhrase) {
-                    throw new Error(`Seed phrase not found for key source ${input.keySourceId}`);
+                    throw new AppError(`Seed phrase not found for key source ${input.keySourceId}`);
                 }
 
                 output = {
@@ -236,7 +237,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
             return output as Output<I>;
         } else {
-            throw new Error(`Unsupported input type: ${input}`);
+            throw new AppError(`Unsupported input type: ${input}`);
         }
     },
 

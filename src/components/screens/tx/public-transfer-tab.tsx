@@ -1,5 +1,6 @@
 import { AccountAddressInput } from "@/components/ui/account-address-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account, { AccountAddress } from "@/profile/account";
@@ -42,7 +43,7 @@ export function PublicTransferTab({
             try {
                 await publicTransfer(account, amount, recipientAddress);
             } catch (error) {
-                LOG.error("[Transfer]:", error)
+                showToastError(error);
             } finally {
                 setIsTransferring(false);
             }

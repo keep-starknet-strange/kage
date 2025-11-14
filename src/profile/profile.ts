@@ -5,6 +5,7 @@ import Network from "./network";
 import NetworkDerfinition from "./settings/networkDefinition";
 import Settings from "./settings/settings";
 import Account, { AccountAddress } from "./account";
+import { AppError } from "@/types/appError";
 
 export default class Profile {
     @Type(() => Header)
@@ -35,7 +36,7 @@ export default class Profile {
         const networkDefinition = this.settings.networks.currentNetworkDefinition;
         const network = this.networks.find(network => network.networkId === networkDefinition.chainId);
         if (!network) {
-            throw new Error(`Network ${networkDefinition.chainId} not found.`);
+            throw new AppError(`Network ${networkDefinition.chainId} not found.`);
         }
 
         return { network, networkDefinition };

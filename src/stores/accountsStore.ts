@@ -4,6 +4,8 @@ import { create } from "zustand";
 import { useRpcStore } from "./useRpcStore";
 import { LOG } from "@/utils/logs";
 import { useAccessVaultStore } from "./accessVaultStore";
+import { AppError } from "@/types/appError";
+import { showToastError } from "@/components/ui/toast";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
 
@@ -49,10 +51,10 @@ export const useAccountsStore = create<AccountsState>((set, get) => {
                     deployedAccounts.set(accounts[i].address, classHash ? "deployed" : "not-deployed");
                 }
             } catch (error) {
-                LOG.error("[Accounts]:", error);
                 for (const account of accounts) {
                     deployedAccounts.set(account.address, "unknown");
                 }
+                showToastError(error);
             }
 
             set({ status: deployedAccounts });
@@ -79,7 +81,7 @@ export const useAccountsStore = create<AccountsState>((set, get) => {
 
                 const keyPairs = result.signing.get(account);
                 if (!keyPairs) {
-                    throw new Error("Signing key not found for account " + account.address);
+                    throw new AppError("Signing key not found for account " + account.address);
                 }
 
                 const starknetAccount = new StarknetAccount({
@@ -97,8 +99,8 @@ export const useAccountsStore = create<AccountsState>((set, get) => {
 
                 set({ status: updateStatus(deployedAccounts, account, "deployed") });
             } catch (error) {
-                LOG.error(`Failed to deploy account ${account.address}:`, error);
                 set({ status: updateStatus(deployedAccounts, account, "not-deployed") });
+                throw error;
             }
         }
     }

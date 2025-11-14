@@ -1,5 +1,6 @@
 import Keychain, { ACCESS_CONTROL, ACCESSIBLE, AuthenticationPrompt } from "react-native-keychain";
 import EncryptedStorage, { AuthPrompt } from "./EncryptedStorage";
+import { LOG } from "@/utils/logs";
 
 /**
  * Secure storage wrapper for react-native-keychain providing key-value storage with
@@ -82,7 +83,7 @@ class MobileEncryptedStorage implements EncryptedStorage {
         });
 
         if (!value) {
-            console.error(`Failed to get item ${key} from keychain`);
+            LOG.error(`Failed to get item ${key} from keychain`);
             return null;
         }
 
@@ -155,7 +156,7 @@ class MobileEncryptedStorage implements EncryptedStorage {
         );
         
         if (!result) {
-            console.error(`Failed to set item ${key} in keychain`);
+            LOG.error(`Failed to set item ${key} in keychain`);
             return false;
         }
 

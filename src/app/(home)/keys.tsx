@@ -2,6 +2,8 @@ import { ProfileState } from "@/profile/profileState";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useProfileStore } from "@/stores/profileStore";
+import { AppError } from "@/types/appError";
+import { LOG } from "@/utils/logs";
 import * as Clipboard from 'expo-clipboard';
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from 'react';
@@ -25,7 +27,7 @@ export default function BackupScreen() {
 
     const fetchMnemonic = useCallback(async () => {
         if (!keySourceId) {
-            throw new Error("Key source ID is not set");
+            throw new AppError("Key source ID is not set");
         }
 
         try {
@@ -37,7 +39,7 @@ export default function BackupScreen() {
             setMnemonicWords(output.seedPhrase.getWords());
             setShowLoading(false);
         } catch (e) {
-            console.error("Failed to read mnemonic", e);
+            LOG.error("Failed to read mnemonic", e);
             setShowRetry(true);
             setShowLoading(false);
         }

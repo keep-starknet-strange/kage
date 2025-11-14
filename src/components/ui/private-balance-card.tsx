@@ -9,6 +9,7 @@ import { IconSymbol } from "./icon-symbol";
 import ActionButton from "./action-buttons";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AddressView } from "../address-view";
+import { showToastError } from "./toast";
 
 export interface PrivateBalanceCardProps {
     account: Account;
@@ -52,7 +53,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                                 await unlockPrivateBalances([account]);
                             }
                         } catch (error) {
-                            console.error('Error updating lock state:', error);
+                            showToastError(error);
                         } finally {
                             setIsUpdatingLockState(false);
                         }

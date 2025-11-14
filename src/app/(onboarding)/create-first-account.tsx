@@ -1,7 +1,9 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { showToastError } from "@/components/ui/toast";
 import { appTheme } from "@/design/theme";
 import { useProfileStore } from "@/stores/profileStore";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
+import { AppError } from "@/types/appError";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
@@ -27,7 +29,7 @@ export default function CreateFirstAccountScreen() {
         if (!isFormValid) return;
         const passphrase = consumeTempPassphrase();
         if (!passphrase) {
-            console.error("No passphrase is set");
+            showToastError(new AppError("No passphrase is set"));
             return;
         }
 
@@ -35,7 +37,7 @@ export default function CreateFirstAccountScreen() {
         try {
             await create(passphrase, accountName);
         } catch (error) {
-            console.error("Failed to create account:", error);
+            showToastError(error); 
         } finally {
             setIsCreating(false);
         }

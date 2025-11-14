@@ -1,10 +1,9 @@
-import { AddressView } from '@/components/address-view';
 import { PrivateBalancesLocked } from '@/components/private-balances-locked';
 import AccountHeader from '@/components/ui/account-header';
-import { DeployButton } from '@/components/ui/deploy-button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
 import { PublicBalanceCard } from '@/components/ui/public-balance-card';
+import { showToastError } from '@/components/ui/toast';
 import { PrivateTokenBalanceView, PublicTokenBalanceView } from '@/components/ui/token-balance-view';
 import { colorTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
@@ -49,7 +48,7 @@ export default function AccountDetailScreen() {
         try {
             await requestRefresh([account], [account]);
         } catch (error) {
-            console.error('Error fetching balances:', error);
+            showToastError(error);
         } finally {
             setIsLoadingBalances(false);
         }
@@ -62,7 +61,7 @@ export default function AccountDetailScreen() {
         try {
             await unlockPrivateBalances([account]);
         } catch (error) {
-            console.error('Error unlocking private balances:', error);
+            showToastError(error);
         } finally {
             setIsLoadingBalances(false);
         }

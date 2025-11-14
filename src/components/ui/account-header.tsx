@@ -2,11 +2,10 @@ import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useRouter } from "expo-router";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { AddressView } from "../address-view";
-import { DeployButton } from "./deploy-button";
-import { IconSymbol } from "./icon-symbol";
 import { AccountContextMenu } from "./account-context-menu";
+import { IconSymbol } from "./icon-symbol";
 
 interface AccountHeaderProps {
     account: Account | null;
@@ -15,10 +14,6 @@ interface AccountHeaderProps {
 const AccountHeader = ({ account }: AccountHeaderProps) => {
     const router = useRouter();
     const { insets } = useDynamicSafeAreaInsets();
-
-    const deployButton = () => {
-        return account ? <DeployButton account={account} /> : null
-    };
 
     return (
         <View style={[styles.header, { marginTop: insets.top }]}>

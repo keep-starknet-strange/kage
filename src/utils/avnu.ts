@@ -3,6 +3,7 @@
 import { TokenMetadata } from "@/types/token";
 import { LOG } from "./logs";
 import { TokenAddress } from "@/types/tokenAddress";
+import { AppError } from "@/types/appError";
 
 const TOKENS_URL = "https://starknet.impulse.avnu.fi/v3/tokens";
 const PRICES_URL = "https://starknet.impulse.avnu.fi/v3/tokens/prices";
@@ -68,7 +69,7 @@ export async function getTokenPrices(tokenAddresses: TokenAddress[]): Promise<Ma
 
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Failed to fetch token prices due to ${error.error}`);
+        throw new AppError("Failed to fetch token prices", error);
     }
 
     const dataJson: TokenPriceItem[] = await response.json();

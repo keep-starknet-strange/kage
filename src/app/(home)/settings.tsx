@@ -1,4 +1,5 @@
 import { DangerButton } from "@/components/ui/danger-button";
+import { showToastError } from "@/components/ui/toast";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
@@ -56,18 +57,18 @@ export default function SettingsScreen() {
                 const passphrase = await requestAccess({ requestFor: "passphrase" });
 
                 if (passphrase) {
-                    const enabeld = await seedPhraseVault.enableBiometrics(passphrase, {
+                    await seedPhraseVault.enableBiometrics(passphrase, {
                         title: "Enable Biometrics",
                         subtitleAndroid: "Confirming your change",
                         descriptionAndroid: "KAGE needs to confirm your change to enable biometrics.",
                         cancelAndroid: "Cancel",
                     });
 
-                    await keyValueStorage.set("device.biometrics.enabled", enabeld);
-                    setIsBiometricsEnabled(enabeld);
+                    await keyValueStorage.set("device.biometrics.enabled", true);
+                    setIsBiometricsEnabled(true);
                 }
             } catch (e) {
-                console.error("Failed to enable biometrics", e);
+                showToastError(e);
             }
         }
     }
@@ -78,7 +79,7 @@ export default function SettingsScreen() {
         try {
             await deleteProfile();
         } catch (e) {
-            console.error("Failed to delete profile", e);
+            showToastError(e);
         } finally {
             setIsDeletingProfile(false);
         }

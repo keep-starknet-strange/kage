@@ -15,6 +15,7 @@ import { useAccessVaultStore } from "../accessVaultStore";
 import { useRpcStore } from "../useRpcStore";
 import PrivateBalanceRepository from "./privateBalanceRepository";
 import { PublicBalanceRepository } from "./publicBalanceRepository";
+import { AppError } from "@/types/appError";
 
 type PresetNetworkId = keyof typeof tokensConfig;
 
@@ -115,10 +116,10 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 }));
                 const feeTokenAddress = TokenAddress.create(preset.feeTokenAddress);
                 if (!tokens.has(feeTokenAddress)) {
-                    throw new Error("Fee token not found for network " + networkId + ". Make sure tokens.json is configured properly.");
+                    throw new AppError("Fee token not found for network " + networkId + ". Make sure tokens.json is configured properly.");
                 }
             } else {
-                throw new Error("Network " + networkId + " is not configured in tokens.json. Dynamic presets not supported yet.");
+                throw new AppError("Network " + networkId + " is not configured in tokens.json. Dynamic presets not supported yet.");
             }
 
             const tokenMetadata = await getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress));
@@ -225,7 +226,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 try {
                     await updateBalancesWithTokens(publicBalancesToUpdate, privateBalancesToUpdate);
                 } catch (error) {
-                    console.error('Error in processUpdate:', error);
+                    LOG.error('Error in processUpdate:', error);
                 } finally {
                     isUpdating = false;
 
@@ -379,7 +380,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                         privateBalances: newPrivateBalances
                     });
                 } catch (error) {
-                    console.error("Error refreshing token prices:", error);
+                    LOG.error("Error refreshing token prices:", error);
                 }
             }, PRICE_REFRESH_INTERVAL_MS);
         },

@@ -5,6 +5,7 @@ import { RpcProvider, Account as StarknetAccount } from "starknet";
 import { AccountSigner } from "./accountSigner";
 import HDKeyInstance, { KeyInstance } from "./keyInstance";
 import { NetworkId } from "./misc";
+import { AppError } from "@/types/appError";
 
 export type AccountAddress = string & {
     __type: "account";
@@ -14,22 +15,22 @@ export namespace AccountAddress {
     export function fromHex(hex: string): AccountAddress {
         // Validate hex format
         if (!hex.startsWith('0x')) {
-            throw new Error(`Invalid account address: must start with 0x`);
+            throw new AppError(`Invalid account address: must start with 0x`, hex);
         }
         
         // Validate hex characters (case-insensitive) and length
         const hexPart = hex.slice(2);
         if (hexPart.length === 0) {
-            throw new Error(`Invalid account address: missing hex digits after 0x`);
+            throw new AppError(`Invalid account address: missing hex digits after 0x`, hex);
         }
         
         if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
-            throw new Error(`Invalid account address: contains non-hex characters`);
+            throw new AppError(`Invalid account address: contains non-hex characters`, hex);
         }
         
         // Starknet addresses can be up to 64 hex characters (256 bits) but can be shorter
         if (hexPart.length > 64) {
-            throw new Error(`Invalid account address: too long (max 64 hex characters)`);
+            throw new AppError(`Invalid account address: too long (max 64 hex characters)`, hex);
         }
         
         // Pad with leading zeros to 64 characters and normalize to lowercase

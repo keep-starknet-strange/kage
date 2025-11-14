@@ -1,3 +1,4 @@
+import { LOG } from "@/utils/logs";
 import EncryptedStorage, { AuthPrompt } from "./EncryptedStorage";
 
 // Currently not encrypting
@@ -15,7 +16,7 @@ export default class WebEncryptedStorage implements EncryptedStorage {
         const value = localStorage.getItem(this.getService(key));
 
         if (!value) {
-            console.error(`Failed to get item ${key} from web encrypted storage`);
+            LOG.error(`Failed to get item ${key} from web encrypted storage`);
             return null;
         }
 

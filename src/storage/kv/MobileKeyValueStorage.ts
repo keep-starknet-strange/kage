@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import KeyValueStorage from './KeyValueStorage';
 import { KeyValueSchema } from './KeyValueSchema';
+import { LOG } from '@/utils/logs';
 
 /**
  * MobileKeyValueStorage implements KeyValueStorage using react-native-async-storage.
@@ -20,14 +21,14 @@ export default class MobileKeyValueStorage implements KeyValueStorage {
                 return null;
             }
         } catch (e) {
-            console.error(`Failed to get value for key ${key}:`, e);
+            LOG.error(`Failed to get value for key ${key}:`, e);
             return null;
         }
 
         try {
             return JSON.parse(serializedValue) as KeyValueSchema[K];
         } catch (e) {
-            console.error(`Failed to deserialize value ${serializedValue} for key "${key}":`, e);
+            LOG.error(`Failed to deserialize value ${serializedValue} for key "${key}":`, e);
             return null;
         }
     }
@@ -54,7 +55,7 @@ export default class MobileKeyValueStorage implements KeyValueStorage {
             try {
                 await this.remove(key);
             } catch (e) {
-                console.error(`Failed to remove item ${key}:`, e);
+                LOG.error(`Failed to remove item ${key}:`, e);
             }
             return;
         }
@@ -63,14 +64,14 @@ export default class MobileKeyValueStorage implements KeyValueStorage {
         try {
             serializedValue = JSON.stringify(value);
         } catch (e) {
-            console.error(`Failed to serialize value ${value} for key "${key}":`, e);
+            LOG.error(`Failed to serialize value ${value} for key "${key}":`, e);
             return;
         }
 
         try {
             await AsyncStorage.setItem(key, serializedValue);
         } catch (e) {
-            console.error(`MobileKeyValueStorage.setItem error:`, e);
+            LOG.error(`MobileKeyValueStorage.setItem error:`, e);
         }
     }
 
@@ -82,7 +83,7 @@ export default class MobileKeyValueStorage implements KeyValueStorage {
         try {
             await AsyncStorage.removeItem(key);
         } catch (e) {
-            console.error(`MobileKeyValueStorage.removeItem error:`, e);
+            LOG.error(`MobileKeyValueStorage.removeItem error:`, e);
         }
     }
 
@@ -93,7 +94,7 @@ export default class MobileKeyValueStorage implements KeyValueStorage {
         try {
             await AsyncStorage.clear();
         } catch (e) {
-            console.error(`MobileKeyValueStorage.clear error:`, e);
+            LOG.error(`MobileKeyValueStorage.clear error:`, e);
         }
     }
 }

@@ -40,6 +40,8 @@ const MAPPING = {
     'pencil.circle.fill': 'edit',
     'ellipsis': 'more-horiz',
     'ellipsis.circle': 'more-horiz',
+    'exclamationmark.circle.fill': 'error',
+    'paperplane': 'send',
 } as IconMapping;
 
 /**

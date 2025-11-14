@@ -6,6 +6,7 @@ import { IconSymbol } from "./icon-symbol";
 import { appTheme } from "@/design/theme";
 import { getAggregatedFiatBalance } from "@/types/tokenBalance";
 import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
+import { showToastError } from "./toast";
 
 export interface TotalBalanceCardProps {
     accounts: Account[];
@@ -74,7 +75,7 @@ export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
                                     await unlockPrivateBalances(accounts);
                                 }
                             } catch (error) {
-                                console.error('Error updating lock state:', error);
+                                showToastError(error);
                             } finally {
                                 setIsUpdatingLockState(false);
                             }
