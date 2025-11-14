@@ -115,14 +115,13 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
 
     delete: async () => {
         const { profileState } = get();
-        const { profileStorage, seedPhraseVault, keyValueStorage } = useAppDependenciesStore.getState();
+        const { profileStorage, seedPhraseVault } = useAppDependenciesStore.getState();
 
         if (!ProfileState.isProfile(profileState)) {
             throw new AppError("Profile state cannot be deleted", profileState);
         }
 
         await profileStorage.deleteProfile();
-        await keyValueStorage.clear();
         await seedPhraseVault.reset(profileState.keySources.map(keySource => keySource.id));
 
         set({ profileState: null });

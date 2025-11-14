@@ -10,6 +10,9 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { colorTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { useOnChainStore } from "@/stores/onChainStore";
+import { useRpcStore } from "@/stores/useRpcStore";
+import { useBalanceStore } from "@/stores/balance/balanceStore";
 
 export default function SettingsScreen() {
     const { insets } = useDynamicSafeAreaInsets();
@@ -17,6 +20,9 @@ export default function SettingsScreen() {
     const { keyValueStorage, seedPhraseVault, biometricsProvider } = useAppDependenciesStore();
     const { requestAccess } = useAccessVaultStore();
     const { delete: deleteProfile } = useProfileStore();
+    const { reset: resetOnChainStore } = useOnChainStore();
+    const { reset: resetRpcStore } = useRpcStore();
+    const { reset: resetBalanceStore } = useBalanceStore();
 
     const [isResolvingBiometrics, setIsResolvingBiometrics] = useState(false);
     const [supportedBiometryType, setSupportedBiometryType] = useState<BiometryType | null>(null);
@@ -81,6 +87,10 @@ export default function SettingsScreen() {
         
         try {
             await deleteProfile();
+            await resetBalanceStore();
+            await resetOnChainStore();
+            await resetRpcStore();
+            keyValueStorage.clear();
         } catch (e) {
             showToastError(e);
         } finally {

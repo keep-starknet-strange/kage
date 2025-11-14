@@ -12,6 +12,8 @@ export interface RpcState {
     changeNetwork: (network: NetworkDerfinition) => Promise<RpcProvider>;
     subscribeToWS: () => Promise<WebSocketChannel>;
     unsubscribeFromWS: () => void;
+
+    reset: () => Promise<void>;
 }
 
 export const useRpcStore = create<RpcState>((set, get) => {
@@ -31,7 +33,7 @@ export const useRpcStore = create<RpcState>((set, get) => {
             }
 
             LOG.info("Change RPC network to", network.chainId);
-            
+
             const newProvider = new RpcProvider({ nodeUrl: network.rpcUrl.toString(), batch: 0 })
             const newWsChannel = new WebSocketChannel({ nodeUrl: network.wsUrl.toString() })
 
@@ -45,7 +47,7 @@ export const useRpcStore = create<RpcState>((set, get) => {
         },
         subscribeToWS: async () => {
             const { wsChannel } = get();
-            
+
             LOG.info("📣 Connecting...");
             await wsChannel.waitForConnection();
             LOG.info("✅ Connected");
@@ -58,12 +60,24 @@ export const useRpcStore = create<RpcState>((set, get) => {
             set({
                 wsChannel: new WebSocketChannel({ nodeUrl: wsChannel.nodeUrl }),
             });
-            
+
             if (wsChannel.isConnected()) {
                 LOG.info("🛑 Disconnecting...");
                 wsChannel.disconnect();
                 LOG.info("🛑 Disconnected");
             }
         },
+
+        reset: async () => {
+            const { unsubscribeFromWS } = get();
+            await unsubscribeFromWS();
+            
+            set({
+                networkId: "SN_MAIN",
+                provider: new RpcProvider({ nodeUrl: mainnet.rpcUrl.toString(), batch: 0 }),
+                wsChannel: new WebSocketChannel({ nodeUrl: mainnet.wsUrl.toString() }),
+            });
+            
+        }
     }
 });

@@ -38,6 +38,8 @@ export interface BalanceState {
 
     startPriceRefresh: () => Promise<void>,
     stopPriceRefresh: () => void,
+
+    reset: () => Promise<void>,
 }
 
 export const useBalanceStore = create<BalanceState>((set, get) => {
@@ -390,6 +392,18 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 clearInterval(intervalId);
                 intervalId = null;
             }
+        },
+
+        reset: async () => {
+            const { unsubscribeFromBalanceUpdates, stopPriceRefresh } = get();
+            await unsubscribeFromBalanceUpdates();
+            stopPriceRefresh();
+            networkTokens = mainnetTokens;
+            
+            set({
+                networkId: "SN_MAIN",
+                unlockedPrivateBalances: new Set(),
+            });
         }
     }
 });

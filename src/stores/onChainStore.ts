@@ -37,6 +37,8 @@ export interface OnChainState {
     appendPendingTransaction: (transaction: Transaction) => void;
 
     removePendingTransaction: (transactionHash: string) => void;
+
+    reset(): void;
 }
 
 export const useOnChainStore = create<OnChainState>((set, get) => {
@@ -395,5 +397,9 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 pendingTransactionsStack: state.pendingTransactionsStack.filter((transaction) => transaction.txHash !== transactionHash),
             }));
         },
+
+        reset: () => {
+            set({ deployStatus: new Map(), pendingTransactionsStack: [] });
+        }
     }
 })
