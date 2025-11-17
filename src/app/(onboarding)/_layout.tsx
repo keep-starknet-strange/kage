@@ -1,10 +1,12 @@
+import { defaultScreenOptions } from '@/providers/ThemeProvider';
 import { Stack } from 'expo-router';
 import React from 'react';
 
 
 export default function OnboaringLayout() {
+    const screenOptions = defaultScreenOptions();
     return (
-        <Stack>
+        <Stack screenOptions={screenOptions}>
             <Stack.Screen name='index' options={{ headerShown: false }} />
             <Stack.Screen name='set-passphrase' />
             <Stack.Screen name='create-first-account' />

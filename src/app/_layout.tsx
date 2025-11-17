@@ -4,6 +4,7 @@ import Account, { AccountAddress } from '@/profile/account';
 import Profile from '@/profile/profile';
 import { ProfileState } from '@/profile/profileState';
 import { AppProviders } from '@/providers/AppProviders';
+import { defaultScreenOptions } from '@/providers/ThemeProvider';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
 import { useOnChainStore } from '@/stores/onChainStore';
 import { useProfileStore } from '@/stores/profileStore';
@@ -15,6 +16,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
+import NetworkDefinition from '@/profile/settings/networkDefinition';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -100,7 +102,24 @@ export default function RootLayout() {
 
     return (
         <AppProviders>
-            <Stack>
+            <AppStructure isOnboarded={isOnboarded} currentNetworkDefinition={currentNetworkDefinition} />
+        </AppProviders>
+    );
+}
+
+function AppStructure({ 
+    isOnboarded, 
+    currentNetworkDefinition 
+}: { 
+    isOnboarded: boolean, 
+    currentNetworkDefinition: NetworkDefinition | null 
+}) {
+    const screenOptions = defaultScreenOptions();
+    return (
+        <>
+            <Stack
+                screenOptions={screenOptions}
+            >
                 <Stack.Protected guard={!isOnboarded}>
                     <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
                 </Stack.Protected>
@@ -117,6 +136,6 @@ export default function RootLayout() {
             <AccessVaultModal />
             <NetworkBanner network={currentNetworkDefinition} />
             <KageToast />
-        </AppProviders>
+        </>
     );
 }

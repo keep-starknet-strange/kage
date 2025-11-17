@@ -1,17 +1,14 @@
-import {Tabs} from 'expo-router';
+import { Tabs } from 'expo-router';
 import React from 'react';
 
-import {HapticTab} from '@/components/haptic-tab';
-import {IconSymbol} from '@/components/ui/icon-symbol';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { defaultScreenOptions } from '@/providers/ThemeProvider';
 
 export default function WalletLayout() {
+    const screenOptions = defaultScreenOptions();
     return (
         <Tabs
-            screenOptions={{
-                tabBarActiveTintColor: "#323030",
-                headerShown: false,
-                tabBarButton: HapticTab,
-            }}>
+            screenOptions={{...screenOptions, headerShown: false}}>
             <Tabs.Screen
                 name="index"
                 options={{

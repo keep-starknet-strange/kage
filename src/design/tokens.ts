@@ -44,6 +44,32 @@ export const darkColorTokens = {
   'shadow.deep': 'rgba(0,0,0,0.48)',
 } as const;
 
+// Ztarknet-inspired theme: Cypherpunk aesthetic with deep blacks and vibrant orange accents
+// Based on https://www.ztarknet.cash/
+export const ztarknetColorTokens = {
+  'bg.default': '#040405',
+  'bg.elevated': 'rgba(12, 13, 17, 0.85)',
+  'bg.sunken': '#000000',
+  'surface.glass': 'rgba(12, 13, 17, 0.85)',
+  'surface.overlay': 'rgba(255, 107, 26, 0.12)',
+  'text.primary': '#f4f4f6',
+  'text.secondary': '#B8B8C8',
+  'text.muted': '#777c8e',
+  'text.inverted': '#040405',
+  'brand.accent': '#ff6b1a',
+  'brand.accentSoft': '#ff8946',
+  'brand.glow': 'rgba(255, 107, 26, 0.32)',
+  'status.success': '#00FF88', // Bright green for "proof verified" states
+  'status.info': '#5B9EFF',
+  'status.warning': '#FFB84D',
+  'status.error': '#FF1744',
+  'border.subtle': 'rgba(255, 107, 26, 0.2)',
+  'border.strong': 'rgba(255, 107, 26, 0.4)',
+  'shadow.primary': 'rgba(255, 107, 26, 0.16)',
+  'shadow.deep': 'rgba(0, 0, 0, 0.72)',
+} as const;
+
+
 export const radiusTokens = {
   xs: 6,
   sm: 10,

@@ -1,10 +1,10 @@
-import { darkColorTokens, lightColorTokens } from '@/design/tokens';
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
-import { useColorScheme, StyleSheet, ViewStyle, TextStyle, ImageStyle } from 'react-native';
+import { darkColorTokens, lightColorTokens, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
+import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import { StyleSheet } from 'react-native';
 
-type ThemeMode = 'light' | 'dark' | 'auto';
+type ThemeMode = 'ztarknet'; // Currently only ztarknet theme is supported
 
-type ColorTokens = typeof lightColorTokens | typeof darkColorTokens;
+type ColorTokens = typeof lightColorTokens | typeof darkColorTokens | typeof ztarknetColorTokens;
 
 interface ThemeContextType {
     theme: ThemeMode;
@@ -28,14 +28,11 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-    const systemColorScheme = useColorScheme();
-    const [theme, setTheme] = useState<ThemeMode>('auto');
+    // const systemColorScheme = useColorScheme();
+    const [theme, setTheme] = useState<ThemeMode>('ztarknet');
 
-    // Determine if dark mode should be active
-    const isDark = theme === 'dark' || (theme === 'auto' && systemColorScheme === 'dark');
-
-    // Get the appropriate color tokens
-    const colors = isDark ? darkColorTokens : lightColorTokens;
+    const colors = theme === 'ztarknet' ? ztarknetColorTokens : lightColorTokens;
+    const isDark = theme === 'ztarknet' ? false : false;
 
     return (
         <ThemeContext.Provider value={{ theme, setTheme, colors, isDark }}>
@@ -67,7 +64,31 @@ export const useThemedStyle = <T extends StyleSheet.NamedStyles<T> | StyleSheet.
     const { colors } = useTheme();
 
     return useMemo(() => {
-        console.log('Setting up stylesheet', colors);
         return styleFactory.factory(colors);
     }, [colors]);
+}
+
+export const defaultScreenOptions = () => {
+    const { colors } = useTheme();
+
+    return {
+        headerStyle: {
+            backgroundColor: colors['bg.default'],
+        },
+        headerTintColor: colors['text.primary'],
+        headerTitleStyle: {
+            color: colors['text.primary'],
+        },
+        contentStyle: {
+            backgroundColor: colors['bg.default'],
+        },
+        tabBarActiveTintColor: colors['text.primary'],
+        tabBarInactiveTintColor: colors['text.muted'],
+        tabBarStyle: {
+            backgroundColor: colors['bg.default'],
+            borderTopWidth: 1,
+            borderTopColor: colors['border.subtle'],
+            paddingTop: spaceTokens[2],
+        },
+    };
 }
