@@ -5,6 +5,7 @@ import { LOG } from "@/utils/logs";
 import { useState } from "react";
 import { Modal, Pressable, Text, TextInput, View } from "react-native";
 import { PrimaryButton } from "./primary-button";
+import { SecondaryButton } from "./secondary-button";
 
 export interface RenameAccountModalProps {
     account: Account;
@@ -105,13 +106,12 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
                         </View>
 
                         <View style={styles.buttonContainer}>
-                            <Pressable
-                                style={[styles.cancelButton, isRenaming && styles.buttonDisabled]}
+                            <SecondaryButton
+                                title="Cancel"
                                 onPress={handleClose}
                                 disabled={isRenaming}
-                            >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </Pressable>
+                                style={styles.cancelButton}
+                            />
 
                             <PrimaryButton
                                 title={isRenaming ? 'Renaming...' : 'Rename'}
@@ -206,23 +206,9 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     cancelButton: {
         flex: 1,
-        paddingVertical: spaceTokens[3],
-        paddingHorizontal: spaceTokens[4],
-        borderRadius: radiusTokens.md,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colorTokens['bg.sunken'],
-    },
-    cancelButtonText: {
-        color: colorTokens['text.primary'],
-        fontSize: 16,
-        ...fontStyles.ubuntuMono.semibold,
     },
     renameButton: {
         flex: 1,
-    },
-    buttonDisabled: {
-        opacity: 0.6,
     },
 }));
 

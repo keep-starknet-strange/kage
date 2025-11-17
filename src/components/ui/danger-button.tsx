@@ -1,8 +1,8 @@
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from "react-native";
 
-export interface DangerButtonProps extends Omit<PressableProps, 'style'> {
+export interface DangerButtonProps extends Omit<TouchableOpacityProps, 'style'> {
     title: string;
     onPress: () => void;
     disabled?: boolean;
@@ -16,7 +16,7 @@ export const DangerButton = ({ title, onPress, disabled, loading, style, ...prop
     const isDisabled = disabled || loading;
 
     return (
-        <Pressable
+        <TouchableOpacity
             style={[
                 styles.button,
                 isDisabled && styles.buttonDisabled,
@@ -44,7 +44,7 @@ export const DangerButton = ({ title, onPress, disabled, loading, style, ...prop
                     {title}
                 </Text>
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
 

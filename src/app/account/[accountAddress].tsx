@@ -3,6 +3,7 @@ import AccountHeader from '@/components/ui/account-header';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
 import { PublicBalanceCard } from '@/components/ui/public-balance-card';
+import { SecondaryButton } from '@/components/ui/secondary-button';
 import { showToastError } from '@/components/ui/toast';
 import { PrivateTokenBalanceView, PublicTokenBalanceView } from '@/components/ui/token-balance-view';
 import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';
@@ -82,12 +83,10 @@ export default function AccountDetailScreen() {
             <View style={[styles.container]}>
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>Account not found</Text>
-                    <Pressable
-                        style={styles.backButton}
+                    <SecondaryButton
+                        title="Go Back"
                         onPress={() => router.back()}
-                    >
-                        <Text style={styles.backButtonText}>Go Back</Text>
-                    </Pressable>
+                    />
                 </View>
             </View>
         );
@@ -383,17 +382,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         fontSize: 18,
         ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
-    },
-    backButton: {
-        backgroundColor: colorTokens['brand.accent'],
-        paddingVertical: spaceTokens[3],
-        paddingHorizontal: spaceTokens[5],
-        borderRadius: radiusTokens.md,
-    },
-    backButtonText: {
-        color: colorTokens['text.inverted'],
-        fontSize: 16,
-        ...fontStyles.ubuntuMono.semibold,
     },
 }));
 

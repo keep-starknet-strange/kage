@@ -39,7 +39,7 @@ const ActionButton = ({ icon, label, onPress, disabled = false }: ActionButtonPr
                 <IconSymbol
                     name={icon}
                     size={24}
-                    color={colorTokens['bg.default']}
+                    color={colorTokens['brand.accent']}
                 />
             </View>
             <Text style={[
@@ -69,7 +69,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: colorTokens['brand.accent'],
+        backgroundColor: colorTokens['brand.glow'],
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: colorTokens['shadow.primary'],
@@ -84,7 +84,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         borderColor: colorTokens['border.subtle'],
     },
     iconCircleDisabled: {
-        backgroundColor: colorTokens['text.muted'],
+        backgroundColor: colorTokens['brand.glow'],
+        opacity: 0.5,
         shadowOpacity: 0,
         elevation: 0,
     },

@@ -184,7 +184,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: colorTokens['brand.accentSoft'],
+        backgroundColor: colorTokens['brand.glow'],
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: spaceTokens[2],

@@ -4,6 +4,7 @@ import { TransferTab } from "@/components/screens/tx/transfer-tab";
 import { WithdrawTab } from "@/components/screens/tx/withdraw-tab";
 import AccountHeader from "@/components/ui/account-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { SecondaryButton } from "@/components/ui/secondary-button";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
@@ -47,12 +48,10 @@ const TransactionScreen = () => {
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>Account not found</Text>
-                    <Pressable
-                        style={styles.backButton}
+                    <SecondaryButton
+                        title="Go Back"
                         onPress={() => router.back()}
-                    >
-                        <Text style={styles.backButtonText}>Go Back</Text>
-                    </Pressable>
+                    />
                 </View>
             </View>
         );
@@ -229,16 +228,5 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
         marginBottom: spaceTokens[3],
-    },
-    backButton: {
-        paddingHorizontal: spaceTokens[5],
-        paddingVertical: spaceTokens[2],
-        backgroundColor: colorTokens['bg.elevated'],
-        borderRadius: radiusTokens.sm,
-    },
-    backButtonText: {
-        fontSize: 16,
-        ...fontStyles.ubuntuMono.regular,
-        color: colorTokens['text.primary'],
     },
 }));
