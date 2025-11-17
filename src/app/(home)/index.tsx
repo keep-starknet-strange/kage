@@ -1,7 +1,8 @@
 import { AddressView } from '@/components/address-view';
 import { AccountContextMenu } from '@/components/ui/account-context-menu';
+import { PrimaryButton } from '@/components/ui/primary-button';
 import { TotalBalanceCard } from '@/components/ui/total-balance-card';
-import { radiusTokens, spaceTokens } from '@/design/tokens';
+import { fontStyles, fontTokens, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
@@ -9,7 +10,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemePro
 import { useProfileStore } from '@/stores/profileStore';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Platform, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
     const { insets } = useDynamicSafeAreaInsets();
@@ -59,15 +60,13 @@ export default function HomeScreen() {
     );
 
     const renderFooter = () => (
-        <TouchableOpacity
-            style={[styles.createAccountButton, { backgroundColor: colors['brand.glow'], borderColor: colors['brand.accent'] + '40' }]}
-            activeOpacity={0.7}
+        <PrimaryButton
+            title="Add a new public account"
             onPress={() => {
                 router.push('/account/create');
             }}
-        >
-            <Text style={[styles.createAccountButtonText, { color: colors['brand.accent'] }]}>Add a new public account</Text>
-        </TouchableOpacity>
+            style={styles.createAccountButton}
+        />
     );
 
     return (
@@ -101,7 +100,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.bold,
         marginBottom: spaceTokens[3], // 12px
         marginTop: spaceTokens[5], // 24px
     },
@@ -119,7 +118,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     accountName: {
         fontSize: 18,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
     },
     emptyState: {
         backgroundColor: colorTokens['bg.elevated'],
@@ -129,27 +128,11 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     emptyStateText: {
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
     createAccountButton: {
-        backgroundColor: colorTokens['brand.accent'],
-        paddingVertical: spaceTokens[3], // 12px
-        paddingHorizontal: spaceTokens[5], // 24px
-        borderRadius: radiusTokens.md,
-        alignItems: 'center',
-        justifyContent: 'center',
         marginTop: spaceTokens[4], // 16px
-        minHeight: 48,
-        shadowColor: colorTokens['brand.accent'],
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    createAccountButtonText: {
-        color: colorTokens['text.inverted'],
-        fontSize: 16,
-        fontWeight: '600',
     },
     accountNameContainer: {
         flexDirection: 'row',

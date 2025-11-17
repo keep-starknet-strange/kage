@@ -2,7 +2,7 @@ import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultSt
 import { useState, useEffect } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
@@ -255,13 +255,14 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 24,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         marginBottom: spaceTokens[2],
         textAlign: 'center',
     },
     description: {
         fontSize: 15,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         textAlign: 'center',
         lineHeight: 22,
@@ -274,6 +275,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     biometricsHint: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
         textAlign: 'center',
     },
@@ -297,6 +299,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     input: {
         flex: 1,
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
         paddingVertical: spaceTokens[3],
         minHeight: 48,
@@ -325,7 +328,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     cancelButtonText: {
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.secondary'],
     },
     submitButton: {
@@ -344,7 +347,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     submitButtonText: {
         fontSize: 16,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.inverted'],
     },
 }));

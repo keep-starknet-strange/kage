@@ -1,6 +1,6 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
@@ -266,14 +266,9 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         paddingBottom: spaceTokens[4],
         gap: spaceTokens[2],
     },
-    title: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: colorTokens['text.primary'],
-        letterSpacing: -0.5,
-    },
     subtitle: {
         fontSize: 15,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 22,
     },
@@ -283,16 +278,17 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     label: {
         fontSize: 15,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     helperText: {
         fontSize: 13,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 18,
     },
@@ -303,6 +299,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         borderRadius: radiusTokens.md,
         padding: spaceTokens[4],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         backgroundColor: colorTokens['bg.elevated'],
         color: colorTokens['text.primary'],
     },
@@ -312,8 +309,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     link: {
         color: colorTokens['brand.accent'],
-        fontWeight: '600',
         fontSize: 15,
+        ...fontStyles.ubuntuMono.semibold,
     },
     validationRow: {
         flexDirection: 'row',
@@ -322,6 +319,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     validationText: {
         fontSize: 13,
+        ...fontStyles.ubuntuMono.regular,
     },
     validationSuccess: {
         color: colorTokens['status.success'],
@@ -345,6 +343,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         paddingVertical: spaceTokens[4],
         paddingHorizontal: spaceTokens[4],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     eyeButton: {
@@ -353,7 +352,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     eyeButtonText: {
         fontSize: 14,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['brand.accent'],
     },
     buttonSection: {

@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { LOG } from "@/utils/logs";
@@ -152,12 +152,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 24,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         textAlign: 'center',
     },
     description: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         textAlign: 'center',
         lineHeight: 20,
@@ -167,7 +168,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     input: {
@@ -178,6 +179,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         paddingHorizontal: spaceTokens[3],
         paddingVertical: spaceTokens[3],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     inputError: {
@@ -189,10 +191,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     errorText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.error'],
     },
     hintText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
     buttonContainer: {
@@ -212,7 +216,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     cancelButtonText: {
         color: colorTokens['text.primary'],
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
     },
     renameButton: {
         flex: 1,

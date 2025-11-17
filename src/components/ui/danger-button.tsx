@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
 
@@ -80,7 +80,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     buttonText: {
         color: colorTokens['text.inverted'],
         fontSize: 17,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         letterSpacing: 0.3,
     },
     buttonTextDisabled: {

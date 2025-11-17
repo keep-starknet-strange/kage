@@ -1,6 +1,6 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
@@ -112,12 +112,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 28,
-        fontWeight: "700",
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     subtitle: {
         fontSize: 15,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 22,
     },
@@ -129,7 +130,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 15,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     input: {
@@ -140,10 +141,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         paddingVertical: spaceTokens[4],
         paddingHorizontal: spaceTokens[4],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     helperText: {
         fontSize: 13,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.success'],
         marginTop: -spaceTokens[1],
     },

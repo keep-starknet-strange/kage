@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from '@/design/tokens';
+import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';
 import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { PrivateTokenAddress } from '@/types/privateRecipient';
 import formattedAddress from '@/utils/formattedAddress';
@@ -140,10 +140,9 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         flex: 1,
     },
     addressText: {
-        fontFamily: 'monospace',
         fontSize: 13,
         color: colorTokens['text.secondary'],
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
     },
     copyButton: {
         padding: spaceTokens[0], // 4px
@@ -175,7 +174,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     copiedText: {
         color: colorTokens['text.inverted'],
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
     },
 }));
 

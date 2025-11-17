@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
 import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
@@ -189,7 +189,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     inputContainer: {
@@ -213,6 +213,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         flex: 1,
         paddingVertical: spaceTokens[3],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     inputDisabled: {
@@ -220,7 +221,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tokenSymbol: {
         fontSize: 14,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.secondary'],
         paddingLeft: spaceTokens[2],
     },
@@ -229,11 +230,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     errorText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.error'],
         marginStart: spaceTokens[0],
     },
     hintText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         marginStart: spaceTokens[0],
     },
@@ -271,13 +274,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tokenName: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
         flex: 1,
     },
     tokenText: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary']
     }
 }));

@@ -1,6 +1,6 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { showToastError } from "@/components/ui/toast";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import KeySource from "@/profile/keys/keySource";
 import { ProfileState } from "@/profile/profileState";
@@ -468,11 +468,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     headerTitle: {
         fontSize: 20,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
     },
     headerSubtitle: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 18,
     },
@@ -515,16 +516,15 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     keySourceTitle: {
         fontSize: 14,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.secondary'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     },
     keySourceId: {
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
-        fontFamily: 'monospace',
     },
     keySourceStats: {
         flexDirection: 'row',
@@ -543,7 +543,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     statText: {
         fontSize: 12,
         color: colorTokens['text.secondary'],
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
     },
     keySourceContent: {
         borderTopWidth: 1,
@@ -568,7 +568,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     viewSeedPhraseButtonText: {
         fontSize: 15,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['brand.accent'],
     },
     seedPhraseContainer: {
@@ -589,13 +589,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     seedPhraseWarning: {
         fontSize: 13,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['status.warning'],
         flex: 1,
     },
     copyButton: {
         fontSize: 14,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['brand.accent'],
     },
     seedPhraseGrid: {
@@ -618,20 +618,19 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         fontSize: 12,
         color: colorTokens['text.muted'],
         marginRight: spaceTokens[1],
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
     },
     seedPhraseWordText: {
         fontSize: 14,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
-        fontFamily: 'monospace',
     },
     accountsSection: {
         gap: spaceTokens[3],
     },
     accountsSectionTitle: {
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.muted'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -642,8 +641,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     emptyAccountsText: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.italic,
         color: colorTokens['text.muted'],
-        fontStyle: 'italic',
     },
     accountCard: {
         backgroundColor: colorTokens['bg.default'],
@@ -670,13 +669,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     accountName: {
         fontSize: 15,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     accountAddress: {
         fontSize: 13,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
-        fontFamily: 'monospace',
     },
     unlockedBadge: {
         flexDirection: 'row',
@@ -689,7 +688,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     unlockedText: {
         fontSize: 11,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['status.success'],
     },
     tokensSection: {
@@ -697,7 +696,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tokensSectionTitle: {
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.muted'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -720,7 +719,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tokenSymbol: {
         fontSize: 13,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['brand.accent'],
     },
     noTokens: {
@@ -729,7 +728,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     noTokensText: {
         fontSize: 13,
         color: colorTokens['text.muted'],
-        fontStyle: 'italic',
+        ...fontStyles.ubuntuMono.italic,
         textAlign: 'center',
     },
     lockedTokens: {
@@ -746,7 +745,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     lockedTokensText: {
         fontSize: 13,
         color: colorTokens['text.muted'],
-        fontStyle: 'italic',
+        ...fontStyles.ubuntuMono.italic,
     },
     emptyState: {
         flex: 1,
@@ -757,11 +756,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     emptyStateText: {
         fontSize: 18,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.secondary'],
     },
     emptyStateSubtext: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
         textAlign: 'center',
         paddingHorizontal: spaceTokens[6],

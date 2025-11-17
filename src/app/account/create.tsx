@@ -1,6 +1,6 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrimaryButton } from '@/components/ui/primary-button';
-import { radiusTokens, spaceTokens } from '@/design/tokens';
+import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
 import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { useAccessVaultStore } from '@/stores/accessVaultStore';
@@ -170,7 +170,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     form: {
@@ -191,12 +191,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 28,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         textAlign: 'center',
     },
     description: {
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         textAlign: 'center',
         lineHeight: 24,
@@ -207,7 +208,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     input: {
@@ -218,6 +219,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         paddingHorizontal: spaceTokens[3],
         paddingVertical: spaceTokens[3],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     inputError: {
@@ -229,10 +231,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     errorText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.error'],
     },
     hintText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
     createButton: {

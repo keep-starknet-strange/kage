@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { useMemo } from "react";
@@ -101,11 +101,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tokenSymbol: {
         fontSize: 18,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     tokenAddress: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
         maxWidth: 200,
     },
@@ -114,11 +115,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tokenBalanceAmount: {
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     tokenFiatPrice: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
 }));

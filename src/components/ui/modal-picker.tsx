@@ -1,5 +1,5 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import Identifiable from "@/types/Identifiable";
 import { ReactNode, useState } from "react";
@@ -117,7 +117,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     pickerButton: {
@@ -138,6 +138,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     placeholder: {
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
     modalOverlay: {
@@ -163,7 +164,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     modalTitle: {
         fontSize: 22,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
     },
     closeButton: {

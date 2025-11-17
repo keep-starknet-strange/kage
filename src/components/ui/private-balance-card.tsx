@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
@@ -124,7 +124,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         fontSize: 14,
         color: colorTokens['text.muted'],
         marginBottom: spaceTokens[1],
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
     },
     amountRow: {
         flexDirection: 'row',
@@ -133,7 +133,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     amount: {
         fontSize: 48,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },

@@ -32,7 +32,54 @@
       "expo-router",
       "expo-secure-store",
       "expo-localization",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./resources/fonts/ubuntu-mono/UbuntuMono_400Regular_Italic.ttf",
+            "./resources/fonts/ubuntu-mono/UbuntuMono_400Regular.ttf",
+            "./resources/fonts/ubuntu-mono/UbuntuMono_700Bold_Italic.ttf",
+            "./resources/fonts/ubuntu-mono/UbuntuMono_700Bold_Italic.ttf"
+          ],
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "UbuntuMono",
+                "fontDefinitions": [
+                  {
+                    "path": "./resources/fonts/ubuntu-mono/UbuntuMono_400Regular_Italic.ttf",
+                    "weight": 400,
+                    "style": "italic"
+                  },
+                  {
+                    "path": "./resources/fonts/ubuntu-mono/UbuntuMono_400Regular.ttf",
+                    "weight": 400,
+                    "style": "normal"
+                  },
+                  {
+                    "path": "./resources/fonts/ubuntu-mono/UbuntuMono_700Bold_Italic.ttf",
+                    "weight": 700,
+                    "style": "italic"
+                  },
+                  {
+                    "path": "./resources/fonts/ubuntu-mono/UbuntuMono_700Bold.ttf",
+                    "weight": 700,
+                    "style": "normal"
+                  }
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": [
+              "./resources/fonts/ubuntu-mono/UbuntuMono_400Regular_Italic.ttf",
+              "./resources/fonts/ubuntu-mono/UbuntuMono_400Regular.ttf",
+              "./resources/fonts/ubuntu-mono/UbuntuMono_700Bold_Italic.ttf",
+              "./resources/fonts/ubuntu-mono/UbuntuMono_700Bold.ttf"
+            ]
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {

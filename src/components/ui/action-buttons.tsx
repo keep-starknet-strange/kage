@@ -1,4 +1,4 @@
-import { opacityTokens, spaceTokens } from '@/design/tokens';
+import { fontStyles, opacityTokens, spaceTokens } from '@/design/tokens';
 import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { SymbolViewProps } from 'expo-symbols';
 import { Pressable, Text, View, ViewStyle } from 'react-native';
@@ -90,7 +90,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 14,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
         textAlign: 'center',
     },

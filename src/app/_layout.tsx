@@ -3,6 +3,7 @@ import KageToast, { showToastError } from '@/components/ui/toast';
 import Account, { AccountAddress } from '@/profile/account';
 import Profile from '@/profile/profile';
 import { ProfileState } from '@/profile/profileState';
+import NetworkDefinition from '@/profile/settings/networkDefinition';
 import { AppProviders } from '@/providers/AppProviders';
 import { defaultScreenOptions } from '@/providers/ThemeProvider';
 import { useBalanceStore } from '@/stores/balance/balanceStore';
@@ -16,7 +17,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
-import NetworkDefinition from '@/profile/settings/networkDefinition';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -139,3 +139,4 @@ function AppStructure({
         </>
     );
 }
+

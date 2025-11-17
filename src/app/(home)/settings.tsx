@@ -2,7 +2,7 @@ import { DangerButton } from "@/components/ui/danger-button";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { showToastError } from "@/components/ui/toast";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
@@ -261,12 +261,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 32,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         marginBottom: spaceTokens[1],
     },
     subtitle: {
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
     },
     section: {
@@ -274,7 +275,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     sectionTitle: {
         fontSize: 13,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.muted'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -314,11 +315,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     itemTitle: {
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     itemDescription: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 18,
     },
@@ -327,7 +329,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     dangerSectionTitle: {
         fontSize: 13,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['status.error'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -366,11 +368,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     dangerTitle: {
         fontSize: 16,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['status.error'],
     },
     dangerDescription: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },

@@ -1,5 +1,5 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { PrivateTokenAddress } from "@/types/privateRecipient";
 import { useEffect, useState } from "react";
@@ -116,7 +116,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     iconContainer: {
@@ -149,7 +149,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         flex: 1,
         paddingVertical: spaceTokens[3],
         fontSize: 14,
-        fontFamily: 'monospace',
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     inputDisabled: {
@@ -169,11 +169,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     errorText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.error'],
         marginStart: spaceTokens[0],
     },
     hintText: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.success'],
         marginStart: spaceTokens[0],
     },

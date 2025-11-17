@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
@@ -132,11 +132,11 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     sectionLabel: {
         fontSize: 14,
         color: colorTokens['text.muted'],
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
     },
     sectionAmount: {
         fontSize: 32,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },

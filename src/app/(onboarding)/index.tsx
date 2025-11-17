@@ -1,6 +1,6 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
-import { spaceTokens } from "@/design/tokens";
+import { fontStyles, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { Image } from 'expo-image';
@@ -102,7 +102,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     appName: {
         fontSize: 48,
-        fontWeight: "800",
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         letterSpacing: 2,
         textAlign: "center",
@@ -116,7 +116,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tagline: {
         fontSize: 18,
-        fontWeight: "500",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.secondary'],
         textAlign: "center",
     },
@@ -130,8 +130,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     footnote: {
         fontSize: 12,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
         textAlign: "center",
-        fontWeight: "400",
     },
 })); 

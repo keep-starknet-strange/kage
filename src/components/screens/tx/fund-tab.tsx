@@ -2,7 +2,7 @@ import { AccountPicker } from "@/components/ui/account-picker";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { spaceTokens } from "@/design/tokens";
+import { fontStyles, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
@@ -118,6 +118,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     description: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },

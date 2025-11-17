@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useOnChainStore } from "@/stores/onChainStore";
@@ -161,7 +161,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     menuItemText: {
         fontSize: 16,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     menuDivider: {

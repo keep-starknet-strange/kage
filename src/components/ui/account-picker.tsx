@@ -1,5 +1,5 @@
 import { AddressView } from "@/components/address-view";
-import { spaceTokens } from "@/design/tokens";
+import { fontStyles, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { StyleSheet, Text, View } from "react-native";
 import { ModalPicker } from "./modal-picker";
@@ -54,7 +54,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     accountName: {
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
 }));

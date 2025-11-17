@@ -1,4 +1,4 @@
-import { darkColorTokens, lightColorTokens, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
+import { darkColorTokens, fontStyles, lightColorTokens, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
 import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
@@ -78,12 +78,17 @@ export const defaultScreenOptions = () => {
         headerTintColor: colors['text.primary'],
         headerTitleStyle: {
             color: colors['text.primary'],
+            ...fontStyles.ubuntuMono.bold,
         },
         contentStyle: {
             backgroundColor: colors['bg.default'],
         },
         tabBarActiveTintColor: colors['text.primary'],
         tabBarInactiveTintColor: colors['text.muted'],
+        tabBarLabelStyle: {
+            ...fontStyles.ubuntuMono.semibold,
+            fontSize: 12,
+        },
         tabBarStyle: {
             backgroundColor: colors['bg.default'],
             borderTopWidth: 1,

@@ -1,4 +1,4 @@
-import { opacityTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, opacityTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
 
@@ -74,7 +74,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     buttonText: {
         color: colorTokens['text.primary'],
         fontSize: 17,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         letterSpacing: 0.3,
     },
     buttonTextDisabled: {

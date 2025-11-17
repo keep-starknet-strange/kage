@@ -4,7 +4,7 @@ import { TransferTab } from "@/components/screens/tx/transfer-tab";
 import { WithdrawTab } from "@/components/screens/tx/withdraw-tab";
 import AccountHeader from "@/components/ui/account-header";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
@@ -161,7 +161,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     accountName: {
         fontSize: 20,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
     },
     content: {
@@ -172,7 +172,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     sectionLabel: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.secondary'],
         marginBottom: spaceTokens[1],
     },
@@ -206,12 +206,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tabText: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.secondary'],
     },
     activeTabText: {
         color: colorTokens['text.primary'],
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
     },
     tabContent: {
         flex: 1,
@@ -226,6 +226,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     errorText: {
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
         marginBottom: spaceTokens[3],
     },
@@ -237,6 +238,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     backButtonText: {
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
 }));

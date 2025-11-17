@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import * as Clipboard from 'expo-clipboard';
 import { useState } from "react";
@@ -135,11 +135,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 16,
-        fontWeight: '800',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.inverted'],
     },
     subtitle: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.inverted'],
         lineHeight: 20,
     },
@@ -170,7 +171,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     detailsLabel: {
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.inverted'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -186,7 +187,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     copyButtonText: {
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.inverted'],
     },
     detailsContent: {
@@ -198,7 +199,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     detailsText: {
         fontSize: 12,
-        fontFamily: 'monospace',
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 18,
     },

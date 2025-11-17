@@ -2,7 +2,7 @@ import { PrivateBalancesLocked } from "@/components/private-balances-locked";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { spaceTokens } from "@/design/tokens";
+import { fontStyles, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
@@ -111,6 +111,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     description: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },

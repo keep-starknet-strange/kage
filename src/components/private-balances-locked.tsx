@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { Text, View } from "react-native";
 import { IconSymbol } from "./ui/icon-symbol";
@@ -42,7 +42,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 16,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.muted'],
     },
     unlockButton: {
@@ -56,6 +56,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     unlockButtonText: {
         color: colorTokens['text.inverted'],
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
     }
 }));

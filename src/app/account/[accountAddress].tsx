@@ -5,7 +5,7 @@ import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
 import { PublicBalanceCard } from '@/components/ui/public-balance-card';
 import { showToastError } from '@/components/ui/toast';
 import { PrivateTokenBalanceView, PublicTokenBalanceView } from '@/components/ui/token-balance-view';
-import { radiusTokens, spaceTokens } from '@/design/tokens';
+import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';
 import { AccountAddress } from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
@@ -311,7 +311,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tabButtonText: {
         fontSize: 14,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.muted'],
     },
     tabButtonTextActive: {
@@ -335,7 +335,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     tabHeaderText: {
         fontSize: 18,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     refreshButton: {
@@ -358,7 +358,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     emptyStateText: {
         fontSize: 16,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.muted'],
     },
     loadingContainer: {
@@ -369,6 +369,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     loadingText: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
     errorContainer: {
@@ -380,7 +381,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     errorText: {
         fontSize: 18,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     backButton: {
@@ -392,7 +393,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     backButtonText: {
         color: colorTokens['text.inverted'],
         fontSize: 16,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
     },
 }));
 

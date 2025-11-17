@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
@@ -71,7 +71,7 @@ export const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     accountName: {
         fontSize: 20,
-        fontWeight: '700',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
     },
     accountNameContainer: {

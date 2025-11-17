@@ -1,4 +1,4 @@
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ProfileState } from "@/profile/profileState";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
@@ -298,11 +298,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 16,
-        fontWeight: '800',
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.inverted'],
     },
     subtitle: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.inverted'],
         lineHeight: 20,
     },
@@ -337,13 +338,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     detailLabel: {
         fontSize: 13,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.inverted'],
         opacity: 0.8,
     },
     detailValue: {
         fontSize: 13,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.inverted'],
         flex: 1,
         textAlign: 'right',
@@ -358,7 +359,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     txHashLabel: {
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.inverted'],
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -378,7 +379,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     actionButtonText: {
         fontSize: 12,
-        fontWeight: '600',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.inverted'],
     },
     txHashContent: {
@@ -390,7 +391,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     txHashText: {
         fontSize: 11,
-        fontFamily: 'monospace',
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.inverted'],
         lineHeight: 16,
     },

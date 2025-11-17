@@ -1,5 +1,5 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 import { useNavigation, useRouter } from "expo-router";
@@ -160,12 +160,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     title: {
         fontSize: 28,
-        fontWeight: "700",
+        ...fontStyles.ubuntuMono.bold,
         color: colorTokens['text.primary'],
         letterSpacing: -0.5,
     },
     subtitle: {
         fontSize: 15,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 22,
     },
@@ -177,7 +178,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     label: {
         fontSize: 15,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     inputWrapper: {
@@ -193,6 +194,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         paddingVertical: spaceTokens[4],
         paddingHorizontal: spaceTokens[4],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
     eyeButton: {
@@ -201,11 +203,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     eyeButtonText: {
         fontSize: 14,
-        fontWeight: "600",
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['brand.accent'],
     },
     helperText: {
         fontSize: 13,
+        ...fontStyles.ubuntuMono.regular,
         marginTop: -spaceTokens[1],
     },
     helperSuccess: {

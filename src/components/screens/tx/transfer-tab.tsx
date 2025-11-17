@@ -3,7 +3,7 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { PrivateAddressInput } from "@/components/ui/private-address-input";
 import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
@@ -121,6 +121,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     description: {
         fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
         lineHeight: 20,
     },
@@ -129,7 +130,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     inputLabel: {
         fontSize: 14,
-        fontWeight: '500',
+        ...fontStyles.ubuntuMono.semibold,
         color: colorTokens['text.primary'],
     },
     input: {
@@ -139,6 +140,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         borderRadius: radiusTokens.sm,
         padding: spaceTokens[3],
         fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
     },
 }));

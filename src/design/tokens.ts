@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 export const lightColorTokens = {
   'bg.default': '#F6F7FB',
   'bg.elevated': '#FFFFFF',
@@ -98,3 +100,55 @@ export const opacityTokens = {
   disabled: 0.38,
   overlay: 0.22,
 } as const;
+
+export const fontTokens = {
+  ubuntuMono: {
+    regular: Platform.select({
+      ios: 'UbuntuMono-Regular',
+      android: 'UbuntuMono_400Regular',
+      default: 'UbuntuMono_400Regular',
+    }),
+    italic: Platform.select({
+      ios: 'UbuntuMono-Italic',
+      android: 'UbuntuMono_400Regular_Italic',
+      default: 'UbuntuMono_400Regular_Italic',
+    }),
+    bold: Platform.select({
+      ios: 'UbuntuMono-Bold',
+      android: 'UbuntuMono_700Bold',
+      default: 'UbuntuMono_700Bold',
+    }),
+    boldItalic: Platform.select({
+      ios: 'UbuntuMono-BoldItalic',
+      android: 'UbuntuMono_700Bold_Italic',
+      default: 'UbuntuMono_700Bold_Italic',
+    }),
+  },
+} as const;
+
+export const fontStyles = {
+  ubuntuMono: {
+    semibold: {
+      fontWeight: "600",
+      fontFamily: fontTokens.ubuntuMono.bold,
+    },
+    bold: {
+      fontWeight: "700",
+      fontFamily: fontTokens.ubuntuMono.bold,
+    },
+    boldItalic: {
+      fontWeight: "700",
+      fontStyle: "italic",
+      fontFamily: fontTokens.ubuntuMono.boldItalic,
+    },
+    regular: {
+      fontWeight: "400",
+      fontFamily: fontTokens.ubuntuMono.regular,
+    },
+    italic: {
+      fontWeight: "400",
+      fontStyle: "italic",
+      fontFamily: fontTokens.ubuntuMono.italic,
+    },
+  }
+}
