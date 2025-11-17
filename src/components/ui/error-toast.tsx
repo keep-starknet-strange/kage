@@ -1,22 +1,27 @@
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import * as Clipboard from 'expo-clipboard';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
 
 export interface ErrorToastProps {
+    id: string;
     title: string;
     subtitle: string;
     details: string | null;
     onPress?: () => void;
 }
 
-export const ErrorToast = ({ title, subtitle, details, onPress }: ErrorToastProps) => {
+export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToastProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
+
+    useEffect(() => {
+        setIsExpanded(false);
+    }, [id, setIsExpanded]);
 
     const handlePress = () => {
         if (details) {

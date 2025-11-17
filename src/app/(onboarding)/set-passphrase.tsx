@@ -138,7 +138,7 @@ export default function SetPassphraseScreen() {
                 <View style={{ flex: 1 }} />
 
                 {/* Button Section */}
-                <View style={styles.buttonSection}>
+                <View style={[styles.buttonSection, { paddingBottom: insets.bottom }]}>
                     <PrimaryButton
                         title="Create Account"
                         onPress={handleCreateAccount}

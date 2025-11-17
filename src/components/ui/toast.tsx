@@ -1,11 +1,12 @@
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
-import React from "react"
+import { AppError, CancellationError } from "@/types/appError";
+import { Transaction } from "@/types/transaction";
+import React from "react";
 import Toast, { ToastConfig } from "react-native-toast-message";
+import { RpcError, TimeoutError, WebSocketNotConnectedError } from "starknet";
 import { ErrorToast } from "./error-toast";
 import { TransactionToast } from "./transaction-toast";
-import { AppError, CancellationError } from "@/types/appError";
-import { RpcError, TimeoutError, WebSocketNotConnectedError } from "starknet";
-import { Transaction } from "@/types/transaction";
+import uuid from 'react-native-uuid';
 
 export function showToastError(error: any) {
     if (error instanceof CancellationError) {
@@ -14,7 +15,7 @@ export function showToastError(error: any) {
 
     let message = "";
     let details: string | null = null;
-    
+
     if (error instanceof AppError) {
         message = error.message;
         if (error.details) {
@@ -27,7 +28,11 @@ export function showToastError(error: any) {
         message = "Request timed out";
         details = error.message;
     } else if (error instanceof RpcError) {
-        message = error.baseError.message;
+        if (error.isType('VALIDATION_FAILURE') && error.baseError.data.includes("exceed balance")) {
+            message = "Insufficient balance";
+        } else {
+            message = error.baseError.message;
+        }
         details = JSON.stringify(error.baseError);
     } else if (error instanceof Error) {
         if (error.message === "invalid tag") {
@@ -40,6 +45,7 @@ export function showToastError(error: any) {
     Toast.show({
         type: "customError",
         props: {
+            id: uuid.v4(),
             title: "An error occurred",
             subtitle: message,
             details: details,
@@ -51,6 +57,7 @@ export function showToastTransaction(transaction: Transaction, pending: boolean 
     Toast.show({
         type: "transaction",
         props: {
+            id: transaction.txHash,
             transaction: Transaction.toSerializable(transaction),
             pending,
         },
@@ -62,6 +69,7 @@ export function showToastTransaction(transaction: Transaction, pending: boolean 
 const toastConfig: ToastConfig = {
     customError: ({ props }) => (
         <ErrorToast
+            id={props.id}
             title={props.title}
             subtitle={props.subtitle}
             details={props.details}
@@ -69,10 +77,11 @@ const toastConfig: ToastConfig = {
     ),
     transaction: ({ props }) => (
         <TransactionToast
+            id={props.id}
             transaction={props.transaction}
             pending={props.pending}
         />
-    ),
+    )
 };
 
 export default function KageToast() {

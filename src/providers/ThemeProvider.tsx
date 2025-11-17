@@ -1,4 +1,4 @@
-import { fontStyles, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
+import { fontStyles, fontTokens, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
 import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
@@ -78,7 +78,7 @@ export const defaultScreenOptions = () => {
         headerTintColor: colors['text.primary'],
         headerTitleStyle: {
             color: colors['text.primary'],
-            ...fontStyles.ubuntuMono.bold,
+            fontFamily: fontTokens.ubuntuMono.bold,
         },
         contentStyle: {
             backgroundColor: colors['bg.default'],

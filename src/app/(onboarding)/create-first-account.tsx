@@ -38,13 +38,15 @@ export default function CreateFirstAccountScreen() {
 
     const handleCreateAccount = async () => {
         if (!isFormValid) return;
+        setIsCreating(true);
+
         const passphrase = consumeTempPassphrase();
         if (!passphrase) {
             showToastError(new AppError("No passphrase is set"));
+            setIsCreating(false);
             return;
         }
 
-        setIsCreating(true);
         try {
             await create(passphrase, accountName);
         } catch (error) {
@@ -90,7 +92,7 @@ export default function CreateFirstAccountScreen() {
                 <View style={{ flex: 1 }} />
 
                 {/* Button Section */}
-                <View style={styles.buttonSection}>
+                <View style={[styles.buttonSection, { paddingBottom: insets.bottom }]}>
                     <PrimaryButton
                         title={isCreating ? "Creating Account..." : "Create Account"}
                         onPress={handleCreateAccount}

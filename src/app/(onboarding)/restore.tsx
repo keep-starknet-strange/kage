@@ -1,4 +1,5 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { SimpleHeader } from "@/components/ui/simple-header";
 import { showToastError } from "@/components/ui/toast";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
@@ -6,12 +7,13 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemePro
 import { useProfileStore } from "@/stores/profileStore";
 import { mnemonicToWords, validateMnemonic, wordlist } from "@starkms/key-management";
 import * as Clipboard from "expo-clipboard";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 export default function RestoreScreen() {
     const navigation = useNavigation();
+    const router = useRouter();
     const { insets } = useDynamicSafeAreaInsets();
     const { restore } = useProfileStore();
 
@@ -33,10 +35,15 @@ export default function RestoreScreen() {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: "Restore your Wallet",
-            headerBackButtonDisplayMode: "minimal"
+            header: () => (
+                <SimpleHeader
+                    title="Restore your Wallet"
+                    onBackPress={() => router.back()}
+                    style={{ paddingTop: insets.top }}
+                />
+            ),
         });
-    }, [navigation]);
+    }, [navigation, router]);
 
     // Validate seed phrase
     useEffect(() => {

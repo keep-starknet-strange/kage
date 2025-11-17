@@ -9,14 +9,16 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
+import { ToastShowParams } from "react-native-toast-message";
 
 export interface TransactionToastProps {
+    id: string;
     transaction: SerializableTransaction;
     pending?: boolean;
     onPress?: () => void;
 }
 
-export const TransactionToast = ({ transaction, pending = false, onPress }: TransactionToastProps) => {
+export const TransactionToast = ({ id, transaction, pending = false, onPress }: TransactionToastProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const currentNetworkDefinition = useProfileStore(state => ProfileState.isProfile(state.profileState) ? state.profileState.currentNetworkWithDefinition.networkDefinition : null);
@@ -24,6 +26,10 @@ export const TransactionToast = ({ transaction, pending = false, onPress }: Tran
     const { colors: colorTokens } = useTheme();
     // Progress bar animation
     const progressAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        setIsExpanded(false);
+    }, [id, setIsExpanded]);
 
     useEffect(() => {
         if (pending) {

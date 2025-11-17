@@ -18,6 +18,7 @@ import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
 
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
