@@ -1,8 +1,8 @@
 import { fontStyles, opacityTokens, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from "react-native";
 
-export interface SecondaryButtonProps extends Omit<PressableProps, 'style'> {
+export interface SecondaryButtonProps extends Omit<TouchableOpacityProps, 'style'> {
     title: string;
     onPress: () => void;
     disabled?: boolean;
@@ -16,7 +16,7 @@ export const SecondaryButton = ({ title, onPress, disabled, loading, style, ...p
     const isDisabled = disabled || loading;
 
     return (
-        <Pressable
+        <TouchableOpacity
             style={[
                 styles.button,
                 isDisabled && styles.buttonDisabled,
@@ -44,7 +44,7 @@ export const SecondaryButton = ({ title, onPress, disabled, loading, style, ...p
                     {title}
                 </Text>
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
 

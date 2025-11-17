@@ -1,8 +1,8 @@
-import { fontStyles, fontTokens, radiusTokens, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import { ActivityIndicator, Pressable, PressableProps, Text, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from "react-native";
 
-export interface PrimaryButtonProps extends Omit<PressableProps, 'style'> {
+export interface PrimaryButtonProps extends Omit<TouchableOpacityProps, 'style'> {
     title: string;
     onPress: () => void;
     disabled?: boolean;
@@ -16,7 +16,7 @@ export const PrimaryButton = ({ title, onPress, disabled, loading, style, ...pro
     const isDisabled = disabled || loading;
 
     return (
-        <Pressable
+        <TouchableOpacity
             style={[
                 styles.button,
                 isDisabled && styles.buttonDisabled,
@@ -44,7 +44,7 @@ export const PrimaryButton = ({ title, onPress, disabled, loading, style, ...pro
                     {title}
                 </Text>
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
 

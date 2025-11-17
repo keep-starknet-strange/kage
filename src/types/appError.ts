@@ -6,3 +6,9 @@ export class AppError extends Error {
         this.details = details;
     }
 }
+
+export class CancellationError extends AppError {
+    constructor() {
+        super("Cancelled");
+    }
+}

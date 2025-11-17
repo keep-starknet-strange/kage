@@ -4,7 +4,7 @@ import { KeySourceId } from "@/profile/keys/keySource";
 import { KeySourceKind } from "@/profile/keys/keySourceKind";
 import { ProfileState } from "@/profile/profileState";
 import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
-import { AppError } from "@/types/appError";
+import { AppError, CancellationError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import Token from "@/types/token";
 import { groupBy } from "@/utils/collections";
@@ -68,10 +68,10 @@ export interface AccessVaultState {
     // Promises for async passphrase input
     readonly passphrasePromise: {
         resolve: (passphrase: string) => void;
-        reject: (reason?: string) => void;
+        reject: (reason?: any) => void;
     } | null;
     handlePassphraseSubmit: (passphrase: string) => Promise<void>;
-    handlePassphraseReject: (reason?: string) => void;
+    handlePassphraseReject: (reason: AppError) => void;
 }
 
 export const useAccessVaultStore = create<AccessVaultState>((set) => ({
@@ -251,7 +251,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
         })
     },
 
-    handlePassphraseReject: (reason?: string) => {
+    handlePassphraseReject: (reason: AppError) => {
         set((state) => {
             state.passphrasePromise?.reject(reason);
             return {

@@ -4,9 +4,12 @@ import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, S
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { SecondaryButton } from "@/components/ui/secondary-button";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { CancellationError } from "@/types/appError";
 
 export default function AccessVaultModal() {
     const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
@@ -28,7 +31,7 @@ export default function AccessVaultModal() {
 
     const onRequestClose = () => {
         if (!isSubmitting) {
-            void handlePassphraseReject("Cancelled");
+            void handlePassphraseReject(new CancellationError());
         }
     }
 
@@ -197,29 +200,20 @@ export default function AccessVaultModal() {
 
                             {/* Action Buttons */}
                             <View style={styles.buttonContainer}>
-                                <TouchableOpacity
-                                    style={[styles.button, styles.cancelButton]}
+                                <SecondaryButton
+                                    title="Cancel"
                                     onPress={onRequestClose}
                                     disabled={isSubmitting}
-                                >
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                                </TouchableOpacity>
+                                    style={styles.cancelButton}
+                                />
 
-                                <TouchableOpacity
-                                    style={[
-                                        styles.button, 
-                                        styles.submitButton,
-                                        (inputPassphrase.length === 0 || isSubmitting) && styles.submitButtonDisabled
-                                    ]}
+                                <PrimaryButton
+                                    title="Unlock"
                                     onPress={() => onPassphraseSubmit(inputPassphrase)}
-                                    disabled={inputPassphrase.length === 0 || isSubmitting}
-                                >
-                                    {isSubmitting ? (
-                                        <ActivityIndicator size="small" color={colorTokens['text.inverted']} />
-                                    ) : (
-                                        <Text style={styles.submitButtonText}>Unlock</Text>
-                                    )}
-                                </TouchableOpacity>
+                                    disabled={inputPassphrase.length === 0}
+                                    loading={isSubmitting}
+                                    style={styles.submitButton}
+                                />
                             </View>
                         </View>
                     )}
@@ -314,40 +308,10 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         gap: spaceTokens[3],
         marginTop: spaceTokens[2],
     },
-    button: {
-        flex: 1,
-        height: 52,
-        borderRadius: radiusTokens.md,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     cancelButton: {
-        backgroundColor: colorTokens['bg.sunken'],
-        borderWidth: 1,
-        borderColor: colorTokens['border.strong'],
-    },
-    cancelButtonText: {
-        fontSize: 16,
-        ...fontStyles.ubuntuMono.bold,
-        color: colorTokens['text.secondary'],
+        flex: 1,
     },
     submitButton: {
-        backgroundColor: colorTokens['brand.accent'],
-        shadowColor: colorTokens['brand.accent'],
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    submitButtonDisabled: {
-        backgroundColor: colorTokens['text.muted'],
-        opacity: 0.5,
-        shadowOpacity: 0,
-        elevation: 0,
-    },
-    submitButtonText: {
-        fontSize: 16,
-        ...fontStyles.ubuntuMono.regular,
-        color: colorTokens['text.inverted'],
+        flex: 1,
     },
 }));

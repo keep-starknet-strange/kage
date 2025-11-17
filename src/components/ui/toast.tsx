@@ -3,14 +3,18 @@ import React from "react"
 import Toast, { ToastConfig } from "react-native-toast-message";
 import { ErrorToast } from "./error-toast";
 import { TransactionToast } from "./transaction-toast";
-import { AppError } from "@/types/appError";
+import { AppError, CancellationError } from "@/types/appError";
 import { RpcError, TimeoutError, WebSocketNotConnectedError } from "starknet";
 import { Transaction } from "@/types/transaction";
 
 export function showToastError(error: any) {
+    if (error instanceof CancellationError) {
+        return;
+    }
+
     let message = "";
     let details: string | null = null;
-
+    
     if (error instanceof AppError) {
         message = error.message;
         if (error.details) {
@@ -26,7 +30,11 @@ export function showToastError(error: any) {
         message = error.baseError.message;
         details = JSON.stringify(error.baseError);
     } else if (error instanceof Error) {
-        message = error.message;
+        if (error.message === "invalid tag") {
+            message = "Wrong passphrase";
+        } else {
+            message = error.message;
+        }
     }
 
     Toast.show({
