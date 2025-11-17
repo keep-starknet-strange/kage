@@ -1,5 +1,6 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PrimaryButton } from '@/components/ui/primary-button';
+import { SimpleHeader } from '@/components/ui/simple-header';
 import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
 import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
@@ -8,7 +9,7 @@ import { useProfileStore } from '@/stores/profileStore';
 import { LOG } from '@/utils/logs';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
 
 export default function CreateAccountScreen() {
     const router = useRouter();
@@ -58,26 +59,13 @@ export default function CreateAccountScreen() {
     useLayoutEffect(() => {
         navigation.setOptions({
             header: () => (
-                <View style={[styles.header, { paddingTop: insets.top }]}>
-                    <View style={styles.headerContent}>
-                        <Pressable
-                            style={styles.backButton}
-                            onPress={() => router.back()}
-                            disabled={isCreating}
-                        >
-                            <IconSymbol
-                                name="chevron.left"
-                                size={24}
-                                color={colorTokens['text.primary']}
-                            />
-                        </Pressable>
-                        <Text style={styles.headerTitle}>Create Account</Text>
-                        <View style={styles.backButton} />
-                    </View>
-                </View>
+                <SimpleHeader
+                    title="Create Account"
+                    onBackPress={() => router.back()}
+                />
             ),
         });
-    }, [navigation, insets.top, isCreating, router]);
+    }, [navigation, insets.top, router]);
 
     return (
         <KeyboardAvoidingView
@@ -142,36 +130,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
-    },
-    header: {
-        backgroundColor: colorTokens['bg.elevated'],
-        borderBottomWidth: 1,
-        borderBottomColor: colorTokens['border.subtle'],
-        shadowColor: colorTokens['shadow.primary'],
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    headerContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spaceTokens[4],
-        paddingVertical: spaceTokens[3],
-        minHeight: 56,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: radiusTokens.md,
-    },
-    headerTitle: {
-        fontSize: 18,
-        ...fontStyles.ubuntuMono.semibold,
-        color: colorTokens['text.primary'],
     },
     form: {
         flex: 1,

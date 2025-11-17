@@ -83,7 +83,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
                                     )}
                                     {!isDeploying && (
                                         <IconSymbol
-                                            name="arrow.up.circle.fill"
+                                            name="square.and.arrow.up.circle.fill"
                                             size={20}
                                             color={colorTokens['status.warning']}
                                         />

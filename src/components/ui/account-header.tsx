@@ -62,8 +62,6 @@ export const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: radiusTokens.md,
-        backgroundColor: colorTokens['bg.elevated'],
     },
     accountInfo: {
         flex: 1,

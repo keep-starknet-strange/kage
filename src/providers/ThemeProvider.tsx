@@ -1,10 +1,10 @@
-import { darkColorTokens, fontStyles, lightColorTokens, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
+import { fontStyles, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
 import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 type ThemeMode = 'ztarknet'; // Currently only ztarknet theme is supported
 
-type ColorTokens = typeof lightColorTokens | typeof darkColorTokens | typeof ztarknetColorTokens;
+type ColorTokens = typeof ztarknetColorTokens;
 
 interface ThemeContextType {
     theme: ThemeMode;
@@ -31,8 +31,8 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     // const systemColorScheme = useColorScheme();
     const [theme, setTheme] = useState<ThemeMode>('ztarknet');
 
-    const colors = theme === 'ztarknet' ? ztarknetColorTokens : lightColorTokens;
-    const isDark = theme === 'ztarknet' ? false : false;
+    const colors = ztarknetColorTokens;
+    const isDark = true;
 
     return (
         <ThemeContext.Provider value={{ theme, setTheme, colors, isDark }}>

@@ -1,17 +1,20 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { SimpleHeader } from "@/components/ui/simple-header";
 import { showToastError } from "@/components/ui/toast";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 import { AppError } from "@/types/appError";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateFirstAccountScreen() {
     const navigation = useNavigation();
+    const router = useRouter();
+    const { insets } = useDynamicSafeAreaInsets();
     const [accountName, setAccountName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const { create } = useProfileStore();
@@ -21,10 +24,15 @@ export default function CreateFirstAccountScreen() {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: "Create your First Account",
-            headerBackButtonDisplayMode: "minimal"
+            header: () => (
+                <SimpleHeader
+                    title="Name your First Account"
+                    onBackPress={() => router.back()}
+                    style={{ paddingTop: insets.top }}
+                />
+            ),
         });
-    }, [navigation]);
+    }, [navigation, insets.top, router]);
 
     const isFormValid = accountName.trim().length > 0;
 
@@ -47,11 +55,10 @@ export default function CreateFirstAccountScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.content}>
                 {/* Header Section */}
                 <View style={styles.headerSection}>
-                    <Text style={styles.title}>Name your account</Text>
                     <Text style={styles.subtitle}>
                         Choose a name to help you identify this account. You can always change it later.
                     </Text>
@@ -92,7 +99,7 @@ export default function CreateFirstAccountScreen() {
                     />
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 

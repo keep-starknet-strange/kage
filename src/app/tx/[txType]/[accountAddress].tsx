@@ -68,7 +68,7 @@ const TransactionScreen = () => {
                                 onPress={() => setActiveTab('fund')}
                             >
                                 <IconSymbol
-                                    name="plus.circle"
+                                    name="shield.fill"
                                     size={20}
                                     color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                                 />
@@ -96,7 +96,7 @@ const TransactionScreen = () => {
                                 onPress={() => setActiveTab('withdraw')}
                             >
                                 <IconSymbol
-                                    name="arrow.up.circle"
+                                    name="shield.slash.fill"
                                     size={20}
                                     color={activeTab === 'withdraw' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                                 />

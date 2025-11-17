@@ -77,7 +77,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
 
             <View style={styles.actionsContainer}>
                 <ActionButton
-                    icon="plus.circle.fill"
+                    icon="shield.fill"
                     label="Shield"
                     onPress={() => {
                         props.onFundPress();
@@ -85,7 +85,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                     disabled={false}
                 />
                 <ActionButton
-                    icon="arrow.right.circle.fill"
+                    icon="bolt.shield.fill"
                     label="Transfer"
                     onPress={() => {
                         props.onTransferPress();
@@ -93,7 +93,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                     disabled={false}
                 />
                 <ActionButton
-                    icon="arrow.up.circle.fill"
+                    icon="shield.slash.fill"
                     label="Unshield"
                     onPress={() => {
                         props.onWithdrawPress();

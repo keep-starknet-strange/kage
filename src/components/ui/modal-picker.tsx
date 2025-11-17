@@ -141,17 +141,11 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.muted'],
     },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: colorTokens['surface.overlay'],
-        justifyContent: 'flex-end',
-    },
     modalContent: {
         flex: 1,
         backgroundColor: colorTokens['bg.elevated'],
         borderTopLeftRadius: radiusTokens.lg,
         borderTopRightRadius: radiusTokens.lg,
-        maxHeight: '80%',
         paddingBottom: spaceTokens[6],
     },
     modalHeader: {

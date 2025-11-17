@@ -169,7 +169,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         backgroundColor: colorTokens['bg.elevated'],
         borderTopLeftRadius: radiusTokens.lg,
         borderTopRightRadius: radiusTokens.lg,
-        maxHeight: '80%',
         paddingBottom: spaceTokens[6],
     },
     modalHeader: {

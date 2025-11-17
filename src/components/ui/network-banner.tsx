@@ -53,7 +53,7 @@ export default function NetworkBanner({ network }: NetworkBannerProps) {
                 left: 0,
                 right: 0,
                 paddingTop: appInsets.top,
-                backgroundColor: colorTokens['status.warning'],
+                backgroundColor: colorTokens['brand.glow'],
             }}
         >
             <View
@@ -62,7 +62,7 @@ export default function NetworkBanner({ network }: NetworkBannerProps) {
                     setBannerHeight(event.nativeEvent.layout.height);
                 }}
             >
-                <Text style={{ color: colorTokens['text.inverted'] }}>{`Test Network ${networkDisplayName}`}</Text>
+                <Text style={{ color: colorTokens['brand.accent'] }}>{`Test Network ${networkDisplayName}`}</Text>
             </View>
         </View>
     ) || null;

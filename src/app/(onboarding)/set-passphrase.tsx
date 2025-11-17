@@ -1,17 +1,19 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { SimpleHeader } from "@/components/ui/simple-header";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
+import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const MIN_PASSPHRASE_LENGTH = 7;
 
 export default function SetPassphraseScreen() {
     const router = useRouter();
     const navigation = useNavigation();
+    const { insets } = useDynamicSafeAreaInsets();
     const [passphrase, setPassphrase] = useState("");
     const [confirmPassphrase, setConfirmPassphrase] = useState("");
     const [showPassphrase, setShowPassphrase] = useState(false);
@@ -23,10 +25,15 @@ export default function SetPassphraseScreen() {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: "Setup a passphrase",
-            headerBackButtonDisplayMode: "minimal"
+            header: () => (
+                <SimpleHeader
+                    title="Create a passphrase"
+                    onBackPress={() => router.back()}
+                    style={{ paddingTop: insets.top }}
+                />
+            ),
         });
-    }, [navigation]);
+    }, [navigation, insets.top, router]);
 
     // Validation checks
     const isPassphraseLongEnough = passphrase.length >= MIN_PASSPHRASE_LENGTH;
@@ -43,11 +50,10 @@ export default function SetPassphraseScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.content}>
                 {/* Header Section */}
                 <View style={styles.headerSection}>
-                    <Text style={styles.title}>Create a passphrase</Text>
                     <Text style={styles.subtitle}>
                         Your passphrase will be used to encrypt and protect your wallet. Make sure it's strong and memorable.
                     </Text>
@@ -140,7 +146,7 @@ export default function SetPassphraseScreen() {
                     />
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 
