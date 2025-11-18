@@ -70,10 +70,12 @@ export default class PrivateBalanceRepository extends BalanceRepository {
         const result = await requestAccess({ requestFor: "privateKeys", signing: [], tokens: accountTokens });
 
         for (const [account, tokenKeyPairs] of result.tokens.entries()) {
-            // @ts-ignore
-            const tongoToken = new TongoToken(tokenKeyPairs.keyPairs.spendingKeyPair.privateSpendingKey, tokenKeyPairs.token.tongoAddress, this.provider);
-            this.tongoCache.set(this.cacheKey(account, tokenKeyPairs.token), tongoToken);
-            this.tongoAddressToAccountAddress.set(tongoToken.tongoAddress(), account.address);
+            for (const tokenKeyPair of tokenKeyPairs) {
+                // @ts-ignore
+                const tongoToken = new TongoToken(tokenKeyPair.keyPairs.spendingKeyPair.privateSpendingKey, tokenKeyPair.token.tongoAddress, this.provider);
+                this.tongoCache.set(this.cacheKey(account, tokenKeyPair.token), tongoToken);
+                this.tongoAddressToAccountAddress.set(tongoToken.tongoAddress(), account.address);
+            }
         }
     }
 

@@ -39,7 +39,7 @@ export type Input = PrivateKeysInput | PassphraseInput | SeedPhraseInput;
 
 export type PrivateKeysOutput = {
     signing: Map<Account, StarknetKeyPair>;
-    tokens: Map<Account, { token: Token, keyPairs: StarknetKeyPair }>;
+    tokens: Map<Account, { token: Token, keyPairs: StarknetKeyPair }[]>;
 }
 
 export type Output<I extends Input> =
@@ -107,7 +107,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
             const groupedByKind = groupBy(keySources, keySource => keySource.kind);
 
             const signingResult: Map<Account, StarknetKeyPair> = new Map();
-            const tokensResult: Map<Account, { token: Token, keyPairs: StarknetKeyPair }> = new Map();
+            const tokensResult: Map<Account, { token: Token, keyPairs: StarknetKeyPair }[]> = new Map();
 
             for (const [kind, keySources] of groupedByKind) {
                 switch (kind) {
@@ -168,7 +168,10 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                                     accountIndex: (account.keyInstance as HDKeyInstance).index,
                                     addressIndex: tokenIndex,
                                 }, seedPhrase, true);
-                                tokensResult.set(account, { token, keyPairs: keyPairs });
+
+                                const existingTokens = tokensResult.get(account) ?? [];
+                                existingTokens.push({ token, keyPairs });
+                                tokensResult.set(account, existingTokens);
                             }
                         }
 

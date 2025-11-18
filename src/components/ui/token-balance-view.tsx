@@ -97,7 +97,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     tokenLogo: {
         width: spaceTokens[6],
         height: spaceTokens[6],
-        borderRadius: radiusTokens.sm,
+        borderRadius: radiusTokens.sm,    
     },
     tokenSymbol: {
         fontSize: 18,
