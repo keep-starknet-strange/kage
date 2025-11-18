@@ -146,18 +146,20 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
         unlockPrivateBalances: async (accounts: Account[]) => {
             const { requestAccess } = useAccessVaultStore.getState();
-            const { requestRefresh } = get()
+            const { unlockedPrivateBalances, requestRefresh } = get()
 
             const allTokens = Array.from(networkTokens.values());
 
             await privateBalanceRepository.unlock(accounts, allTokens, requestAccess);
-            set({ unlockedPrivateBalances: new Set(accounts.map((account) => account.address)) });
+            const newUnlockedPrivateBalances = new Set([...unlockedPrivateBalances, ...accounts.map((account) => account.address)]);
+            set({ unlockedPrivateBalances: newUnlockedPrivateBalances });
             await requestRefresh([], accounts);
         },
         lockPrivateBalances: async (accounts: Account[]) => {
-            const { requestRefresh } = get();
+            const { unlockedPrivateBalances, requestRefresh } = get();
             await privateBalanceRepository.lock(accounts, Array.from(networkTokens.values()));
-            set({ unlockedPrivateBalances: new Set() });
+            const newUnlockedPrivateBalances = new Set([...unlockedPrivateBalances].filter((address) => !accounts.some((account) => account.address === address)));
+            set({ unlockedPrivateBalances: newUnlockedPrivateBalances });
             await requestRefresh([], accounts);
         },
 

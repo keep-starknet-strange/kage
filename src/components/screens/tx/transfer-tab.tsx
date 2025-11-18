@@ -87,7 +87,7 @@ export function TransferTab({
             ) : (
                 <>
                     <Text style={styles.description}>
-                        Transfer tokens to another address.
+                        Transfer tokens to another address privately.
                     </Text>
 
                     <PrivateAddressInput
