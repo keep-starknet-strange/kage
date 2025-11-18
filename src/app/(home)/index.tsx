@@ -92,25 +92,25 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         flex: 1,
     },
     contentContainer: {
-        padding: spaceTokens[4], // 16px
+        padding: spaceTokens[4], 
     },
     networkBadgeMargin: {
         alignSelf: "center",
-        marginBottom: spaceTokens[4], // 16px
+        marginBottom: spaceTokens[4], 
     },
     sectionTitle: {
         fontSize: 20,
         ...fontStyles.ubuntuMono.bold,
-        marginBottom: spaceTokens[3], // 12px
-        marginTop: spaceTokens[5], // 24px
+        marginBottom: spaceTokens[3], 
+        marginTop: spaceTokens[5], 
     },
     separator: {
-        height: spaceTokens[2], // 12px
+        height: spaceTokens[3], 
     },
     accountCard: {
         borderRadius: radiusTokens.md,
-        padding: spaceTokens[4], // 16px
-        gap: spaceTokens[2], // 12px
+        padding: spaceTokens[4], 
+        gap: spaceTokens[2], 
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 1,
         shadowRadius: 8,
@@ -123,7 +123,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     emptyState: {
         backgroundColor: colorTokens['bg.elevated'],
         borderRadius: radiusTokens.md,
-        padding: spaceTokens[6], // 32px
+        padding: spaceTokens[6], 
         alignItems: 'center',
     },
     emptyStateText: {
@@ -132,7 +132,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['text.muted'],
     },
     createAccountButton: {
-        marginTop: spaceTokens[4], // 16px
+        marginTop: spaceTokens[4], 
     },
     accountNameContainer: {
         flexDirection: 'row',

@@ -128,8 +128,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         backgroundColor: colorTokens['bg.sunken'],
         alignItems: "center",
         justifyContent: "space-around",
-        paddingVertical: spaceTokens[0], // 8px
-        paddingHorizontal: spaceTokens[1], // 12px
+        paddingVertical: spaceTokens[0], 
+        paddingHorizontal: spaceTokens[1], 
         gap: spaceTokens[1],
         borderRadius: radiusTokens.sm,
         borderWidth: 1,
@@ -145,7 +145,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         ...fontStyles.ubuntuMono.semibold,
     },
     copyButton: {
-        padding: spaceTokens[0], // 4px
+        padding: spaceTokens[0], 
         borderRadius: radiusTokens.xs,
         backgroundColor: colorTokens['bg.elevated'],
         borderWidth: 1,
@@ -162,8 +162,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         top: -32,
         right: 0,
         backgroundColor: colorTokens['status.success'],
-        paddingHorizontal: spaceTokens[2], // 12px
-        paddingVertical: spaceTokens[1], // 8px
+        paddingHorizontal: spaceTokens[2], 
+        paddingVertical: spaceTokens[1], 
         borderRadius: radiusTokens.sm,
         shadowColor: colorTokens['shadow.primary'],
         shadowOffset: { width: 0, height: 2 },

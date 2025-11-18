@@ -1,11 +1,11 @@
 import { Platform } from "react-native";
 
-// Based on https://www.ztarknet.cash/
+// Inspired by https://www.ztarknet.cash/
 export const ztarknetColorTokens = {
   'bg.default': '#0a0908',
-  'bg.elevated': '#1a1614',
-  'bg.sunken': '#050403',
-  'surface.glass': 'rgba(26, 22, 20, 0.85)',
+  'bg.elevated': '#221e1c',
+  'bg.sunken': '#16130f',
+  'surface.glass': 'rgba(34, 30, 28, 0.85)',
   'surface.overlay': 'rgba(255, 107, 26, 0.12)',
   'text.primary': '#f4f4f6',
   'text.secondary': '#B8B8C8',
