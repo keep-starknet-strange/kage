@@ -33,7 +33,7 @@ export default function KeysScreen() {
     const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
-    
+
     const profile = useMemo(() => ProfileState.getProfileOrNull(profileState), [profileState]);
 
     const keysData = useMemo(() => {
@@ -188,14 +188,14 @@ interface KeySourceItemProps {
     isCopied: boolean;
 }
 
-function KeySourceItem({ 
-    keySource, 
-    accounts, 
-    isExpanded, 
-    onToggle, 
-    onViewSeedPhrase, 
-    isViewingSeedPhrase, 
-    seedPhraseWords, 
+function KeySourceItem({
+    keySource,
+    accounts,
+    isExpanded,
+    onToggle,
+    onViewSeedPhrase,
+    isViewingSeedPhrase,
+    seedPhraseWords,
     loadingSeedPhrase,
     onCopySeedPhrase,
     isCopied
@@ -270,7 +270,7 @@ function KeySourceItem({
             {isExpanded && (
                 <View style={styles.keySourceContent}>
                     {/* View Seed Phrase Button */}
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.viewSeedPhraseButton}
                         onPress={onViewSeedPhrase}
                         disabled={loadingSeedPhrase}
@@ -305,7 +305,11 @@ function KeySourceItem({
                                 {seedPhraseWords.map((word, index) => (
                                     <View key={`${word}-${index}`} style={styles.seedPhraseWord}>
                                         <Text style={styles.seedPhraseWordIndex}>{index + 1}.</Text>
-                                        <Text style={styles.seedPhraseWordText}>{word}</Text>
+                                        <Text
+                                            style={styles.seedPhraseWordText}
+                                            numberOfLines={1}
+                                            ellipsizeMode="tail"
+                                        >{word}</Text>
                                     </View>
                                 ))}
                             </View>

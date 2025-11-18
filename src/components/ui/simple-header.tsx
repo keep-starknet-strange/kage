@@ -17,33 +17,37 @@ export const SimpleHeader = ({ title, subtitle, onBackPress, style }: SimpleHead
     const { colors: colorTokens } = useTheme();
 
     return (
-        <View style={[styles.headerContainer, { paddingTop: insets.top + spaceTokens[3] }, style]}>
-            {/* Back Button */}
-            <TouchableOpacity
-                style={styles.backButton}
-                onPress={onBackPress}
-            >
-                <IconSymbol name="chevron.left" size={24} color={colorTokens['text.primary']} />
-            </TouchableOpacity>
+        <View style={[styles.container, { paddingTop: insets.top }, style]}>
+            <View style={[styles.headerContainer]}>
+                {/* Back Button */}
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={onBackPress}
+                >
+                    <IconSymbol name="chevron.left" size={24} color={colorTokens['text.primary']} />
+                </TouchableOpacity>
 
-            {/* Header Content */}
-            <View style={styles.headerContent}>
-                <Text style={styles.headerTitle}>{title}</Text>
-                {subtitle && (
-                    <Text style={styles.headerSubtitle}>
-                        {subtitle}
-                    </Text>
-                )}
+                {/* Header Content */}
+                <View style={styles.headerContent}>
+                    <Text style={styles.headerTitle}>{title}</Text>
+                    {subtitle && (
+                        <Text style={styles.headerSubtitle}>
+                            {subtitle}
+                        </Text>
+                    )}
+                </View>
             </View>
         </View>
     );
 };
 
 const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
-    headerContainer: {
+    container: {
         backgroundColor: colorTokens['bg.elevated'],
-        borderBottomWidth: 1,
         borderBottomColor: colorTokens['border.subtle'],
+        borderBottomWidth: 1,
+    },
+    headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: spaceTokens[4],
