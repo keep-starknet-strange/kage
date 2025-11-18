@@ -557,6 +557,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     seedPhraseGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        justifyContent: 'space-between',
         gap: spaceTokens[2],
     },
     seedPhraseWord: {
@@ -568,12 +569,12 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         borderRadius: radiusTokens.sm,
         paddingHorizontal: spaceTokens[2],
         paddingVertical: spaceTokens[2],
-        minWidth: 100,
+        width: '30%',
     },
     seedPhraseWordIndex: {
         fontSize: 12,
         color: colorTokens['text.muted'],
-        marginRight: spaceTokens[1],
+        marginRight: spaceTokens[0],
         ...fontStyles.ubuntuMono.semibold,
     },
     seedPhraseWordText: {
