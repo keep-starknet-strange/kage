@@ -9,7 +9,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
-import { ToastShowParams } from "react-native-toast-message";
 
 export interface TransactionToastProps {
     id: string;
@@ -90,13 +89,13 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
     const getSubtitle = () => {
         switch (transaction.type) {
             case "fund":
-                return `Funded ${transaction.amountFormatted}`;
+                return pending ? `Funding ${transaction.amountFormatted}` : `Funded ${transaction.amountFormatted}`;
             case "transfer":
-                return `Transferred ${transaction.amountFormatted}`;
+                return pending ? `Transferring privately ${transaction.amountFormatted}` : `Transferred privately ${transaction.amountFormatted}`;
             case "withdraw":
-                return `Withdrew ${transaction.amountFormatted}`;
+                return pending ? `Withdrawing ${transaction.amountFormatted}` : `Withdrew ${transaction.amountFormatted}`;
             case "publicTransfer":
-                return `Sent ${transaction.amountFormatted}`;
+                return pending ? `Sending ${transaction.amountFormatted}` : `Sent ${transaction.amountFormatted}`;
             case "deployAccount":
                 return pending ? `Account "${transaction.account.name}" deploying on Starknet` : `Account "${transaction.account.name}" deployed on Starknet`;
         }
@@ -116,7 +115,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
             case "transfer":
                 details.push(
                     { label: "From", value: transaction.from.name },
-                    { label: "To", value: formattedAddress(transaction.recipient.privateTokenAddress.base58, 'compact') },
+                    { label: "To", value: formattedAddress(transaction.recipient, 'compact') },
                     { label: "Amount", value: transaction.amountFormatted },
                     { label: "Signer", value: transaction.signer.name }
                 );

@@ -44,7 +44,7 @@ export type SerializableTransaction = {
     from: Account,
     amountFormatted: string,
     signer: Account,
-    recipient: PrivateTokenRecipient,
+    recipient: string,
     txHash: string,
 } | {
     type: "withdraw",
@@ -81,7 +81,7 @@ export namespace Transaction {
                     from: transaction.from,
                     amountFormatted: transaction.amount.formatted(),
                     signer: transaction.signer,
-                    recipient: transaction.recipient,
+                    recipient: transaction.recipient.privateTokenAddress.base58,
                     txHash: transaction.txHash,
                 };
             case "withdraw":

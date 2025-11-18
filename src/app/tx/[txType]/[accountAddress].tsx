@@ -82,7 +82,7 @@ const TransactionScreen = () => {
                                 onPress={() => setActiveTab('transfer')}
                             >
                                 <IconSymbol
-                                    name="arrow.right.circle"
+                                    name="bolt.shield.fill"
                                     size={20}
                                     color={activeTab === 'transfer' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                                 />
