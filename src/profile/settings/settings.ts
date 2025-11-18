@@ -2,7 +2,7 @@ import { Type } from "class-transformer";
 import { NetworkId } from "../misc";
 import NetworkSettings from "./networkSettings";
 import UiSettings from "./uiSettings";
-import NetworkDerfinition from "./networkDefinition";
+import NetworkDefinition from "./networkDefinition";
 
 export default class Settings {
     @Type(() => NetworkSettings)
@@ -26,7 +26,7 @@ export default class Settings {
         );
     }
 
-    addNetwork(definition: NetworkDerfinition): Settings {
+    addNetwork(definition: NetworkDefinition): Settings {
         return new Settings(
             this.networks.addNetwork(definition),
             this.ui
@@ -43,6 +43,13 @@ export default class Settings {
     static default(): Settings {
         return new Settings(
             NetworkSettings.default(), 
+            UiSettings.default()
+        );
+    }
+
+    static createFromNetworkDefinition(definition: NetworkDefinition): Settings {
+        return new Settings(
+            NetworkSettings.createFromNetworkDefinition(definition),
             UiSettings.default()
         );
     }

@@ -1,6 +1,6 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { NetworkId } from "@/profile/misc";
-import NetworkDerfinition from "@/profile/settings/networkDefinition";
+import NetworkDefinition from "@/profile/settings/networkDefinition";
 import Token from "@/types/token";
 import { PublicTokenBalance } from "@/types/tokenBalance";
 import { LOG } from "@/utils/logs";
@@ -11,7 +11,7 @@ abstract class BalanceRepository {
     protected provider: RpcProvider;
 
     constructor() {
-        this.provider = new RpcProvider({ nodeUrl: NetworkDerfinition.mainnet().rpcUrl.toString(), batch: 0 });
+        this.provider = new RpcProvider({ nodeUrl: NetworkDefinition.mainnet().rpcUrl.toString(), batch: 0 });
     }
 
     public setNetwork(networkId: NetworkId, rpcProvider: RpcProvider) {

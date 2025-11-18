@@ -3,7 +3,7 @@ import Account, { AccountAddress } from "./account";
 import { NetworkId } from "./misc";
 import { KeySourceId } from "./keys/keySource";
 import HDKeyInstance from "./keyInstance";
-import { deriveAccountAddress, deriveStarknetKeyPairs, getStarknetPublicKeyFromPrivate, joinMnemonicWords } from "@starkms/key-management";
+import { deriveAccountAddress, deriveStarknetKeyPairs, getStarknetPublicKeyFromPrivate, joinMnemonicWords, StarknetKeyPair } from "@starkms/key-management";
 
 export default class Network {
     readonly networkId: NetworkId;
@@ -23,7 +23,7 @@ export default class Network {
         return Math.max(
             ...this.accounts
                 .filter(account => account.keyInstance.keySourceId === keySourceId)
-                .map(account => (account.keyInstance as HDKeyInstance).index),  
+                .map(account => (account.keyInstance as HDKeyInstance).index),
             -1
         ) + 1;
     }
@@ -36,22 +36,42 @@ export default class Network {
         const keySourceId = KeySourceId.from(seedPhraseWords);
         const newIndex = this.nextAccountIndex(keySourceId);
 
-        const keyPairs = deriveStarknetKeyPairs({
+        const keyPair = deriveStarknetKeyPairs({
             accountIndex: 0,
             addressIndex: newIndex, // TODO check that with Teddy
         }, joinMnemonicWords(seedPhraseWords), true)
 
-        const publicKey = getStarknetPublicKeyFromPrivate(keyPairs.spendingKeyPair.privateSpendingKey, true);
+        const publicKey = getStarknetPublicKeyFromPrivate(keyPair.spendingKeyPair.privateSpendingKey, true);
         const accountAddress = deriveAccountAddress(
             publicKey,
             { classHash: accountClassHash, salt: "0x0" }
         ).address;
 
-        const keyInstance = new HDKeyInstance(keySourceId, publicKey, newIndex);
-        const newAccount = new Account(AccountAddress.fromHex(accountAddress), accountName, this.networkId, keyInstance);
+        return this.addAccounts([{
+            accountAddress: AccountAddress.fromHex(accountAddress), 
+            accountName, 
+            index: newIndex, 
+            keySourceId, 
+            keyPair
+        }]);
+    }
 
-        const newAccounts = [...this.accounts, newAccount];
-
+    addAccounts(
+        accountData: {
+            accountAddress: AccountAddress,
+            accountName: string,
+            index: number,
+            keySourceId: KeySourceId,
+            keyPair: StarknetKeyPair
+        }[]
+    ): Network {
+        const newAccounts: Account[] = [...this.accounts];
+        for (const data of accountData) {
+            const publicKey = getStarknetPublicKeyFromPrivate(data.keyPair.spendingKeyPair.privateSpendingKey, true);
+            const keyInstance = new HDKeyInstance(data.keySourceId, publicKey, data.index);
+            const newAccount = new Account(data.accountAddress, data.accountName, this.networkId, keyInstance);
+            newAccounts.push(newAccount);
+        }
         return new Network(this.networkId, newAccounts);
     }
 

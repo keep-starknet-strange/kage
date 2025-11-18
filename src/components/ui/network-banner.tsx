@@ -1,5 +1,5 @@
 import { spaceTokens } from "@/design/tokens";
-import NetworkDerfinition from "@/profile/settings/networkDefinition";
+import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { useTheme } from "@/providers/ThemeProvider";
 import { StatusBar } from "expo-status-bar";
@@ -8,7 +8,7 @@ import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface NetworkBannerProps {
-    network: NetworkDerfinition | null;
+    network: NetworkDefinition | null;
 }
 
 export default function NetworkBanner({ network }: NetworkBannerProps) {
@@ -36,12 +36,7 @@ export default function NetworkBanner({ network }: NetworkBannerProps) {
     const networkDisplayName = useMemo(() => {
         if (!network?.isTestNetwork) return '';
 
-        switch (network.chainId) {
-            case 'SN_SEPOLIA':
-                return 'Sepolia';
-            default:
-                return network.chainId;
-        }
+        return network.displayName;
     }, [network]);
 
     const networkBanner = network?.isTestNetwork && (

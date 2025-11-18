@@ -1,18 +1,24 @@
+import Account, { AccountAddress } from "@/profile/account";
 import Profile from "@/profile/profile";
 import { ProfileState } from "@/profile/profileState";
-import { generateMnemonicWords } from "@starkms/key-management";
-import { create } from "zustand";
-import { useAppDependenciesStore } from "./appDependenciesStore";
-import Account from "@/profile/account";
+import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { AppError } from "@/types/appError";
+import { generateMnemonicWords, StarknetKeyPair } from "@starkms/key-management";
+import { create } from "zustand";
 import { RequestAccessFn } from "./accessVaultStore";
+import { useAppDependenciesStore } from "./appDependenciesStore";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
 
     initialize: () => Promise<void>;
     create: (passphrase: string, accountName: string) => Promise<void>;
-    restore: (passphrase: string, seedPhraseWords: string[]) => Promise<void>;
+    restore: (
+        networkDefinition: NetworkDefinition,
+        passphrase: string,
+        seedPhraseWords: string[],
+        accountData: Map<AccountAddress, {index: number; keyPair: StarknetKeyPair}>
+    ) => Promise<void>;
     addAccount: (accountName: string, requestAccess: RequestAccessFn) => Promise<void>;
     renameAccount: (account: Account, newName: string) => Promise<void>;
     delete: () => Promise<void>;
@@ -61,7 +67,15 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         set({ profileState: updatedProfile });
     },
 
-    restore: async (passphrase: string, seedPhraseWords: string[]) => {
+    restore: async (
+        networkDefinition: NetworkDefinition,
+        passphrase: string,
+        seedPhraseWords: string[],
+        accountData: Map<AccountAddress, {
+            index: number;
+            keyPair: StarknetKeyPair;
+        }>,
+    ) => {
         const { profileState } = get();
         const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
 
@@ -69,8 +83,16 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
             throw new AppError("Profile state cannot be created", profileState);
         }
 
-        const profile = Profile.createFromSeedPhrase(seedPhraseWords);
-        const updatedProfile = profile.addAccountOnCurrentNetwork("Restored Account 1", seedPhraseWords);
+        const profile = Profile.createFromSeedPhraseOnNetwork(networkDefinition, seedPhraseWords);
+        const data = Array.from(accountData.entries()).map(([accountAddress, { index, keyPair }]) => ({
+            index,
+            accountAddress,
+            keySourceId: profile.keySources[0].id,
+            keyPair,
+        }));
+        
+        const updatedProfile = profile.addRestoredAccountsWithSeedPhraseOnCurrentNetwork(data);
+
         await profileStorage.storeProfile(updatedProfile);
 
         const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
@@ -96,7 +118,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
 
         const updatedProfile = profileState.addAccountOnCurrentNetwork(accountName, result.seedPhrase.getWords());
         await profileStorage.storeProfile(updatedProfile);
-        
+
         set({ profileState: updatedProfile });
     },
 
@@ -107,7 +129,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         if (!ProfileState.isProfile(profileState)) {
             throw new AppError("Profile state cannot be updated", profileState);
         }
-      
+
         const updatedProfile = profileState.renameAccount(account, newName);
         await profileStorage.storeProfile(updatedProfile);
         set({ profileState: updatedProfile });

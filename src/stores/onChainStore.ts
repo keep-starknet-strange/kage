@@ -5,7 +5,7 @@ import { Transaction } from "@/types/transaction";
 import { LOG } from "@/utils/logs";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
-import { cairo, CallData, Contract, RpcError, Account as StarknetAccount } from "starknet";
+import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
 import { useRpcStore } from "./useRpcStore";
@@ -31,6 +31,8 @@ export interface OnChainState {
     withdraw: (to: Account, amount: PrivateAmount, signer: Account) => Promise<void>;
 
     checkAccountsDeployed: (accounts: Account[]) => Promise<void>;
+
+    checkAccountAddressesDeployed: (accountAddress: AccountAddress[], provider: RpcProvider) => Promise<Map<AccountAddress, DeployedStatus>>;
 
     deployAccount: (account: Account) => Promise<void>;
 
@@ -267,48 +269,58 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         checkAccountsDeployed: async (accounts: Account[]) => {
             const { provider } = useRpcStore.getState();
-            const { keyValueStorage } = useAppDependenciesStore.getState();
+            const { checkAccountAddressesDeployed } = get();
 
-            const deployedAccounts: Map<AccountAddress, DeployedStatus> = new Map();
             try {
-                const storedClassHashes = await readStoredClassHashes(keyValueStorage);
-                const classHashes = await Promise.all(
-                    accounts.map(account => {
-                        const storedClassHash = storedClassHashes.get(account.address);
-                        if (storedClassHash) {
-                            return Promise.resolve(storedClassHash);
-                        }
-
-                        return provider
-                            .getClassHashAt(account.address)
-                            .catch(error => {
-                                if (error instanceof RpcError && error.isType("CONTRACT_NOT_FOUND")) {
-                                    return null;
-                                } else {
-                                    throw error;
-                                }
-                            })
-                    })
-                );
-
-                storedClassHashes.clear();
-                for (const [i, classHash] of classHashes.entries()) {
-                    if (classHash) {
-                        storedClassHashes.set(accounts[i].address, classHash);
-                    }
-
-                    deployedAccounts.set(accounts[i].address, classHash ? "deployed" : "not-deployed");
-                }
-
-                await writeStoredClassHashes(keyValueStorage, storedClassHashes);
+                const deployedAccounts = await checkAccountAddressesDeployed(accounts.map(account => account.address), provider);
+                set({ deployStatus: deployedAccounts });
             } catch (error) {
+                const deployedAccounts: Map<AccountAddress, DeployedStatus> = new Map();
                 for (const account of accounts) {
                     deployedAccounts.set(account.address, "unknown");
                 }
+                set({ deployStatus: deployedAccounts });
                 showToastError(error);
             }
+        },
 
-            set({ deployStatus: deployedAccounts });
+        checkAccountAddressesDeployed: async (accountAddresses: AccountAddress[], provider: RpcProvider) => {
+            const { keyValueStorage } = useAppDependenciesStore.getState();
+
+            const deployedAccounts: Map<AccountAddress, DeployedStatus> = new Map();
+
+            const storedClassHashes = await readStoredClassHashes(keyValueStorage);
+            const classHashes = await Promise.all(
+                accountAddresses.map(accountAddress => {
+                    const storedClassHash = storedClassHashes.get(accountAddress);
+                    if (storedClassHash) {
+                        return Promise.resolve(storedClassHash);
+                    }
+
+                    return provider
+                        .getClassHashAt(accountAddress)
+                        .catch(error => {
+                            if (error instanceof RpcError && error.isType("CONTRACT_NOT_FOUND")) {
+                                return null;
+                            } else {
+                                throw error;
+                            }
+                        })
+                })
+            );
+
+            storedClassHashes.clear();
+            for (const [i, classHash] of classHashes.entries()) {
+                if (classHash) {
+                    storedClassHashes.set(accountAddresses[i], classHash);
+                }
+
+                deployedAccounts.set(accountAddresses[i], classHash ? "deployed" : "not-deployed");
+            }
+
+            await writeStoredClassHashes(keyValueStorage, storedClassHashes);
+
+            return deployedAccounts;
         },
 
         deployAccount: async (account: Account) => {

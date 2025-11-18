@@ -3,12 +3,14 @@ import { SimpleHeader } from "@/components/ui/simple-header";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
-import { useNavigation, useRouter } from "expo-router";
+import { useTempStore } from "@/stores/tempStore";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 const MIN_PASSPHRASE_LENGTH = 7;
+
+type OnboardingMode = 'create' | 'restore';
 
 export default function SetPassphraseScreen() {
     const router = useRouter();
@@ -18,8 +20,10 @@ export default function SetPassphraseScreen() {
     const [confirmPassphrase, setConfirmPassphrase] = useState("");
     const [showPassphrase, setShowPassphrase] = useState(false);
     const [showConfirmPassphrase, setShowConfirmPassphrase] = useState(false);
-    const { setTempPassphrase } = useTempPassphraseStore();
+    const { setTempPassphrase } = useTempStore();
 
+    const { mode } = useLocalSearchParams<{ mode: OnboardingMode }>();
+    
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
@@ -46,6 +50,15 @@ export default function SetPassphraseScreen() {
         setTempPassphrase(passphrase);
         router.push({
             pathname: "/create-first-account",
+        });
+    };
+
+    const handleRestoreWallet = () => {
+        if (!isFormValid) return;
+
+        setTempPassphrase(passphrase);
+        router.push({
+            pathname: "/restore-wallet",
         });
     };
 
@@ -140,8 +153,8 @@ export default function SetPassphraseScreen() {
                 {/* Button Section */}
                 <View style={[styles.buttonSection, { paddingBottom: insets.bottom }]}>
                     <PrimaryButton
-                        title="Create Account"
-                        onPress={handleCreateAccount}
+                        title={mode === "create" ? "Create Account" : "Restore Wallet"}
+                        onPress={mode === "create" ? handleCreateAccount : handleRestoreWallet}
                         disabled={!isFormValid}
                     />
                 </View>

@@ -1,5 +1,5 @@
 import { NetworkId } from "@/profile/misc";
-import NetworkDerfinition from "@/profile/settings/networkDefinition";
+import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { LOG } from "@/utils/logs";
 import { RpcProvider, WebSocketChannel } from "starknet";
 import { create } from "zustand";
@@ -9,7 +9,7 @@ export interface RpcState {
     provider: RpcProvider;
     wsChannel: WebSocketChannel;
 
-    changeNetwork: (network: NetworkDerfinition) => Promise<RpcProvider>;
+    changeNetwork: (network: NetworkDefinition) => Promise<RpcProvider>;
     subscribeToWS: () => Promise<WebSocketChannel>;
     unsubscribeFromWS: () => void;
 
@@ -17,7 +17,7 @@ export interface RpcState {
 }
 
 export const useRpcStore = create<RpcState>((set, get) => {
-    const mainnet = NetworkDerfinition.mainnet()
+    const mainnet = NetworkDefinition.mainnet()
     const initialWsChannel = new WebSocketChannel({ nodeUrl: mainnet.wsUrl.toString() });
 
     return {
@@ -25,7 +25,7 @@ export const useRpcStore = create<RpcState>((set, get) => {
         provider: new RpcProvider({ nodeUrl: mainnet.rpcUrl.toString(), batch: 0 }),
         wsChannel: initialWsChannel,
 
-        changeNetwork: async (network: NetworkDerfinition) => {
+        changeNetwork: async (network: NetworkDefinition) => {
             const { networkId, provider } = get();
 
             if (networkId === network.chainId) {

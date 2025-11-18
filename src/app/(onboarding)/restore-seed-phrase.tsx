@@ -4,20 +4,19 @@ import { SimpleHeader } from "@/components/ui/simple-header";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
-import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
+import { useTempStore } from "@/stores/tempStore";
 import SeedPhraseWords from "@/types/seedPhraseWords";
-import { LOG } from "@/utils/logs";
 import { useNavigation, useRouter } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
 import { Text, View } from "react-native";
 
-export default function RestoreScreen() {
+export default function RestoreSeedPhraseScreen() {
     const navigation = useNavigation();
     const router = useRouter();
     const { insets } = useDynamicSafeAreaInsets();
     
     const [isFormValid, setIsFormValid] = useState(false);
-    const { setTempSeedPhraseWords } = useTempPassphraseStore();
+    const { setTempSeedPhraseWords } = useTempStore();
 
     const styles = useThemedStyle(themedStyleSheet);
 
@@ -43,6 +42,13 @@ export default function RestoreScreen() {
         [setIsFormValid]
     );
 
+    const handleNext = useCallback(
+        () => {
+            router.navigate({ pathname: "set-passphrase", params: { mode: "restore" } });
+        },
+        [router]
+    );
+
 
 
     return (
@@ -62,9 +68,7 @@ export default function RestoreScreen() {
             <PrimaryButton
                 style={[styles.buttonSection, { marginBottom: insets.bottom + spaceTokens[3] }]}
                 title="Setup Passphrase"
-                onPress={() => {
-
-                }}
+                onPress={handleNext}
                 disabled={!isFormValid}
             />
         </View>

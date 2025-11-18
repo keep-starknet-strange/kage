@@ -3,7 +3,7 @@ import SeedPhraseWords from "@/types/seedPhraseWords";
 import { LOG } from "@/utils/logs";
 import { create } from "zustand";
 
-export interface TempSeedState {
+export interface TempState {
     readonly passphraseEncoded: string | null;
     readonly seedPhraseEncoded: string | null;
     setTempPassphrase: (passphrase: string) => void;
@@ -12,7 +12,7 @@ export interface TempSeedState {
     consumeTempSeedPhraseWords: () => SeedPhraseWords | null;
 }
 
-export const useTempPassphraseStore = create<TempSeedState>((set, get) => {
+export const useTempStore = create<TempState>((set, get) => {
     return {
         passphraseEncoded: null,
         seedPhraseEncoded: null,

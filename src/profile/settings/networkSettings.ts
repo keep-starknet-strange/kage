@@ -1,17 +1,17 @@
 import { Type } from "class-transformer";
 import { NetworkId } from "../misc";
-import NetworkDerfinition from "./networkDefinition";
+import NetworkDefinition from "./networkDefinition";
 import { AppError } from "@/types/appError";
 
 export default class NetworkSettings {
     readonly current: NetworkId;
 
-    @Type(() => NetworkDerfinition)
-    readonly definitions: NetworkDerfinition[];
+    @Type(() => NetworkDefinition)
+    readonly definitions: NetworkDefinition[];
 
     constructor(
         current: NetworkId,
-        definitions: NetworkDerfinition[]
+        definitions: NetworkDefinition[]
     ) {
         this.current = current;
         this.definitions = definitions;
@@ -24,7 +24,7 @@ export default class NetworkSettings {
         // }
     }
 
-    addNetwork(definition: NetworkDerfinition): NetworkSettings {
+    addNetwork(definition: NetworkDefinition): NetworkSettings {
         if (this.definitions.some(def => def.chainId === definition.chainId)) {
             throw new AppError(`NetworkSettings already contains a definition for chain ${definition.chainId}.`);
         }
@@ -46,7 +46,7 @@ export default class NetworkSettings {
         );
     }
 
-    get currentNetworkDefinition(): NetworkDerfinition {
+    get currentNetworkDefinition(): NetworkDefinition {
         const currentDefinition = this.definitions.find((definition) => definition.chainId == this.current)
         if (!currentDefinition) {
             throw new AppError(`Network ${this.current} is not yet defined.`)
@@ -58,7 +58,19 @@ export default class NetworkSettings {
     static default(): NetworkSettings {
         return new NetworkSettings(
             "SN_SEPOLIA",
-            [NetworkDerfinition.mainnet(), NetworkDerfinition.sepolia()]
+            NetworkDefinition.wellKnown()
+        );
+    }
+
+    static createFromNetworkDefinition(definition: NetworkDefinition): NetworkSettings {
+        const definitions = NetworkDefinition.wellKnown();
+        if (!definitions.some(def => def.chainId === definition.chainId)) {
+            definitions.push(definition);
+        }
+
+        return new NetworkSettings(
+            definition.chainId,
+            definitions
         );
     }
 }

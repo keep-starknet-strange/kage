@@ -5,7 +5,7 @@ import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
-import { useTempPassphraseStore } from "@/stores/tempPassphraseStore";
+import { useTempStore } from "@/stores/tempStore";
 import { AppError } from "@/types/appError";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
@@ -18,7 +18,7 @@ export default function CreateFirstAccountScreen() {
     const [accountName, setAccountName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const { create } = useProfileStore();
-    const { consumeTempPassphrase } = useTempPassphraseStore();
+    const { consumeTempPassphrase } = useTempStore();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
@@ -47,13 +47,15 @@ export default function CreateFirstAccountScreen() {
             return;
         }
 
-        try {
-            await create(passphrase, accountName);
-        } catch (error) {
-            showToastError(error); 
-        } finally {
-            setIsCreating(false);
-        }
+        setTimeout(async () => {
+            try {
+                await create(passphrase, accountName);
+            } catch (error) {
+                showToastError(error);
+            } finally {
+                setIsCreating(false);
+            }
+        }, 500); // Wait for the UI to update. KMS is slow...
     };
 
     return (

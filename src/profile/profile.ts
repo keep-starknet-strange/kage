@@ -2,10 +2,12 @@ import { Type } from "class-transformer";
 import Header from "./header/header";
 import KeySource, { KeySourceId } from "./keys/keySource";
 import Network from "./network";
-import NetworkDerfinition from "./settings/networkDefinition";
+import NetworkDefinition from "./settings/networkDefinition";
 import Settings from "./settings/settings";
 import Account, { AccountAddress } from "./account";
 import { AppError } from "@/types/appError";
+import { StarknetKeyPair } from "@starkms/key-management";
+import { KeySourceKind } from "./keys/keySourceKind";
 
 export default class Profile {
     @Type(() => Header)
@@ -32,7 +34,7 @@ export default class Profile {
         this.settings = settings;
     }
 
-    get currentNetworkWithDefinition(): { network: Network, networkDefinition: NetworkDerfinition } {
+    get currentNetworkWithDefinition(): { network: Network, networkDefinition: NetworkDefinition } {
         const networkDefinition = this.settings.networks.currentNetworkDefinition;
         const network = this.networks.find(network => network.networkId === networkDefinition.chainId);
         if (!network) {
@@ -82,6 +84,43 @@ export default class Profile {
         );
     }
 
+    addRestoredAccountsWithSeedPhraseOnCurrentNetwork(
+        data: {
+            index: number;
+            accountAddress: AccountAddress;
+            keySourceId: KeySourceId;
+            keyPair: StarknetKeyPair;
+        }[]
+    ): Profile {
+        const { network } = this.currentNetworkWithDefinition;
+
+        const keySources = [...this.keySources];
+        for (const derivedData of data) {
+            const keySource = this.keySources.find(keySource => keySource.id === derivedData.keySourceId);
+            if (!keySource) {
+                keySources.push(new KeySource(derivedData.keySourceId, KeySourceKind.SEED_PHRASE));
+            }
+        }
+
+        const updatedNetwork = network.addAccounts(
+            data.map(data => ({
+                accountAddress: data.accountAddress,
+                accountName: `Restored Account ${data.index + 1}`,
+                index: data.index,
+                keySourceId: data.keySourceId,
+                keyPair: data.keyPair
+            }))
+        );
+        const updatedNetworks = this.networks.map(network => network.networkId === updatedNetwork.networkId ? updatedNetwork : network);
+
+        return new Profile(
+            this.header.updateUsed(new Date()),
+            keySources,
+            updatedNetworks,
+            this.settings
+        );
+    }
+
     renameAccount(account: Account, newName: string): Profile {
         const updatedAccounts = this.accountsOnCurrentNetwork.map(acc => acc.id === account.id ? acc.updateName(newName) : acc);
         const updatedNetwork = this.currentNetwork.updateAccounts(updatedAccounts);
@@ -98,11 +137,19 @@ export default class Profile {
     static createFromSeedPhrase(
         seedPhraseWords: string[]
     ) {
+        return this.createFromSeedPhraseOnNetwork(
+            NetworkDefinition.sepolia(), 
+            seedPhraseWords
+        );
+    }
+
+    static createFromSeedPhraseOnNetwork(
+        networkDefinition: NetworkDefinition,
+        seedPhraseWords: string[]
+    ) {
+        const settings = Settings.createFromNetworkDefinition(networkDefinition);
         const hdKeySource = KeySource.fromSeedPhrase(seedPhraseWords);
         const header = Header.createByCurrentDevice();
-        const settings = Settings.default();
-
-        const networkDefinition = settings.networks.currentNetworkDefinition;
         const network = Network.createEmpty(networkDefinition.chainId);
 
         return new Profile(

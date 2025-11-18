@@ -49,14 +49,14 @@ export default function WelcomeScreen() {
                     <PrimaryButton
                         title="Create new wallet"
                         onPress={() => {
-                            router.navigate("set-passphrase");
+                            router.navigate({ pathname: "set-passphrase", params: { mode: "create" } });
                         }}
                     />
 
                     <SecondaryButton
                         title="Restore wallet"
                         onPress={() => {
-                            router.navigate("restore");
+                            router.navigate("restore-seed-phrase");
                         }}
                     />
                 </View>

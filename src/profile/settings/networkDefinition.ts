@@ -1,8 +1,8 @@
-import {Expose, Transform, Type} from "class-transformer";
-import {NetworkId} from "../misc";
+import { Expose, Transform, Type } from "class-transformer";
+import { NetworkId } from "../misc";
 import { AppError } from "@/types/appError";
 
-export default class NetworkDerfinition {
+export default class NetworkDefinition {
     @Type(() => URL)
     @Expose({ name: 'rpcUrl' })
     @Transform(({ value }) => value ? value.toString() : null)
@@ -91,6 +91,17 @@ export default class NetworkDerfinition {
         }
     }
 
+    get displayName(): string {
+        switch (this.chainId) {
+            case "SN_MAIN":
+                return "Mainnet";
+            case "SN_SEPOLIA":
+                return "Sepolia";
+            default:
+                return this.chainId;
+        }
+    }
+
     txUrl(txHash: string): URL | null {
         const baseUrl = this.blockExplorerUrl?.toString();
         if (!baseUrl) {
@@ -100,8 +111,8 @@ export default class NetworkDerfinition {
         return new URL(`tx/${txHash}`, baseUrl);
     }
 
-    static sepolia(): NetworkDerfinition {
-        return new NetworkDerfinition(
+    static sepolia(): NetworkDefinition {
+        return new NetworkDefinition(
             null,
             null,
             "SN_SEPOLIA",
@@ -111,8 +122,8 @@ export default class NetworkDerfinition {
         );
     }
 
-    static mainnet(): NetworkDerfinition {
-        return new NetworkDerfinition(
+    static mainnet(): NetworkDefinition {
+        return new NetworkDefinition(
             null,
             null,
             "SN_MAIN",
@@ -120,5 +131,12 @@ export default class NetworkDerfinition {
             "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
             new URL("https://voyager.online/")
         );
+    }
+
+    static wellKnown(): NetworkDefinition[] {
+        return [
+            NetworkDefinition.mainnet(),
+            NetworkDefinition.sepolia(),
+        ];
     }
 }
