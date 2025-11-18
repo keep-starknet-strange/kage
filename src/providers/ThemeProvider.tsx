@@ -86,14 +86,13 @@ export const defaultScreenOptions = () => {
         tabBarActiveTintColor: colors['text.primary'],
         tabBarInactiveTintColor: colors['text.muted'],
         tabBarLabelStyle: {
-            ...fontStyles.ubuntuMono.semibold,
+            fontFamily: fontTokens.ubuntuMono.bold,
             fontSize: 12,
         },
         tabBarStyle: {
             backgroundColor: colors['bg.default'],
             borderTopWidth: 1,
             borderTopColor: colors['border.subtle'],
-            paddingTop: spaceTokens[2],
         },
     };
 }
