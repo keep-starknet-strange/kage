@@ -1,12 +1,21 @@
-import { joinMnemonicWords, mnemonicToWords } from "@starkms/key-management";
+import { wordlist } from "@scure/bip39/wordlists/english";
+import { joinMnemonicWords, mnemonicToWords, validateMnemonic } from "@starkms/key-management";
+import { AppError } from "./appError";
+
+export const SEED_PHRASE_WORD_COUNT = 24;
 
 export default class SeedPhraseWords {
 
     constructor(
         private readonly words: string[],
     ) {
-        // TODO Add length validation
-        // TODO Add wordlist validation
+        const mnemonic = words.join(' ');
+        const isValid = validateMnemonic(mnemonic, wordlist);
+        if (!isValid) {
+            throw new AppError('Invalid seed phrase');
+        }
+
+        this.words = words;
     }
 
     getWords(): string[] {
@@ -18,6 +27,10 @@ export default class SeedPhraseWords {
     }
 
     static fromMnemonic(mnemonic: string): SeedPhraseWords {
-        return new SeedPhraseWords(mnemonicToWords(mnemonic));
+        const words = mnemonicToWords(mnemonic);
+        if (words.length !== SEED_PHRASE_WORD_COUNT) {
+            throw new AppError('Invalid seed phrase');
+        }
+        return new SeedPhraseWords(words);
     }
 }

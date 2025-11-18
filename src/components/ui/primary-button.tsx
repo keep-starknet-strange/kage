@@ -1,13 +1,13 @@
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from "react-native";
+import { ActivityIndicator, StyleProp, Text, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from "react-native";
 
 export interface PrimaryButtonProps extends Omit<TouchableOpacityProps, 'style'> {
     title: string;
     onPress: () => void;
     disabled?: boolean;
     loading?: boolean;
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
 }
 
 export const PrimaryButton = ({ title, onPress, disabled, loading, style, ...props }: PrimaryButtonProps) => {
