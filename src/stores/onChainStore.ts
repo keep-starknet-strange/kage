@@ -83,16 +83,21 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 throw new AppError("Signing key not found for account", signer.address);
             }
 
-            const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
+            const tokenKeyPairs = result.tokens.get(from);
             if (!tokenKeyPairs) {
                 throw new AppError("Token key not found for account", from.address);
             }
 
+            const tokenKeyPair = tokenKeyPairs.find(tokenKeyPair => tokenKeyPair.token.contractAddress === amount.token.contractAddress);
+            if (!tokenKeyPair) {
+                throw new AppError(`Token key not found for account and token`, JSON.stringify({ account: from.address, token: amount.token.contractAddress }));
+            }
+
             // @ts-ignore
-            const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
+            const tongoAccount = new TongoAccount(tokenKeyPair.keyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
             const sdkRate = await tongoAccount.rate();
             const privateAmount = amount.intoPrivateAmount(sdkRate);
-
+            console.log("privateAmount", privateAmount.toSdkAmount());
             const signerAccount = new StarknetAccount({
                 provider: provider,
                 address: signer.address,
@@ -172,13 +177,18 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 throw new AppError("Signing key not found for account", signer.address);
             }
 
-            const tokenKeyPairs = result.tokens.get(from)?.keyPairs;
+            const tokenKeyPairs = result.tokens.get(from);
             if (!tokenKeyPairs) {
                 throw new AppError("Token key not found for account", from.address);
             }
 
+            const tokenKeyPair = tokenKeyPairs.find(tokenKeyPair => tokenKeyPair.token.contractAddress === amount.token.contractAddress);
+            if (!tokenKeyPair) {
+                throw new AppError(`Token key not found for account and token`, JSON.stringify({ account: from.address, token: amount.token.contractAddress }));
+            }
+
             // @ts-ignore
-            const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
+            const tongoAccount = new TongoAccount(tokenKeyPair.keyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
             const signerAccount = new StarknetAccount({
                 provider: provider,
                 address: signer.address,
@@ -228,12 +238,18 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 throw new AppError("Signing key not found for account", signer.address);
             }
 
-            const tokenKeyPairs = result.tokens.get(to)?.keyPairs;
+            const tokenKeyPairs = result.tokens.get(to);
             if (!tokenKeyPairs) {
                 throw new AppError("Token key not found for account", to.address);
             }
+
+            const tokenKeyPair = tokenKeyPairs.find(tokenKeyPair => tokenKeyPair.token.contractAddress === amount.token.contractAddress);
+            if (!tokenKeyPair) {
+                throw new AppError(`Token key not found for account and token`, JSON.stringify({ account: to.address, token: amount.token.contractAddress }));
+            }
+
             // @ts-ignore
-            const tongoAccount = new TongoAccount(tokenKeyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
+            const tongoAccount = new TongoAccount(tokenKeyPair.keyPairs.spendingKeyPair.privateSpendingKey, amount.token.tongoAddress, provider);
 
             const signerAccount = new StarknetAccount({
                 provider: provider,
