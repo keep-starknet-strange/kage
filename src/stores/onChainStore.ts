@@ -5,7 +5,7 @@ import { Transaction } from "@/types/transaction";
 import { LOG } from "@/utils/logs";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
-import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount } from "starknet";
+import { AllowArray, cairo, Call, CallData, Contract, InvokeFunctionResponse, num, RpcError, RpcProvider, Account as StarknetAccount } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
 import { useRpcStore } from "./useRpcStore";
@@ -63,6 +63,19 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
         await keyValueStorage.set("accounts.classHashes", Object.fromEntries(classHashes.entries()));
     }
 
+    const prepareAndExecute = async (account: StarknetAccount, calls: AllowArray<Call>): Promise<InvokeFunctionResponse> => {
+        const tipEstimate = await account.getEstimateTip('latest', {
+            maxBlocks: 3,
+            minTxsNecessary: 5
+        });
+        return account.execute(
+            calls,
+            {
+                tip: tipEstimate.recommendedTip,
+            }
+        );
+    }
+
     return {
         pendingTransactionsStack: [],
         deployStatus: new Map(),
@@ -108,7 +121,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount() });
             await fundOp.populateApprove();
             LOG.info("[TX]: 🚀 Funding account execute...");
-            const starknetTx = await signerAccount.execute([
+            const starknetTx = await prepareAndExecute(signerAccount, [
                 fundOp.approve!,
                 fundOp.toCalldata()
             ]);
@@ -210,7 +223,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🚀 Transfer execute...");
-            const starknetTx = await signerAccount.execute([transferOp.toCalldata()]);
+            const starknetTx = await prepareAndExecute(signerAccount, [transferOp.toCalldata()]);
 
             appendPendingTransaction({
                 type: "transfer",
@@ -272,7 +285,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🚀 Withdraw execute...");
-            const starknetTx = await signerAccount.execute([withdrawOp.toCalldata()]);
+            const starknetTx = await prepareAndExecute(signerAccount, [withdrawOp.toCalldata()]);
 
             appendPendingTransaction({
                 type: "withdraw",
