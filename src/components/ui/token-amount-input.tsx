@@ -4,9 +4,10 @@ import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
 import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
 import { stringToBigint, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
-import { Image, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { IconSymbol } from "./icon-symbol";
 import { ModalPicker } from "./modal-picker";
+import { Image } from "expo-image";
 
 type AmountType<T extends TokenBalance> =
     T extends PrivateTokenBalance ? PrivateAmount :

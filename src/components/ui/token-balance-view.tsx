@@ -2,8 +2,9 @@ import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { useMemo } from "react";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { PrivateAddressView } from "./private-address-view";
+import { Image } from "expo-image";
 
 export interface PublicTokenBalanceViewProps {
     balance: PublicTokenBalance;
