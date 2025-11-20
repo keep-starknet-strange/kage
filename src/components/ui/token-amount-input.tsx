@@ -82,7 +82,7 @@ export function TokenAmountInput<T extends TokenBalance>({
             return;
         } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {
             6
-            setError(`Private ${selectedBalance.token.symbol} amount must be at least ${tokenAmountToFormatted(true, minRange, selectedBalance.token)}`)
+            setError(`Private ${selectedBalance.token.symbol} amount must be at least ${tokenAmountToFormatted(false, minRange, selectedBalance.token)}`)
             return;
         } else if (amountDecimal < minRange) {
             setError("Negative amounts are not allowed")
@@ -130,13 +130,7 @@ export function TokenAmountInput<T extends TokenBalance>({
                             style={styles.tokenLogo}
                         />
                     ) : (
-                        <View style={styles.tokenLogoPlaceholder}>
-                            <IconSymbol
-                                name="wallet.bifold.fill"
-                                size={16}
-                                color={colorTokens['text.muted']}
-                            />
-                        </View>
+                        <IconSymbol name="centsign.circle" size={spaceTokens[5]} color={colorTokens['text.primary']} />
                     )}
                     <Text style={styles.tokenName}>
                         {token.name || token.symbol}
@@ -261,8 +255,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         flex: 1,
     },
     tokenLogo: {
-        width: 24,
-        height: 24,
+        width: spaceTokens[5],
+        height: spaceTokens[5],
         borderRadius: 12,
     },
     tokenLogoPlaceholder: {

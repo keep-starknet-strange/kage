@@ -41,7 +41,8 @@ const MAPPING = {
     'eye.fill': 'eye',
     'eye.slash.fill': 'eye-off',
     'key.fill': 'key',
-    'bolt.shield.fill': 'cash-lock'
+    'bolt.shield.fill': 'cash-lock',
+    'centsign.circle': 'alpha-c-circle-outline'
 } as IconMapping;
 
 /**

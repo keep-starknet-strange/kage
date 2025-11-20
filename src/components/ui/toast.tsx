@@ -7,11 +7,14 @@ import { RpcError, TimeoutError, WebSocketNotConnectedError } from "starknet";
 import { ErrorToast } from "./error-toast";
 import { TransactionToast } from "./transaction-toast";
 import uuid from 'react-native-uuid';
+import { LOG } from "@/utils/logs";
 
 export function showToastError(error: any) {
     if (error instanceof CancellationError) {
         return;
     }
+
+    LOG.error(error)
 
     let message = "";
     let details: string | null = null;

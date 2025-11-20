@@ -20,6 +20,8 @@ import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
 import { Platform } from "react-native";
 import { AppError } from "@/types/appError";
+import { MarketRepository } from "@/market/MarketRepository";
+import AVNUMarketRepository from "@/market/AVNUMarketRespository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -30,6 +32,7 @@ export interface AppDependencies {
     seedPhraseVault: SeedPhraseVault;
     publicBalanceRepository: PublicBalanceRepository;
     privateBalanceRepository: PrivateBalanceRepository;
+    marketRepository: MarketRepository;
 }
 
 function getApplicationId(): string {
@@ -69,6 +72,7 @@ export const useAppDependenciesStore = create<AppDependencies>(() => {
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
         publicBalanceRepository: new PublicBalanceRepository(),
         privateBalanceRepository: new PrivateBalanceRepository(),
+        marketRepository: new AVNUMarketRepository(),
     }
 });
 

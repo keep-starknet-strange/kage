@@ -1,10 +1,10 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { NetworkId } from "@/profile/misc";
+import { AppError } from "@/types/appError";
 import { PrivateTokenAddress } from "@/types/privateRecipient";
 import Token from "@/types/token";
 import { TokenAddress } from "@/types/tokenAddress";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
-import { getTokenMetadata, getTokenPrices } from "@/utils/avnu";
 import { pubKeyFromData } from "@/utils/fatSolutions";
 import { LOG } from "@/utils/logs";
 import { MapUtils } from "@/utils/map";
@@ -12,10 +12,10 @@ import tokensConfig from "res/config/tokens.json";
 import { hash, num, RpcProvider, SubscriptionStarknetEventsEvent } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "../accessVaultStore";
+import { useAppDependenciesStore } from "../appDependenciesStore";
 import { useRpcStore } from "../useRpcStore";
 import PrivateBalanceRepository from "./privateBalanceRepository";
 import { PublicBalanceRepository } from "./publicBalanceRepository";
-import { AppError } from "@/types/appError";
 
 type PresetNetworkId = keyof typeof tokensConfig;
 
@@ -98,6 +98,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
         changeNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider) => {
             const { networkId: currentNetworkId } = get();
+            const { marketRepository } = useAppDependenciesStore.getState();
 
             if (currentNetworkId === networkId) {
                 return;
@@ -124,7 +125,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 throw new AppError("Network " + networkId + " is not configured in tokens.json. Dynamic presets not supported yet.");
             }
 
-            const tokenMetadata = await getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress));
+            const tokenMetadata = await marketRepository.getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress), networkId);
             networkTokens = new Map(Array.from(tokens.entries()).map(([address, token]) => {
                 const metadata = tokenMetadata.get(address);
                 return [address, metadata ? token.withMetadata(metadata) : token];
@@ -344,14 +345,15 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         startPriceRefresh: async () => {
-            const { stopPriceRefresh } = get();
+            const { networkId, stopPriceRefresh } = get();
+            const { marketRepository } = useAppDependenciesStore.getState();
 
             stopPriceRefresh();
 
             intervalId = setInterval(async () => {
                 const tokenAddresses = Array.from(networkTokens.keys());
                 try {
-                    const prices = await getTokenPrices(tokenAddresses);
+                    const prices = await marketRepository.getTokenPrices(tokenAddresses, networkId);
                     const updatedTokens = new Map<TokenAddress, Token>();
                     for (const [address, token] of networkTokens.entries()) {
                         const price = prices.get(address);

@@ -118,7 +118,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🗝 Prooving funding...");
-            const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount() });
+            const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount(), sender: from.address });
             await fundOp.populateApprove();
             LOG.info("[TX]: 🚀 Funding account execute...");
             const starknetTx = await prepareAndExecute(signerAccount, [
@@ -210,7 +210,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
             if (amount.needsRollover) {
                 LOG.info("[TX]: 🗝 Prooving rollover...");
-                const rolloverOp = await tongoAccount.rollover();
+                const rolloverOp = await tongoAccount.rollover({ sender: from.address });
                 LOG.info("[TX]: 🚀 Rollover execute...");
                 const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
@@ -219,7 +219,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             LOG.info("[TX]: 🗝 Proving Transfer...");
             const transferOp = await tongoAccount.transfer({
                 to: recipient.privateTokenAddress.pubKey,
-                amount: amount.toSdkAmount()
+                amount: amount.toSdkAmount(),
+                sender: from.address
             });
 
             LOG.info("[TX]: 🚀 Transfer execute...");
@@ -272,7 +273,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
             if (amount.needsRollover) {
                 LOG.info("[TX]: 🗝 Prooving rollover...");
-                const rolloverOp = await tongoAccount.rollover();
+                const rolloverOp = await tongoAccount.rollover({ sender: to.address });
                 LOG.info("[TX]: 🚀 Rollover execute...");
                 const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
@@ -281,7 +282,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             LOG.info("[TX]: 🗝 Prooving withdraw...");
             const withdrawOp = await tongoAccount.withdraw({
                 to: to.address,
-                amount: amount.toSdkAmount()
+                amount: amount.toSdkAmount(),
+                sender: to.address
             });
 
             LOG.info("[TX]: 🚀 Withdraw execute...");

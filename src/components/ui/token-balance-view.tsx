@@ -1,10 +1,11 @@
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
-import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
+import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { useMemo } from "react";
 import { Text, View } from "react-native";
 import { PrivateAddressView } from "./private-address-view";
 import { Image } from "expo-image";
+import { IconSymbol } from "./icon-symbol";
 
 export interface PublicTokenBalanceViewProps {
     balance: PublicTokenBalance;
@@ -15,11 +16,14 @@ export const PublicTokenBalanceView = ({ balance }: PublicTokenBalanceViewProps)
     const fiatPriceFormatted = useMemo(() => {
         return balance.formattedFiatPrice();
     }, [balance.fiatPrice]);
+    const { colors: colorTokens } = useTheme();
 
     return (
         <View style={styles.tokenCard}>
             <View style={styles.tokenInfo}>
-                <Image source={{ uri: balance.token.logo?.toString() }} style={styles.tokenLogo} />
+                {balance.token.logo ? (
+                    <Image source={{ uri: balance.token.logo.toString() }} style={styles.tokenLogo} />
+                ) : <IconSymbol name="centsign.circle" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
                 <Text style={styles.tokenSymbol}>{balance.token.name ?? balance.token.symbol}</Text>
             </View>
             <View style={styles.tokenBalance}>
@@ -46,11 +50,15 @@ export const PrivateTokenBalanceView = ({ balance }: PrivateTokenBalanceViewProp
     const fiatPriceFormatted = useMemo(() => {
         return balance.formattedFiatPrice();
     }, [balance.fiatPrice]);
-
+    const { colors: colorTokens } = useTheme();
+    
     return (
         <View style={styles.tokenCard}>
             <View style={styles.tokenInfo}>
-                <Image source={{ uri: balance.token.logo?.toString() }} style={styles.tokenLogo} />
+                {balance.token.logo ? (
+                    <Image source={{ uri: balance.token.logo.toString() }} style={styles.tokenLogo} />
+                ) : <IconSymbol name="centsign.circle" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
+                
                 <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', gap: spaceTokens[2] }}>
                     <Text style={styles.tokenSymbol}>{balance.token.name ?? balance.token.symbol}</Text>
                     {balance.isUnlocked && (
@@ -98,7 +106,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     tokenLogo: {
         width: spaceTokens[6],
         height: spaceTokens[6],
-        borderRadius: radiusTokens.sm,    
+        borderRadius: radiusTokens.sm,
     },
     tokenSymbol: {
         fontSize: 18,
