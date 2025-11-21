@@ -18,7 +18,6 @@ import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
 
-
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -31,10 +30,9 @@ export default function RootLayout() {
                 await changeRpcNetwork(currentNetworkDefinition);
             }
 
-            const { networkId: balanceStoreNetworkId, changeNetwork: changeBalanceNetwork, requestRefresh, subscribeToBalanceUpdates } = useBalanceStore.getState();
-            if (balanceStoreNetworkId !== currentNetworkDefinition.chainId) {
-                await changeBalanceNetwork(currentNetworkDefinition.chainId, useRpcStore.getState().provider);
-            }
+            const { changeNetwork: changeBalanceNetwork, requestRefresh, subscribeToBalanceUpdates } = useBalanceStore.getState();
+            await changeBalanceNetwork(currentNetworkDefinition.chainId, useRpcStore.getState().provider);
+            
 
             const accounts = profile.accountsOnCurrentNetwork as Account[];
             await requestRefresh(accounts, accounts);
@@ -131,6 +129,7 @@ function AppStructure({
                     <Stack.Screen name="account/create" options={{ headerShown: true }} />
                     <Stack.Screen name="tx/[txType]/[accountAddress]" options={{ headerShown: true }} />
                     <Stack.Screen name="keys" options={{ headerShown: true }} />
+                    <Stack.Screen name="networks" options={{ headerShown: true }} />
                 </Stack.Protected>
             </Stack>
 

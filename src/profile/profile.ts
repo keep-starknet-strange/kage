@@ -8,6 +8,7 @@ import Account, { AccountAddress } from "./account";
 import { AppError } from "@/types/appError";
 import { StarknetKeyPair } from "@starkms/key-management";
 import { KeySourceKind } from "./keys/keySourceKind";
+import { NetworkId } from "./misc";
 
 export default class Profile {
     @Type(() => Header)
@@ -134,11 +135,30 @@ export default class Profile {
         );
     }
 
+    changeNetwork(networkId: NetworkId): Profile {
+        const updatedSettings = this.settings.updateCurrentNetwork(networkId);
+
+        let network = this.networks.find(network => network.networkId === networkId);
+
+        let networks = [...this.networks];
+        if (!network) {
+            network = Network.createEmpty(networkId);
+            networks.push(network);
+        }
+
+        return new Profile(
+            this.header.updateUsed(new Date()),
+            this.keySources as KeySource[],
+            networks,
+            updatedSettings
+        );
+    }
+
     static createFromSeedPhrase(
         seedPhraseWords: string[]
     ) {
         return this.createFromSeedPhraseOnNetwork(
-            NetworkDefinition.sepolia(), 
+            NetworkDefinition.default(),
             seedPhraseWords
         );
     }

@@ -127,10 +127,14 @@ export default class NetworkDefinition {
             null,
             null,
             "SN_MAIN",
-            "0x01e60c8722677cfb7dd8dbea5be86c09265db02cdfe77113e77da7d44c017388",
+            "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564",
             "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
             new URL("https://voyager.online/")
         );
+    }
+
+    static default(): NetworkDefinition {
+        return NetworkDefinition.sepolia();
     }
 
     static wellKnown(): NetworkDefinition[] {

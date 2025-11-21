@@ -7,6 +7,7 @@ import { generateMnemonicWords, StarknetKeyPair } from "@starkms/key-management"
 import { create } from "zustand";
 import { RequestAccessFn } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
+import { NetworkId } from "@/profile/misc";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
@@ -21,6 +22,7 @@ export interface ProfileStoreState {
     ) => Promise<void>;
     addAccount: (accountName: string, requestAccess: RequestAccessFn) => Promise<void>;
     renameAccount: (account: Account, newName: string) => Promise<void>;
+    changeNetwork: (network: NetworkId) => Promise<void>;
     delete: () => Promise<void>;
 }
 
@@ -135,6 +137,19 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         set({ profileState: updatedProfile });
     },
 
+    changeNetwork: async (network: NetworkId) => {
+        const { profileState } = get();
+        const { profileStorage } = useAppDependenciesStore.getState();
+
+        if (!ProfileState.isProfile(profileState)) {
+            throw new AppError("Profile state cannot be updated", profileState);
+        }
+
+        const updatedProfile = profileState.changeNetwork(network);
+        await profileStorage.storeProfile(updatedProfile);
+        set({ profileState: updatedProfile });
+    },
+    
     delete: async () => {
         const { profileState } = get();
         const { profileStorage, seedPhraseVault } = useAppDependenciesStore.getState();

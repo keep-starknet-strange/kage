@@ -8,6 +8,7 @@ import { ErrorToast } from "./error-toast";
 import { TransactionToast } from "./transaction-toast";
 import uuid from 'react-native-uuid';
 import { LOG } from "@/utils/logs";
+import { NetworkChangeToast } from "./network-change-toast";
 
 export function showToastError(error: any) {
     if (error instanceof CancellationError) {
@@ -83,6 +84,12 @@ const toastConfig: ToastConfig = {
             id={props.id}
             transaction={props.transaction}
             pending={props.pending}
+        />
+    ),
+    networkChange: ({ props }) => (
+        <NetworkChangeToast
+            networkId={props.networkId}
+            onPress={props.onPress}
         />
     )
 };

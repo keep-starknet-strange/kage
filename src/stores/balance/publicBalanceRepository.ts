@@ -1,7 +1,7 @@
 import Account, { AccountAddress } from "@/profile/account";
 import Token from "@/types/token";
 import { PublicTokenBalance } from "@/types/tokenBalance";
-import { Call, uint256 } from "starknet";
+import { Call, RpcError, uint256 } from "starknet";
 import BalanceRepository from "./balanceRepository";
 import { TokenAddress } from "@/types/tokenAddress";
 import { AppError } from "@/types/appError";
@@ -50,19 +50,28 @@ export class PublicBalanceRepository extends BalanceRepository {
     }
 
     private async balanceOf(accountAddress: AccountAddress, tokenAddress: TokenAddress): Promise<bigint> {
-        const call: Call = {
-            contractAddress: tokenAddress,
-            entrypoint: "balance_of",
-            calldata: [accountAddress]
-        };
-        const response = await this.provider.callContract(call);
+        try {
+            const call: Call = {
+                contractAddress: tokenAddress,
+                entrypoint: "balance_of",
+                calldata: [accountAddress]
+            };
+            const response = await this.provider.callContract(call);
+    
+            if (response && response.length >= 2) {
+                // ERC-20 returns u256, which is 2 felts (low and high)
+                return uint256.uint256ToBN({ low: response[0], high: response[1] });
+            } else {
+                throw new AppError(`Error fetching balance of ${tokenAddress} for account ${accountAddress}`, response);
+            }
+        } catch (error) {
+            if (error instanceof RpcError && error.isType('ENTRYPOINT_NOT_FOUND')) {
+                return 0n;
+            }
 
-        if (response && response.length >= 2) {
-            // ERC-20 returns u256, which is 2 felts (low and high)
-            return uint256.uint256ToBN({ low: response[0], high: response[1] });
-        } else {
-            throw new AppError(`Error fetching balance of ${tokenAddress} for account ${accountAddress}`, response);
+            throw error;
         }
+        
     }
 
 }

@@ -91,18 +91,12 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
     return {
         networkId: "SN_MAIN",
-        tokenMetadata: new Map(),
         unlockedPrivateBalances: new Set(),
         publicBalances: new Map(),
         privateBalances: new Map(),
 
         changeNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider) => {
-            const { networkId: currentNetworkId } = get();
             const { marketRepository } = useAppDependenciesStore.getState();
-
-            if (currentNetworkId === networkId) {
-                return;
-            }
 
             LOG.info("Changing balance network to", networkId);
 
@@ -133,6 +127,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
             set({
                 networkId: networkId,
+                unlockedPrivateBalances: new Set(),
                 publicBalances: new Map(),
                 privateBalances: new Map()
             });

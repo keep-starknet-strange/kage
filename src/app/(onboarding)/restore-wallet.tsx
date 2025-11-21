@@ -27,7 +27,7 @@ function getRpcProvider(networkDefinition: NetworkDefinition): RpcProvider {
 }
 
 function isNetworkEligibleForRestore(networkDefinition: NetworkDefinition): boolean {
-    return networkDefinition.chainId === "SN_SEPOLIA";
+    return networkDefinition.chainId === "SN_SEPOLIA" || networkDefinition.chainId === "SN_MAIN";
 }
 
 export default function RestoreWalletScreen() {
@@ -91,7 +91,7 @@ export default function RestoreWalletScreen() {
                 throw new AppError("No seed phrase words found");
             }
 
-            const passphrase = consumeTempPassphrase()?.toString() ?? null;
+            const passphrase = consumeTempPassphrase() ?? null;
             if (!passphrase) {
                 throw new AppError("No passphrase found");
             }

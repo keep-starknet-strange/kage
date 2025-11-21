@@ -19,6 +19,7 @@ export default class PrivateBalanceRepository extends BalanceRepository {
     setNetwork(networkId: NetworkId, rpcProvider: RpcProvider) {
         super.setNetwork(networkId, rpcProvider);
         this.tongoCache.clear();
+        this.tongoAddressToAccountAddress.clear();
     }
 
     async getBalances(accounts: Map<Account, Token[]>): Promise<Map<AccountAddress, PrivateTokenBalance[]>> {

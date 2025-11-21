@@ -130,7 +130,7 @@ export default function SettingsScreen() {
                 <Text style={styles.subtitle}>Manage your wallet preferences</Text>
             </View>
 
-            {/* Keys Section */}
+            {/* Security Section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Security</Text>
                 
@@ -195,6 +195,36 @@ export default function SettingsScreen() {
                         />
                     )}
                 </View>
+            </View>
+
+            {/* Configuration Section */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Configuration</Text>
+                
+                <TouchableOpacity 
+                    style={styles.settingsItem}
+                    onPress={() => router.push('/networks')}
+                    activeOpacity={0.7}
+                >
+                    <View style={styles.itemLeft}>
+                        <View style={[styles.iconContainer, { backgroundColor: colorTokens['brand.glow'] }]}>
+                            <IconSymbol
+                                name="network"
+                                size={20}
+                                color={colorTokens['brand.accent']}
+                            />
+                        </View>
+                        <View style={styles.itemTextContainer}>
+                            <Text style={styles.itemTitle}>Networks</Text>
+                            <Text style={styles.itemDescription}>View and change the active network</Text>
+                        </View>
+                    </View>
+                    <IconSymbol
+                        name="chevron.right"
+                        size={20}
+                        color={colorTokens['text.muted']}
+                    />
+                </TouchableOpacity>
             </View>
 
             {/* Danger Zone */}

@@ -42,7 +42,18 @@ const MAPPING = {
     'eye.slash.fill': 'eye-off',
     'key.fill': 'key',
     'bolt.shield.fill': 'cash-lock',
-    'centsign.circle': 'alpha-c-circle-outline'
+    'centsign.circle': 'alpha-c-circle-outline',
+    'icloud': 'cloud-outline',
+    'network': 'network',
+    'network.slash': 'network-off',
+    'globe': 'earth',
+    'wrench.and.screwdriver': 'wrench',
+    'server.rack': 'server',
+    'safari': 'compass',
+    'chevron.down': 'chevron-down',
+    'person.fill': 'account',
+    'person.crop.circle.fill': 'account-circle',
+    'key.slash': 'key-alert'
 } as IconMapping;
 
 /**

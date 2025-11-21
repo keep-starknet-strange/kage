@@ -1,22 +1,22 @@
+import { showToastError, showToastTransaction } from "@/components/ui/toast";
 import Account, { AccountAddress } from "@/profile/account";
+import { ProfileState } from "@/profile/profileState";
+import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import { PrivateAmount, PublicAmount } from "@/types/amount";
+import { AppError } from "@/types/appError";
 import { PrivateTokenRecipient } from "@/types/privateRecipient";
 import { Transaction } from "@/types/transaction";
 import { LOG } from "@/utils/logs";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
-import { AllowArray, cairo, Call, CallData, Contract, InvokeFunctionResponse, num, RpcError, RpcProvider, Account as StarknetAccount } from "starknet";
+import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount, UniversalDetails } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
-import { useRpcStore } from "./useRpcStore";
-import { AppError } from "@/types/appError";
-import { showToastError, showToastTransaction } from "@/components/ui/toast";
 import { useAppDependenciesStore } from "./appDependenciesStore";
-import KeyValueStorage from "@/storage/kv/KeyValueStorage";
+import { useProfileStore } from "./profileStore";
+import { useRpcStore } from "./useRpcStore";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
-
-const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564";
 
 export interface OnChainState {
     pendingTransactionsStack: Transaction[];
@@ -63,17 +63,15 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
         await keyValueStorage.set("accounts.classHashes", Object.fromEntries(classHashes.entries()));
     }
 
-    const prepareAndExecute = async (account: StarknetAccount, calls: AllowArray<Call>): Promise<InvokeFunctionResponse> => {
+
+    const getUniversalTxDetails = async (account: StarknetAccount): Promise<UniversalDetails> => {
         const tipEstimate = await account.getEstimateTip('latest', {
             maxBlocks: 3,
             minTxsNecessary: 5
         });
-        return account.execute(
-            calls,
-            {
-                tip: tipEstimate.recommendedTip,
-            }
-        );
+        return {
+            tip: tipEstimate.recommendedTip,
+        }
     }
 
     return {
@@ -121,10 +119,12 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount(), sender: from.address });
             await fundOp.populateApprove();
             LOG.info("[TX]: 🚀 Funding account execute...");
-            const starknetTx = await prepareAndExecute(signerAccount, [
+            
+            const txDetails = await getUniversalTxDetails(signerAccount);
+            const starknetTx = await signerAccount.execute([
                 fundOp.approve!,
                 fundOp.toCalldata()
-            ]);
+            ], txDetails);
 
             appendPendingTransaction({
                 type: "fund",
@@ -212,11 +212,12 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 LOG.info("[TX]: 🗝 Prooving rollover...");
                 const rolloverOp = await tongoAccount.rollover({ sender: from.address });
                 LOG.info("[TX]: 🚀 Rollover execute...");
-                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
+                const txDetails = await getUniversalTxDetails(signerAccount);
+                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()], txDetails);
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
             }
 
-            LOG.info("[TX]: 🗝 Proving Transfer...");
+            LOG.info("[TX]: 🗝 Proving Transfer..."); 
             const transferOp = await tongoAccount.transfer({
                 to: recipient.privateTokenAddress.pubKey,
                 amount: amount.toSdkAmount(),
@@ -224,7 +225,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🚀 Transfer execute...");
-            const starknetTx = await prepareAndExecute(signerAccount, [transferOp.toCalldata()]);
+            const txDetails = await getUniversalTxDetails(signerAccount);
+            const starknetTx = await signerAccount.execute([transferOp.toCalldata()], txDetails);
 
             appendPendingTransaction({
                 type: "transfer",
@@ -275,7 +277,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 LOG.info("[TX]: 🗝 Prooving rollover...");
                 const rolloverOp = await tongoAccount.rollover({ sender: to.address });
                 LOG.info("[TX]: 🚀 Rollover execute...");
-                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
+                const txDetails = await getUniversalTxDetails(signerAccount);
+                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()], txDetails);
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
             }
 
@@ -287,7 +290,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🚀 Withdraw execute...");
-            const starknetTx = await prepareAndExecute(signerAccount, [withdrawOp.toCalldata()]);
+            const txDetails = await getUniversalTxDetails(signerAccount);
+            const starknetTx = await signerAccount.execute([withdrawOp.toCalldata()], txDetails);
 
             appendPendingTransaction({
                 type: "withdraw",
@@ -356,8 +360,13 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         deployAccount: async (account: Account) => {
             const { deployStatus, appendPendingTransaction } = get();
+            const { profileState } = useProfileStore.getState();
             const { requestAccess } = useAccessVaultStore.getState();
             const { provider } = useRpcStore.getState();
+
+            if (!ProfileState.isProfile(profileState)) {
+                throw new AppError("Profile state is not initialized", profileState);
+            }
 
             const status = deployStatus.get(account.address);
             if (status === "deployed" || status === "unknown") {
@@ -382,7 +391,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             const deployTx = await starknetAccount.deploySelf({
-                classHash: OZ_ACCOUNT_CLASS_HASH,
+                classHash: profileState.currentNetworkWithDefinition.networkDefinition.accountClassHash,
                 constructorCalldata: CallData.compile({ publicKey: keyPairs.spendingKeyPair.publicSpendingKey }),
             });
 
