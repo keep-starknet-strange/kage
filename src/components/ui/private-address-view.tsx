@@ -69,7 +69,7 @@ export function PrivateAddressView({ address, variant = 'default' }: PrivateAddr
         <View style={styles.container}>
             <View style={styles.iconContainer}>
                 <IconSymbol
-                    name="lock.shield.fill"
+                    name="lock-shield"
                     size={20}
                     color={colorTokens['status.success']}
                 />
@@ -91,7 +91,7 @@ export function PrivateAddressView({ address, variant = 'default' }: PrivateAddr
                     {isCopied ? (
                         <View style={styles.iconContainer}>
                             <IconSymbol
-                                name="checkmark.circle.fill"
+                                name="checkmark-circle"
                                 size={20}
                                 color={colorTokens['status.success']}
                             />
@@ -99,7 +99,7 @@ export function PrivateAddressView({ address, variant = 'default' }: PrivateAddr
                     ) : (
                         <View style={styles.iconContainer}>
                             <IconSymbol
-                                name="document.on.document"
+                                name="copy"
                                 size={18}
                                 color={colorTokens['text.secondary']}
                             />

@@ -38,7 +38,7 @@ export const NetworkChangeToast = ({ networkId, onPress }: NetworkChangeToastPro
                 <View style={styles.mainRow}>
                     <View style={styles.iconContainer}>
                         <IconSymbol
-                            name="checkmark.circle.fill"
+                            name="checkmark-circle"
                             size={24}
                             color={colorTokens['text.inverted']}
                         />

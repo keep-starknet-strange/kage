@@ -1,11 +1,10 @@
 import { fontStyles, opacityTokens, spaceTokens } from '@/design/tokens';
 import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
-import { SymbolViewProps } from 'expo-symbols';
 import { Pressable, Text, View, ViewStyle } from 'react-native';
-import { IconSymbol } from './icon-symbol';
+import { IconSymbol, IconSymbolName } from './icon-symbol';
 
 export interface ActionButtonProps {
-    icon: SymbolViewProps['name'];
+    icon: IconSymbolName;
     label: string;
     onPress: () => void;
     disabled?: boolean;

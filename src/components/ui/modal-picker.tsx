@@ -56,7 +56,7 @@ export function ModalPicker<T extends Identifiable>({
                 )}
 
                 <IconSymbol
-                    name="chevron.down"
+                    name="chevron-down"
                     size={20}
                     color={disabled ? colorTokens['text.muted'] : colorTokens['text.secondary']}
                 />
@@ -79,7 +79,7 @@ export function ModalPicker<T extends Identifiable>({
                             style={styles.closeButton}
                             onPress={() => setIsModalVisible(false)}
                         >
-                            <IconSymbol name="xmark" size={24} color={colorTokens['text.primary']} />
+                            <IconSymbol name="close" size={24} color={colorTokens['text.primary']} />
                         </Pressable>
                     </View>
 
@@ -144,8 +144,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     modalContent: {
         flex: 1,
         backgroundColor: colorTokens['bg.elevated'],
-        borderTopLeftRadius: radiusTokens.lg,
-        borderTopRightRadius: radiusTokens.lg,
         paddingBottom: spaceTokens[6],
     },
     modalHeader: {

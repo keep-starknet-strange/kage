@@ -76,7 +76,7 @@ export default function CreateAccountScreen() {
             <View style={styles.form}>
                 <View style={styles.iconContainer}>
                     <IconSymbol
-                        name="wallet.bifold.fill"
+                        name="wallet"
                         size={48}
                         color={colorTokens['brand.accent']}
                     />

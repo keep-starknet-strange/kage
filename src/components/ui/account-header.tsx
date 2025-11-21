@@ -25,7 +25,7 @@ const AccountHeader = ({ account }: AccountHeaderProps) => {
                 style={styles.backIconButton}
                 onPress={() => router.back()}
             >
-                <IconSymbol name="chevron.left" size={24} color={colorTokens['text.primary']} />
+                <IconSymbol name="chevron-left" size={24} color={colorTokens['text.primary']} />
             </TouchableOpacity>
 
             {/* Account Info */}

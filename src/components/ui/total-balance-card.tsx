@@ -91,7 +91,7 @@ export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
                         )}
                         {!isUpdatingLockState && (
                             <IconSymbol
-                                name={hasUnlockedPrivateBalances ? "lock.open.fill" : "lock.fill"}
+                                name={hasUnlockedPrivateBalances ? "lock-open" : "lock"}
                                 size={24}
                                 color={colorTokens['text.muted']}
                             />

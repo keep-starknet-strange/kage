@@ -96,7 +96,7 @@ export function AccountAddressInput({
                         onPress={() => setAddressText('')}
                     >
                         <IconSymbol
-                            name="xmark"
+                            name="close"
                             size={20}
                             color={colorTokens['status.error']}
                         />

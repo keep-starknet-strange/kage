@@ -24,7 +24,7 @@ export const SimpleHeader = ({ title, subtitle, onBackPress, style }: SimpleHead
                     style={styles.backButton}
                     onPress={onBackPress}
                 >
-                    <IconSymbol name="chevron.left" size={24} color={colorTokens['text.primary']} />
+                    <IconSymbol name="chevron-left" size={24} color={colorTokens['text.primary']} />
                 </TouchableOpacity>
 
                 {/* Header Content */}

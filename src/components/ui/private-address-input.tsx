@@ -61,7 +61,7 @@ export function PrivateAddressInput({
             ]}>
                 <View style={styles.iconContainer}>
                     <IconSymbol
-                        name="lock.shield.fill"
+                        name="lock-shield"
                         size={20}
                         color={colorTokens['status.success']}
                     />
@@ -95,7 +95,7 @@ export function PrivateAddressInput({
                         onPress={() => setAddressText('')}
                     >
                         <IconSymbol
-                            name="xmark"
+                            name="close"
                             size={20}
                             color={colorTokens['status.error']}
                         />

@@ -14,14 +14,14 @@ export default function WalletLayout() {
                 options={{
                     title: 'Accounts',
 
-                    tabBarIcon: ({color}) => <IconSymbol size={28} name="wallet.bifold.fill" color={color}/>,
+                    tabBarIcon: ({color}) => <IconSymbol size={28} name="wallet" color={color}/>,
                 }}
             />
             <Tabs.Screen
                 name="settings"
                 options={{
                     title: 'Settings',
-                    tabBarIcon: ({color}) => <IconSymbol size={28} name="gearshape.fill" color={color}/>,
+                    tabBarIcon: ({color}) => <IconSymbol size={28} name="settings" color={color}/>,
                 }}
             />
         </Tabs>

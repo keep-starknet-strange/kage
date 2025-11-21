@@ -106,16 +106,16 @@ export default function SettingsScreen() {
         switch (supportedBiometryType) {
             case BiometryType.FACE_ID:
             case BiometryType.FACE:
-                return "faceid" as const;
+                return "face-id" as const;
             case BiometryType.TOUCH_ID:
             case BiometryType.FINGERPRINT:
-                return "touchid" as const;
+                return "touch-id" as const;
             case BiometryType.OPTIC_ID:
-                return "opticid" as const;
+                return "optic-id" as const;
             case BiometryType.IRIS:
-                return "eye.fill" as const;
+                return "eye" as const;
             default:
-                return "lock.shield.fill" as const;
+                return "lock-shield" as const;
         }
     };
 
@@ -153,7 +153,7 @@ export default function SettingsScreen() {
                         </View>
                     </View>
                     <IconSymbol
-                        name="chevron.right"
+                        name="chevron-right"
                         size={20}
                         color={colorTokens['text.muted']}
                     />
@@ -164,7 +164,7 @@ export default function SettingsScreen() {
                     <View style={styles.itemLeft}>
                         <View style={[styles.iconContainer, { backgroundColor: supportedBiometryType ? 'rgba(47, 185, 132, 0.16)' : 'rgba(108, 114, 133, 0.16)' }]}>
                             <IconSymbol
-                                name={supportedBiometryType ? getBiometryIcon() : "lock.fill"}
+                                name={supportedBiometryType ? getBiometryIcon() : "lock"}
                                 size={20}
                                 color={supportedBiometryType ? colorTokens['status.success'] : colorTokens['text.muted']}
                             />
@@ -220,7 +220,7 @@ export default function SettingsScreen() {
                         </View>
                     </View>
                     <IconSymbol
-                        name="chevron.right"
+                        name="chevron-right"
                         size={20}
                         color={colorTokens['text.muted']}
                     />
@@ -234,7 +234,7 @@ export default function SettingsScreen() {
                     <View style={styles.dangerContent}>
                         <View style={styles.dangerIconContainer}>
                             <IconSymbol
-                                name="exclamationmark.circle.fill"
+                                name="alert-circle"
                                 size={24}
                                 color={colorTokens['status.error']}
                             />

@@ -127,7 +127,7 @@ export default function KeysScreen() {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.emptyState}>
-                    <IconSymbol name="key.slash" size={48} color={colorTokens['text.muted']} />
+                    <IconSymbol name="key-alert" size={48} color={colorTokens['text.muted']} />
                     <Text style={styles.emptyStateText}>No profile found</Text>
                 </View>
             </View>
@@ -142,7 +142,7 @@ export default function KeysScreen() {
             {/* Key Sources List */}
             {keysData.length === 0 ? (
                 <View style={styles.emptyState}>
-                    <IconSymbol name="key.slash" size={48} color={colorTokens['text.muted']} />
+                    <IconSymbol name="key-alert" size={48} color={colorTokens['text.muted']} />
                     <Text style={styles.emptyStateText}>No key sources found</Text>
                     <Text style={styles.emptyStateSubtext}>
                         Create an account to generate your first key source
@@ -225,7 +225,7 @@ function KeySourceItem({
                 <View style={styles.keySourceHeaderLeft}>
                     <View style={styles.keyIconContainer}>
                         <IconSymbol
-                            name="key.fill"
+                            name="key"
                             size={20}
                             color={colorTokens['brand.accent']}
                         />
@@ -238,7 +238,7 @@ function KeySourceItem({
                         <View style={styles.keySourceStats}>
                             <View style={styles.statBadge}>
                                 <IconSymbol
-                                    name="person.fill"
+                                    name="person"
                                     size={12}
                                     color={colorTokens['text.secondary']}
                                 />
@@ -247,7 +247,7 @@ function KeySourceItem({
                             {totalTokens > 0 && (
                                 <View style={styles.statBadge}>
                                     <IconSymbol
-                                        name="lock.shield.fill"
+                                        name="lock-shield"
                                         size={12}
                                         color={colorTokens['text.secondary']}
                                     />
@@ -259,7 +259,7 @@ function KeySourceItem({
                 </View>
                 <Animated.View style={animatedStyle}>
                     <IconSymbol
-                        name="chevron.down"
+                        name="chevron-down"
                         size={20}
                         color={colorTokens['text.muted']}
                     />
@@ -277,7 +277,7 @@ function KeySourceItem({
                     >
                         <View style={styles.viewSeedPhraseButtonContent}>
                             <IconSymbol
-                                name={isViewingSeedPhrase ? "eye.slash.fill" : "eye.fill"}
+                                name={isViewingSeedPhrase ? "eye-off" : "eye"}
                                 size={16}
                                 color={colorTokens['brand.accent']}
                             />
@@ -364,7 +364,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
             <View style={styles.accountHeader}>
                 <View style={styles.accountIconContainer}>
                     <IconSymbol
-                        name="person.crop.circle.fill"
+                        name="person-circle"
                         size={16}
                         color={colorTokens['brand.accent']}
                     />
@@ -378,7 +378,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
                 {isUnlocked && (
                     <View style={styles.unlockedBadge}>
                         <IconSymbol
-                            name="lock.open.fill"
+                            name="lock-open"
                             size={12}
                             color={colorTokens['status.success']}
                         />
@@ -395,7 +395,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
                         {tokens.map((token, index) => (
                             <View key={`${token.id}-${index}`} style={styles.tokenChip}>
                                 <IconSymbol
-                                    name="lock.shield.fill"
+                                    name="lock-shield"
                                     size={12}
                                     color={colorTokens['brand.accent']}
                                 />
@@ -412,7 +412,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
                         <TouchableOpacity onPress={handleUnlock}>
                             <View style={styles.lockedTokens}>
                                 <IconSymbol
-                                    name="lock.fill"
+                                    name="lock"
                                     size={14}
                                     color={colorTokens['text.muted']}
                                 />

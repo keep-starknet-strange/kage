@@ -130,7 +130,7 @@ export function TokenAmountInput<T extends TokenBalance>({
                             style={styles.tokenLogo}
                         />
                     ) : (
-                        <IconSymbol name="centsign.circle" size={spaceTokens[5]} color={colorTokens['text.primary']} />
+                        <IconSymbol name="currency" size={spaceTokens[5]} color={colorTokens['text.primary']} />
                     )}
                     <Text style={styles.tokenName}>
                         {token.name || token.symbol}

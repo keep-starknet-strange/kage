@@ -67,7 +67,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                     )}
                     {!isUpdatingLockState && (
                         <IconSymbol
-                            name={isUnlocked ? "lock.open.fill" : "lock.fill"}
+                            name={isUnlocked ? "lock-open" : "lock"}
                             size={24}
                             color={colorTokens['text.muted']}
                         />
@@ -77,7 +77,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
 
             <View style={styles.actionsContainer}>
                 <ActionButton
-                    icon="shield.fill"
+                    icon="shield"
                     label="Shield"
                     onPress={() => {
                         props.onFundPress();
@@ -85,7 +85,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                     disabled={false}
                 />
                 <ActionButton
-                    icon="bolt.shield.fill"
+                    icon="cash-lock"
                     label="Transfer"
                     onPress={() => {
                         props.onTransferPress();
@@ -93,7 +93,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                     disabled={false}
                 />
                 <ActionButton
-                    icon="shield.slash.fill"
+                    icon="shield-off"
                     label="Unshield"
                     onPress={() => {
                         props.onWithdrawPress();

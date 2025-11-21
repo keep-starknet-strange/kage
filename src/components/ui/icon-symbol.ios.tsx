@@ -1,5 +1,7 @@
-import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
+import { SymbolView, SymbolWeight } from 'expo-symbols';
 import { StyleProp, ViewStyle } from 'react-native';
+import { IconSymbolName, sfSymbol } from './icon-symbol';
+import { useMemo } from 'react';
 
 export function IconSymbol({
   name,
@@ -8,18 +10,19 @@ export function IconSymbol({
   style,
   weight = 'regular',
 }: {
-  name: SymbolViewProps['name'];
+  name: IconSymbolName;
   size?: number;
   color: string;
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
+  const sfSymbolName = useMemo(() => sfSymbol(name), [name, sfSymbol]);
   return (
     <SymbolView
       weight={weight}
       tintColor={color}
       resizeMode="scaleAspectFit"
-      name={name}
+      name={sfSymbolName}
       style={[
         {
           width: size,

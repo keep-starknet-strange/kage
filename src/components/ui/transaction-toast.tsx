@@ -154,7 +154,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                 <View style={styles.mainRow}>
                     <View style={styles.iconContainer}>
                         <IconSymbol
-                            name={pending ? "paperplane" : "checkmark.circle.fill"}
+                            name={pending ? "send" : "checkmark-circle"}
                             size={24}
                             color={colorTokens['text.inverted']}
                         />
@@ -171,7 +171,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
 
                     <View style={styles.expandButton}>
                         <IconSymbol
-                            name="chevron.right"
+                            name="chevron-right"
                             size={16}
                             color={colorTokens['text.inverted']}
                             style={[
@@ -219,7 +219,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                                         style={styles.actionButton}
                                     >
                                         <IconSymbol
-                                            name={isCopied ? "checkmark" : "document.on.document"}
+                                            name={isCopied ? "checkmark" : "copy"}
                                             size={14}
                                             color={colorTokens['text.inverted']}
                                         />
@@ -234,7 +234,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                                             style={styles.actionButton}
                                         >
                                             <IconSymbol
-                                                name="arrow.up.right.square"
+                                                name="external-link"
                                                 size={14}
                                                 color={colorTokens['text.inverted']}
                                             />

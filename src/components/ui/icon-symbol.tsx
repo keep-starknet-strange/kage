@@ -1,77 +1,246 @@
 // Fallback for using MaterialIcons on Android and web.
 
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import {SymbolWeight, SymbolViewProps} from 'expo-symbols';
-import {ComponentProps} from 'react';
-import {OpaqueColorValue, type StyleProp, type TextStyle} from 'react-native';
-
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialCommunityIcons>['name']>;
-type IconSymbolName = keyof typeof MAPPING;
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
+import { ComponentProps } from 'react';
+import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * Platform-specific icon configuration
+ * - ios: SF Symbol name
+ * - android: Material Icon or Material Community Icon name with source
  */
-const MAPPING = {    
-    'chevron.right': 'chevron-right',
-    'wallet.bifold.fill': 'wallet-bifold',
-    'shield.fill': 'shield',
-    'trash.fill': 'delete',
-    'checkmark': 'check',
-    'checkmark.circle.fill': 'check-circle',
-    'gearshape.fill': 'account-settings', // TODO
-    'plus.circle': 'plus-circle',
-    'arrow.right.circle.fill': 'arrow-right-circle',
-    'shield.slash.fill': 'shield-off',
-    'square.and.arrow.up.circle.fill': 'upload-circle',
-    'lock.fill': 'lock',
-    'lock.open.fill': 'lock-open',
-    'lock.shield.fill': 'shield',
-    'document.on.document': 'content-copy',
-    'link': 'link-variant',
-    'pencil': 'pencil',
-    'ellipsis': 'dots-horizontal',
-    'exclamationmark.circle.fill': 'alert-circle',
-    'paperplane': 'send',
-    'faceid': 'face-recognition',
-    'touchid': 'fingerprint',
-    'opticid': 'eye-circle-outline',
-    'eye.fill': 'eye',
-    'eye.slash.fill': 'eye-off',
-    'key.fill': 'key',
-    'bolt.shield.fill': 'cash-lock',
-    'centsign.circle': 'alpha-c-circle-outline',
-    'icloud': 'cloud-outline',
-    'network': 'network',
-    'network.slash': 'network-off',
-    'globe': 'earth',
-    'wrench.and.screwdriver': 'wrench',
-    'server.rack': 'server',
-    'safari': 'compass',
-    'chevron.down': 'chevron-down',
-    'person.fill': 'account',
-    'person.crop.circle.fill': 'account-circle',
-    'key.slash': 'key-alert'
-} as IconMapping;
+export type PlatformIconMapping = {
+    ios: SymbolViewProps['name'];
+    android:
+    | { source: 'material'; name: ComponentProps<typeof MaterialIcons>['name'] }
+    | { source: 'material-community'; name: ComponentProps<typeof MaterialCommunityIcons>['name'] };
+};
+
+/**
+ * Icon mapping type where you can define custom icon names that map to platform-specific icons
+ * 
+ * @example
+ * const myIcons = {
+ *   wallet: {
+ *     ios: 'wallet.bifold.fill',
+ *     android: { source: 'material-community', name: 'wallet-bifold' }
+ *   },
+ *   settings: {
+ *     ios: 'gearshape.fill',
+ *     android: { source: 'material', name: 'settings' }
+ *   }
+ * } satisfies IconMapping;
+ */
+export type IconMapping = Record<string, PlatformIconMapping>;
+
+const MAPPING = {
+    'chevron-right': {
+        ios: 'chevron.right',
+        android: { source: 'material-community', name: 'chevron-right' }
+    },
+    'wallet': {
+        ios: 'wallet.bifold.fill',
+        android: { source: 'material-community', name: 'wallet-bifold' }
+    },
+    'shield': {
+        ios: 'shield.fill',
+        android: { source: 'material-community', name: 'shield' }
+    },
+    'trash': {
+        ios: 'trash.fill',
+        android: { source: 'material-community', name: 'delete' }
+    },
+    'checkmark': {
+        ios: 'checkmark',
+        android: { source: 'material-community', name: 'check' }
+    },
+    'checkmark-circle': {
+        ios: 'checkmark.circle.fill',
+        android: { source: 'material-community', name: 'check-circle' }
+    },
+    'settings': {
+        ios: 'gearshape.fill',
+        android: { source: 'material', name: 'settings' }
+    },
+    'plus-circle': {
+        ios: 'plus.circle',
+        android: { source: 'material-community', name: 'plus-circle' }
+    },
+    'arrow-right-circle': {
+        ios: 'arrow.right.circle.fill',
+        android: { source: 'material-community', name: 'arrow-right-circle' }
+    },
+    'shield-off': {
+        ios: 'shield.slash.fill',
+        android: { source: 'material-community', name: 'shield-off' }
+    },
+    'upload-circle': {
+        ios: 'square.and.arrow.up.circle.fill',
+        android: { source: 'material-community', name: 'upload-circle' }
+    },
+    'lock': {
+        ios: 'lock.fill',
+        android: { source: 'material-community', name: 'lock' }
+    },
+    'lock-open': {
+        ios: 'lock.open.fill',
+        android: { source: 'material-community', name: 'lock-open' }
+    },
+    'lock-shield': {
+        ios: 'lock.shield.fill',
+        android: { source: 'material-community', name: 'shield' }
+    },
+    'copy': {
+        ios: 'document.on.document',
+        android: { source: 'material-community', name: 'content-copy' }
+    },
+    'link': {
+        ios: 'link',
+        android: { source: 'material-community', name: 'link-variant' }
+    },
+    'pencil': {
+        ios: 'pencil',
+        android: { source: 'material-community', name: 'pencil' }
+    },
+    'ellipsis': {
+        ios: 'ellipsis',
+        android: { source: 'material-community', name: 'dots-horizontal' }
+    },
+    'alert-circle': {
+        ios: 'exclamationmark.circle.fill',
+        android: { source: 'material-community', name: 'alert-circle' }
+    },
+    'send': {
+        ios: 'paperplane',
+        android: { source: 'material-community', name: 'send' }
+    },
+    'face-id': {
+        ios: 'faceid',
+        android: { source: 'material-community', name: 'face-recognition' }
+    },
+    'touch-id': {
+        ios: 'touchid',
+        android: { source: 'material-community', name: 'fingerprint' }
+    },
+    'optic-id': {
+        ios: 'opticid',
+        android: { source: 'material-community', name: 'eye-circle-outline' }
+    },
+    'eye': {
+        ios: 'eye.fill',
+        android: { source: 'material-community', name: 'eye' }
+    },
+    'eye-off': {
+        ios: 'eye.slash.fill',
+        android: { source: 'material-community', name: 'eye-off' }
+    },
+    'key': {
+        ios: 'key.fill',
+        android: { source: 'material-community', name: 'key' }
+    },
+    'cash-lock': {
+        ios: 'bolt.shield.fill',
+        android: { source: 'material-community', name: 'cash-lock' }
+    },
+    'currency': {
+        ios: 'centsign.circle',
+        android: { source: 'material-community', name: 'alpha-c-circle-outline' }
+    },
+    'cloud': {
+        ios: 'icloud',
+        android: { source: 'material-community', name: 'cloud-outline' }
+    },
+    'network': {
+        ios: 'network',
+        android: { source: 'material-community', name: 'network' }
+    },
+    'network-off': {
+        ios: 'network.slash',
+        android: { source: 'material-community', name: 'network-off' }
+    },
+    'globe': {
+        ios: 'globe',
+        android: { source: 'material-community', name: 'earth' }
+    },
+    'wrench': {
+        ios: 'wrench.and.screwdriver',
+        android: { source: 'material-community', name: 'wrench' }
+    },
+    'server': {
+        ios: 'server.rack',
+        android: { source: 'material-community', name: 'server' }
+    },
+    'web': {
+        ios: 'safari',
+        android: { source: 'material-community', name: 'web' }
+    },
+    'chevron-down': {
+        ios: 'chevron.down',
+        android: { source: 'material-community', name: 'chevron-down' }
+    },
+    'person': {
+        ios: 'person.fill',
+        android: { source: 'material-community', name: 'account' }
+    },
+    'person-circle': {
+        ios: 'person.crop.circle.fill',
+        android: { source: 'material-community', name: 'account-circle' }
+    },
+    'key-alert': {
+        ios: 'key.slash',
+        android: { source: 'material-community', name: 'key-alert' }
+    },
+    'chevron-left': {
+        ios: 'chevron.left',
+        android: { source: 'material-community', name: 'arrow-left' }
+    },
+    'close': {
+        ios: 'xmark',
+        android: { source: 'material-community', name: 'close' }
+    },
+    'plus-circle-fill': {
+        ios: 'plus.circle.fill',
+        android: { source: 'material-community', name: 'plus-circle' }
+    },
+    'tray': {
+        ios: 'tray',
+        android: { source: 'material-community', name: 'tray' }
+    },
+    'external-link': {
+        ios: 'arrow.up.right.square',
+        android: { source: 'material-community', name: 'open-in-new' }
+    },
+} satisfies IconMapping;
+
+export type IconSymbolName = keyof typeof MAPPING;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
  * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * Icon `name`s are based on custom icon names that map to platform-specific icons.
  */
 export function IconSymbol({
-                               name,
-                               size = 24,
-                               color,
-                               style,
-                           }: {
+    name,
+    size = 24,
+    color,
+    style,
+}: {
     name: IconSymbolName;
     size?: number;
     color: string | OpaqueColorValue;
     style?: StyleProp<TextStyle>;
     weight?: SymbolWeight;
 }) {
-    return <MaterialCommunityIcons color={color} size={size} name={MAPPING[name]} style={style}/>;
+    const iconConfig = MAPPING[name].android;
+    if (iconConfig.source === 'material-community') {
+        return <MaterialCommunityIcons color={color} size={size} name={iconConfig.name} style={style} />;
+    } else if (iconConfig.source === 'material') {
+        return <MaterialIcons color={color} size={size} name={iconConfig.name} style={style} />;
+    }
+}
+
+export function sfSymbol(name: IconSymbolName): SymbolViewProps['name'] {
+    return MAPPING[name].ios;
 }

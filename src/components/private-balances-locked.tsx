@@ -19,7 +19,7 @@ export function PrivateBalancesLocked({
     
     return (
         <View style={styles.container}>
-            <IconSymbol name="lock.fill" size={48} color={colorTokens['text.muted']} />
+            <IconSymbol name="lock" size={48} color={colorTokens['text.muted']} />
             <Text style={styles.label}>Private balances are locked</Text>
 
             <PrimaryButton

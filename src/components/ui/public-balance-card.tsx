@@ -41,7 +41,7 @@ const FundModal = (
                         style={styles.closeButton}
                         onPress={onRequestClose}
                     >
-                        <IconSymbol name="xmark" size={24} color={colorTokens['text.primary']} />
+                        <IconSymbol name="close" size={24} color={colorTokens['text.primary']} />
                     </Pressable>
                 </View>
 
@@ -61,7 +61,7 @@ const FundModal = (
                             }}
                         >
                             <Text style={styles.itemTitle}>{"From Faucet"}</Text>
-                            <IconSymbol name="arrow.up.right.square" size={18} color={colorTokens['text.secondary']} />
+                            <IconSymbol name="external-link" size={18} color={colorTokens['text.secondary']} />
                         </Pressable>
                     )}
 
@@ -104,7 +104,7 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
 
             <View style={styles.actionsContainer}>
                 <ActionButton
-                    icon="plus.circle.fill"
+                    icon="plus-circle"
                     label="Fund"
                     onPress={() => {
                         setIsFundModalVisible(true);
@@ -112,7 +112,7 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
                     disabled={false}
                 />
                 <ActionButton
-                    icon="arrow.right.circle.fill"
+                    icon="arrow-right-circle"
                     label="Send"
                     onPress={() => {
                         props.onTransferPress();
@@ -167,8 +167,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     modalContent: {
         flex: 1,
         backgroundColor: colorTokens['bg.elevated'],
-        borderTopLeftRadius: radiusTokens.lg,
-        borderTopRightRadius: radiusTokens.lg,
         paddingBottom: spaceTokens[6],
     },
     modalHeader: {

@@ -87,7 +87,7 @@ export function AddressView({ address, variant = 'default' }: AddressViewProps) 
                     {isCopied ? (
                         <View style={styles.iconContainer}>
                             <IconSymbol 
-                                name="checkmark.circle.fill" 
+                                name="checkmark-circle" 
                                 size={20} 
                                 color={colorTokens['status.success']} 
                             />
@@ -95,7 +95,7 @@ export function AddressView({ address, variant = 'default' }: AddressViewProps) 
                     ) : (
                         <View style={styles.iconContainer}>
                             <IconSymbol 
-                                name="document.on.document" 
+                                name="copy" 
                                 size={18} 
                                 color={colorTokens['text.secondary']} 
                             />

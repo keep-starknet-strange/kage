@@ -156,13 +156,13 @@ export const SeedPhraseInput = ({
                 <View style={styles.wordStatus}>
                   {isValid ? (
                     <IconSymbol
-                      name="checkmark.circle.fill"
+                      name="checkmark-circle"
                       size={16}
                       color={colorTokens['status.success']}
                     />
                   ) : (
                     <IconSymbol
-                      name="exclamationmark.circle.fill"
+                      name="alert-circle"
                       size={16}
                       color={colorTokens['status.error']}
                     />

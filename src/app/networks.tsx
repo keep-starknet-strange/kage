@@ -78,7 +78,7 @@ export default function NetworksScreen() {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.emptyState}>
-                    <IconSymbol name="network.slash" size={48} color={colorTokens['text.muted']} />
+                    <IconSymbol name="network-off" size={48} color={colorTokens['text.muted']} />
                     <Text style={styles.emptyStateText}>No profile found</Text>
                 </View>
             </View>
@@ -93,7 +93,7 @@ export default function NetworksScreen() {
             {/* Networks List */}
             {networksData.length === 0 ? (
                 <View style={styles.emptyState}>
-                    <IconSymbol name="network.slash" size={48} color={colorTokens['text.muted']} />
+                    <IconSymbol name="network-off" size={48} color={colorTokens['text.muted']} />
                     <Text style={styles.emptyStateText}>No networks configured</Text>
                     <Text style={styles.emptyStateSubtext}>
                         Configure networks in your profile settings
@@ -132,7 +132,7 @@ function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkIt
             case "SN_MAIN":
                 return "globe" as const;
             case "SN_SEPOLIA":
-                return "wrench.and.screwdriver" as const;
+                return "wrench" as const;
             default:
                 return "network" as const;
         }
@@ -194,7 +194,7 @@ function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkIt
                     ) : isSelected ? (
                         <View style={styles.selectedBadge}>
                             <IconSymbol
-                                name="checkmark.circle.fill"
+                                name="checkmark-circle"
                                 size={24}
                                 color={colorTokens['brand.accent']}
                             />
@@ -210,7 +210,7 @@ function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkIt
                 {definition.blockExplorerUrl && (
                     <View style={styles.detailRow}>
                         <IconSymbol
-                            name="safari"
+                            name="web"
                             size={14}
                             color={colorTokens['text.secondary']}
                         />
@@ -221,7 +221,7 @@ function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkIt
                 )}
                 <View style={styles.detailRow}>
                     <IconSymbol
-                        name="server.rack"
+                        name="server"
                         size={14}
                         color={colorTokens['text.secondary']}
                     />

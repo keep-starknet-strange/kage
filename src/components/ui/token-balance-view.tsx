@@ -23,7 +23,7 @@ export const PublicTokenBalanceView = ({ balance }: PublicTokenBalanceViewProps)
             <View style={styles.tokenInfo}>
                 {balance.token.logo ? (
                     <Image source={{ uri: balance.token.logo.toString() }} style={styles.tokenLogo} />
-                ) : <IconSymbol name="centsign.circle" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
+                ) : <IconSymbol name="currency" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
                 <Text style={styles.tokenSymbol}>{balance.token.name ?? balance.token.symbol}</Text>
             </View>
             <View style={styles.tokenBalance}>
@@ -57,7 +57,7 @@ export const PrivateTokenBalanceView = ({ balance }: PrivateTokenBalanceViewProp
             <View style={styles.tokenInfo}>
                 {balance.token.logo ? (
                     <Image source={{ uri: balance.token.logo.toString() }} style={styles.tokenLogo} />
-                ) : <IconSymbol name="centsign.circle" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
+                ) : <IconSymbol name="currency" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
                 
                 <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', gap: spaceTokens[2] }}>
                     <Text style={styles.tokenSymbol}>{balance.token.name ?? balance.token.symbol}</Text>

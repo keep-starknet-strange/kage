@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
@@ -91,20 +91,20 @@ export default function AccessVaultModal() {
         }
     }
 
-    const getBiometryIcon = (type: BiometryType | null) => {
+    const getBiometryIcon = (type: BiometryType | null): IconSymbolName => {
         switch (type) {
             case BiometryType.FACE_ID:
             case BiometryType.FACE:
-                return "faceid" as const;
+                return "face-id" as const;
             case BiometryType.TOUCH_ID:
             case BiometryType.FINGERPRINT:
-                return "touchid" as const;
+                return "touch-id" as const;
             case BiometryType.OPTIC_ID:
-                return "opticid" as const;
+                return "optic-id" as const;
             case BiometryType.IRIS:
-                return "eye.fill" as const;
+                return "eye" as const;
             default:
-                return "lock.shield.fill" as const;
+                return "lock-shield" as const;
         }
     }
 
@@ -134,7 +134,7 @@ export default function AccessVaultModal() {
                     <View style={styles.header}>
                         <View style={styles.iconContainer}>
                             <IconSymbol
-                                name={prompt.validateWith === "biometrics" ? getBiometryIcon(biometryType) : "key.fill"}
+                                name={prompt.validateWith === "biometrics" ? getBiometryIcon(biometryType) : "key"}
                                 size={40}
                                 color={colorTokens['brand.accent']}
                             />
@@ -162,7 +162,7 @@ export default function AccessVaultModal() {
                             <View style={styles.inputWrapper}>
                                 <View style={styles.inputIconContainer}>
                                     <IconSymbol
-                                        name="lock.fill"
+                                        name="lock"
                                         size={18}
                                         color={colorTokens['text.muted']}
                                     />
@@ -191,7 +191,7 @@ export default function AccessVaultModal() {
                                     disabled={isSubmitting}
                                 >
                                     <IconSymbol
-                                        name={isInputVisible ? "eye.slash.fill" : "eye.fill"}
+                                        name={isInputVisible ? "eye-off" : "eye"}
                                         size={18}
                                         color={colorTokens['text.muted']}
                                     />

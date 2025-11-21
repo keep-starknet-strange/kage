@@ -48,7 +48,7 @@ export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToast
                 <View style={styles.mainRow}>
                     <View style={styles.iconContainer}>
                         <IconSymbol 
-                            name="exclamationmark.circle.fill" 
+                            name="alert-circle" 
                             size={24} 
                             color={colorTokens['text.inverted']} 
                         />
@@ -66,7 +66,7 @@ export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToast
                     {details && (
                         <View style={styles.expandButton}>
                             <IconSymbol 
-                                name="chevron.right" 
+                                name="chevron-right" 
                                 size={16} 
                                 color={colorTokens['text.inverted']} 
                                 style={[
@@ -89,7 +89,7 @@ export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToast
                                 style={styles.copyButton}
                             >
                                 <IconSymbol 
-                                    name={isCopied ? "checkmark" : "document.on.document"}
+                                    name={isCopied ? "checkmark" : "copy"}
                                     size={14} 
                                     color={colorTokens['text.inverted']} 
                                 />
