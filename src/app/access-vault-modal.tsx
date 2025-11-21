@@ -1,15 +1,16 @@
-import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
-import { useState, useEffect } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
-import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
+import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { CancellationError } from "@/types/appError";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AccessVaultModal() {
     const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
@@ -36,6 +37,10 @@ export default function AccessVaultModal() {
     }
 
     const onPassphraseSubmit = async (passphrase: string) => {
+        if (inputPassphrase.length === 0 || isSubmitting) {
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             await handlePassphraseSubmit(passphrase);
@@ -122,103 +127,99 @@ export default function AccessVaultModal() {
             onRequestClose={onRequestClose}
             presentationStyle="pageSheet"
         >
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
                 style={styles.container}
             >
-                <ScrollView 
-                    contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <View style={styles.iconContainer}>
-                            <IconSymbol
-                                name={prompt.validateWith === "biometrics" ? getBiometryIcon(biometryType) : "key"}
-                                size={40}
-                                color={colorTokens['brand.accent']}
-                            />
-                        </View>
-                        <Text style={styles.title}>{title}</Text>
-                        <Text style={styles.description}>{description}</Text>
+                {/* Header */}
+                <View style={styles.header}>
+                    <View style={styles.iconContainer}>
+                        <IconSymbol
+                            name={prompt.validateWith === "biometrics" ? getBiometryIcon(biometryType) : "key"}
+                            size={40}
+                            color={colorTokens['brand.accent']}
+                        />
                     </View>
+                    <Text style={styles.title}>{title}</Text>
+                    <Text style={styles.description}>{description}</Text>
+                </View>
 
-                    {/* Biometrics View */}
-                    {prompt.validateWith === "biometrics" && (
-                        <View style={styles.biometricsContainer}>
-                            <ActivityIndicator 
-                                size="large" 
-                                color={colorTokens['brand.accent']}
+                {/* Biometrics View */}
+                {prompt.validateWith === "biometrics" && (
+                    <View style={styles.biometricsContainer}>
+                        <ActivityIndicator
+                            size="large"
+                            color={colorTokens['brand.accent']}
+                        />
+                        <Text style={styles.biometricsHint}>
+                            Waiting for authentication...
+                        </Text>
+                    </View>
+                )}
+
+                {/* Passphrase View */}
+                {prompt.validateWith === "passphrase" && (
+                    <View style={styles.passphraseContainer}>
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.inputIconContainer}>
+                                <IconSymbol
+                                    name="lock"
+                                    size={18}
+                                    color={colorTokens['text.muted']}
+                                />
+                            </View>
+                            <TextInput
+                                style={styles.input}
+                                value={inputPassphrase}
+                                onChangeText={setInputPassphrase}
+                                placeholder="Enter your passphrase"
+                                placeholderTextColor={colorTokens['text.muted']}
+                                secureTextEntry={!isInputVisible}
+                                textContentType="password"
+                                importantForAutofill="yes"
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                autoFocus
+                                returnKeyType="done"
+                                onSubmitEditing={() => {
+                                    onPassphraseSubmit(inputPassphrase);
+                                }}
+                                editable={!isSubmitting}
                             />
-                            <Text style={styles.biometricsHint}>
-                                Waiting for authentication...
-                            </Text>
+                            <TouchableOpacity
+                                onPress={() => setIsInputVisible((state) => !state)}
+                                style={styles.toggleButton}
+                                disabled={isSubmitting}
+                            >
+                                <IconSymbol
+                                    name={isInputVisible ? "eye-off" : "eye"}
+                                    size={18}
+                                    color={colorTokens['text.muted']}
+                                />
+                            </TouchableOpacity>
                         </View>
-                    )}
 
-                    {/* Passphrase View */}
-                    {prompt.validateWith === "passphrase" && (
-                        <View style={styles.passphraseContainer}>
-                            <View style={styles.inputWrapper}>
-                                <View style={styles.inputIconContainer}>
-                                    <IconSymbol
-                                        name="lock"
-                                        size={18}
-                                        color={colorTokens['text.muted']}
-                                    />
-                                </View>
-                                <TextInput
-                                    style={styles.input}
-                                    value={inputPassphrase}
-                                    onChangeText={setInputPassphrase}
-                                    placeholder="Enter your passphrase"
-                                    placeholderTextColor={colorTokens['text.muted']}
-                                    secureTextEntry={!isInputVisible}
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                    autoFocus
-                                    returnKeyType="done"
-                                    onSubmitEditing={() => {
-                                        if (inputPassphrase.length > 0 && !isSubmitting) {
-                                            onPassphraseSubmit(inputPassphrase);
-                                        }
-                                    }}
-                                    editable={!isSubmitting}
-                                />
-                                <TouchableOpacity 
-                                    onPress={() => setIsInputVisible((state) => !state)}
-                                    style={styles.toggleButton}
-                                    disabled={isSubmitting}
-                                >
-                                    <IconSymbol
-                                        name={isInputVisible ? "eye-off" : "eye"}
-                                        size={18}
-                                        color={colorTokens['text.muted']}
-                                    />
-                                </TouchableOpacity>
-                            </View>
+                        {/* Action Buttons */}
+                        <View style={styles.buttonContainer}>
+                            <SecondaryButton
+                                title="Cancel"
+                                onPress={onRequestClose}
+                                disabled={isSubmitting}
+                                style={styles.cancelButton}
+                            />
 
-                            {/* Action Buttons */}
-                            <View style={styles.buttonContainer}>
-                                <SecondaryButton
-                                    title="Cancel"
-                                    onPress={onRequestClose}
-                                    disabled={isSubmitting}
-                                    style={styles.cancelButton}
-                                />
-
-                                <PrimaryButton
-                                    title="Unlock"
-                                    onPress={() => onPassphraseSubmit(inputPassphrase)}
-                                    disabled={inputPassphrase.length === 0}
-                                    loading={isSubmitting}
-                                    style={styles.submitButton}
-                                />
-                            </View>
+                            <PrimaryButton
+                                title="Unlock"
+                                onPress={() => onPassphraseSubmit(inputPassphrase)}
+                                disabled={inputPassphrase.length === 0}
+                                loading={isSubmitting}
+                                style={styles.submitButton}
+                            />
                         </View>
-                    )}
-                </ScrollView>
-            </KeyboardAvoidingView>
+                    </View>
+                )}
+            </KeyboardAwareScrollView>
         </Modal>
     );
 }
@@ -229,9 +230,10 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         backgroundColor: colorTokens['bg.default'],
     },
     scrollContent: {
-        flexGrow: 1,
+        justifyContent: 'center',
         paddingHorizontal: spaceTokens[5],
         paddingBottom: spaceTokens[6],
+        flexGrow: 1,
     },
     header: {
         alignItems: 'center',

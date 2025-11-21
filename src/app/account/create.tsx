@@ -10,6 +10,7 @@ import { LOG } from '@/utils/logs';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 export default function CreateAccountScreen() {
     const router = useRouter();
@@ -68,9 +69,9 @@ export default function CreateAccountScreen() {
     }, [navigation, insets.top, router]);
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            bottomOffset={spaceTokens[4]}
         >
             {/* Form */}
             <View style={styles.form}>
@@ -122,7 +123,7 @@ export default function CreateAccountScreen() {
                     style={styles.createButton}
                 />
             </View>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
     );
 }
 

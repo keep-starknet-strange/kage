@@ -10,6 +10,7 @@ import { AppError } from "@/types/appError";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 export default function CreateFirstAccountScreen() {
     const navigation = useNavigation();
@@ -59,8 +60,8 @@ export default function CreateFirstAccountScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.content}>
+        <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+            <KeyboardAwareScrollView contentContainerStyle={styles.content}>
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <Text style={styles.subtitle}>
@@ -81,6 +82,9 @@ export default function CreateFirstAccountScreen() {
                             autoCapitalize="words"
                             autoCorrect={false}
                             autoFocus
+                            onSubmitEditing={() => {
+                                handleCreateAccount();
+                            }}
                         />
                         {accountName.trim().length > 0 && (
                             <Text style={styles.helperText}>
@@ -89,19 +93,19 @@ export default function CreateFirstAccountScreen() {
                         )}
                     </View>
                 </View>
+            </KeyboardAwareScrollView>
 
-                {/* Spacer */}
-                <View style={{ flex: 1 }} />
+            {/* Spacer */}
+            <View style={{ flex: 1 }} />
 
-                {/* Button Section */}
-                <View style={[styles.buttonSection, { paddingBottom: insets.bottom }]}>
-                    <PrimaryButton
-                        title={isCreating ? "Creating Account..." : "Create Account"}
-                        onPress={handleCreateAccount}
-                        disabled={!isFormValid}
-                        loading={isCreating}
-                    />
-                </View>
+            {/* Button Section */}
+            <View style={[styles.buttonSection]}>
+                <PrimaryButton
+                    title={isCreating ? "Creating Account..." : "Create Account"}
+                    onPress={handleCreateAccount}
+                    disabled={!isFormValid}
+                    loading={isCreating}
+                />
             </View>
         </View>
     );
@@ -113,7 +117,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         backgroundColor: colorTokens['bg.default'],
     },
     content: {
-        flex: 1,
         paddingHorizontal: spaceTokens[4],
     },
     headerSection: {
@@ -162,7 +165,8 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         marginTop: -spaceTokens[1],
     },
     buttonSection: {
-        paddingBottom: spaceTokens[4],
+        paddingHorizontal: spaceTokens[3],
+        paddingBottom: spaceTokens[3],
     },
 }));
 

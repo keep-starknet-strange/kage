@@ -1,3 +1,4 @@
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
@@ -5,7 +6,7 @@ import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
 import { useState } from "react";
 import { ActivityIndicator, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
+import Animated from "react-native-reanimated";
 import { RenameAccountModal } from "./rename-account-modal";
 import { showToastError } from "./toast";
 
@@ -67,7 +68,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
                     style={styles.modalOverlay}
                     onPress={() => setShowModal(false)}
                 >
-                    <View style={styles.menuContainer}>
+                    <Animated.View style={styles.menuContainer}>
                         {deployButtonVisible && (
                             <>
                                 <TouchableOpacity
@@ -106,7 +107,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
                             />
                             <Text style={styles.menuItemText}>Rename Account</Text>
                         </TouchableOpacity>
-                    </View>
+                    </Animated.View>
                 </Pressable>
             </Modal>
 

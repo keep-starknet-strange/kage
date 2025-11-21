@@ -19,9 +19,10 @@ module.exports = function (api) {
         ["@babel/plugin-transform-class-properties", { "loose": true }]
       ] : [
         // Mobile-specific plugins
-      ])
+      ]),
 
       // Rest of the plugins...
+      "react-native-worklets/plugin",
     ],
   };
 };

@@ -5,8 +5,9 @@ import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useTempStore } from "@/stores/tempStore";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 const MIN_PASSPHRASE_LENGTH = 7;
 
@@ -21,9 +22,10 @@ export default function SetPassphraseScreen() {
     const [showPassphrase, setShowPassphrase] = useState(false);
     const [showConfirmPassphrase, setShowConfirmPassphrase] = useState(false);
     const { setTempPassphrase } = useTempStore();
+    const confirmPassphraseInputRef = useRef<TextInput>(null);
 
     const { mode } = useLocalSearchParams<{ mode: OnboardingMode }>();
-    
+
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
@@ -63,8 +65,10 @@ export default function SetPassphraseScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.content}>
+        <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+            <KeyboardAwareScrollView
+                bottomOffset={spaceTokens[4]}
+            >
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <Text style={styles.subtitle}>
@@ -85,8 +89,15 @@ export default function SetPassphraseScreen() {
                                 placeholder="Enter your passphrase"
                                 placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showPassphrase}
+                                textContentType="newPassword"
                                 autoCapitalize="none"
                                 autoCorrect={false}
+                                importantForAutofill="yes"
+                                returnKeyType="next"
+                                enterKeyHint="next"
+                                onSubmitEditing={() => {
+                                    confirmPassphraseInputRef.current?.focus();
+                                }}
                             />
                             <Pressable
                                 style={styles.eyeButton}
@@ -116,14 +127,22 @@ export default function SetPassphraseScreen() {
                         <Text style={styles.label}>Confirm Passphrase</Text>
                         <View style={styles.inputWrapper}>
                             <TextInput
+                                ref={confirmPassphraseInputRef}
                                 style={styles.input}
                                 value={confirmPassphrase}
                                 onChangeText={setConfirmPassphrase}
                                 placeholder="Confirm your passphrase"
                                 placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showConfirmPassphrase}
+                                textContentType="newPassword"
+                                importantForAutofill="yes"
                                 autoCapitalize="none"
                                 autoCorrect={false}
+                                returnKeyType="done"
+                                enterKeyHint="done"
+                                onSubmitEditing={() => {
+                                    handleCreateAccount();
+                                }}
                             />
                             <Pressable
                                 style={styles.eyeButton}
@@ -146,18 +165,18 @@ export default function SetPassphraseScreen() {
                         )}
                     </View>
                 </View>
+            </KeyboardAwareScrollView>
 
-                {/* Spacer */}
-                <View style={{ flex: 1 }} />
+            {/* Spacer */}
+            <View style={{ flex: 1 }} />
 
-                {/* Button Section */}
-                <View style={[styles.buttonSection, { paddingBottom: insets.bottom }]}>
-                    <PrimaryButton
-                        title={mode === "create" ? "Create Account" : "Restore Wallet"}
-                        onPress={mode === "create" ? handleCreateAccount : handleRestoreWallet}
-                        disabled={!isFormValid}
-                    />
-                </View>
+            {/* Button Section */}
+            <View style={styles.buttonSection}>
+                <PrimaryButton
+                    title={mode === "create" ? "Create Account" : "Restore Wallet"}
+                    onPress={mode === "create" ? handleCreateAccount : handleRestoreWallet}
+                    disabled={!isFormValid}
+                />
             </View>
         </View>
     );
@@ -167,9 +186,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
         flex: 1,
         backgroundColor: colorTokens['bg.default'],
-    },
-    content: {
-        flex: 1,
         paddingHorizontal: spaceTokens[4],
     },
     headerSection: {
@@ -237,6 +253,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['status.error'],
     },
     buttonSection: {
-        paddingBottom: spaceTokens[4],
+        paddingVertical: spaceTokens[3],
     },
 }));

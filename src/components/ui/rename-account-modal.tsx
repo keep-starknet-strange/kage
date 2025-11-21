@@ -4,6 +4,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemePro
 import { LOG } from "@/utils/logs";
 import { useState } from "react";
 import { Modal, Pressable, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { PrimaryButton } from "./primary-button";
 import { SecondaryButton } from "./secondary-button";
 
@@ -67,12 +68,16 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
             animationType="fade"
             onRequestClose={handleClose}
         >
-            <Pressable 
+            <Pressable
                 style={styles.modalOverlay}
                 onPress={handleClose}
             >
                 <Pressable style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
+                    <KeyboardAvoidingView
+                        keyboardVerticalOffset={200}
+                        behavior={"position"}
+                        contentContainerStyle={styles.modalContent}
+                    >
                         <Text style={styles.title}>Rename Account</Text>
                         <Text style={styles.description}>
                             Choose a new name for your account.
@@ -121,7 +126,7 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
                                 style={styles.renameButton}
                             />
                         </View>
-                    </View>
+                    </KeyboardAvoidingView>
                 </Pressable>
             </Pressable>
         </Modal>

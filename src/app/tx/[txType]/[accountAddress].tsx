@@ -14,6 +14,7 @@ import { useProfileStore } from "@/stores/profileStore";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
 
@@ -58,76 +59,77 @@ const TransactionScreen = () => {
     }
 
     return (
-        <View style={[styles.container]}>
-            <ScrollView style={styles.content}>
-                {activeTab !== 'publicTransfer' && (
-                    <>
-                        < View style={styles.tabContainer}>
-                            <Pressable
-                                style={[styles.tab, activeTab === 'fund' && styles.activeTab]}
-                                onPress={() => setActiveTab('fund')}
-                            >
-                                <IconSymbol
-                                    name="shield"
-                                    size={20}
-                                    color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
-                                />
-                                <Text style={[styles.tabText, activeTab === 'fund' && styles.activeTabText]}>
-                                    Shield
-                                </Text>
-                            </Pressable>
+        <KeyboardAwareScrollView
+            contentContainerStyle={[styles.container]}
+            bottomOffset={spaceTokens[3]}
+        >
+            {activeTab !== 'publicTransfer' && (
+                <>
+                    <View style={styles.tabContainer}>
+                        <Pressable
+                            style={[styles.tab, activeTab === 'fund' && styles.activeTab]}
+                            onPress={() => setActiveTab('fund')}
+                        >
+                            <IconSymbol
+                                name="shield"
+                                size={20}
+                                color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
+                            />
+                            <Text style={[styles.tabText, activeTab === 'fund' && styles.activeTabText]}>
+                                Shield
+                            </Text>
+                        </Pressable>
 
-                            <Pressable
-                                style={[styles.tab, activeTab === 'transfer' && styles.activeTab]}
-                                onPress={() => setActiveTab('transfer')}
-                            >
-                                <IconSymbol
-                                    name="cash-lock"
-                                    size={20}
-                                    color={activeTab === 'transfer' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
-                                />
-                                <Text style={[styles.tabText, activeTab === 'transfer' && styles.activeTabText]}>
-                                    Transfer
-                                </Text>
-                            </Pressable>
+                        <Pressable
+                            style={[styles.tab, activeTab === 'transfer' && styles.activeTab]}
+                            onPress={() => setActiveTab('transfer')}
+                        >
+                            <IconSymbol
+                                name="cash-lock"
+                                size={20}
+                                color={activeTab === 'transfer' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
+                            />
+                            <Text style={[styles.tabText, activeTab === 'transfer' && styles.activeTabText]}>
+                                Transfer
+                            </Text>
+                        </Pressable>
 
-                            <Pressable
-                                style={[styles.tab, activeTab === 'withdraw' && styles.activeTab]}
-                                onPress={() => setActiveTab('withdraw')}
-                            >
-                                <IconSymbol
-                                    name="shield-off"
-                                    size={20}
-                                    color={activeTab === 'withdraw' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
-                                />
-                                <Text style={[styles.tabText, activeTab === 'withdraw' && styles.activeTabText]}>
-                                    Unshield
-                                </Text>
-                            </Pressable>
-                        </View>
+                        <Pressable
+                            style={[styles.tab, activeTab === 'withdraw' && styles.activeTab]}
+                            onPress={() => setActiveTab('withdraw')}
+                        >
+                            <IconSymbol
+                                name="shield-off"
+                                size={20}
+                                color={activeTab === 'withdraw' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
+                            />
+                            <Text style={[styles.tabText, activeTab === 'withdraw' && styles.activeTabText]}>
+                                Unshield
+                            </Text>
+                        </Pressable>
+                    </View>
 
 
-                        <View style={styles.tabContent}>
-                            {activeTab === 'fund' && (
-                                <FundTab account={account} />
-                            )}
+                    <View style={styles.tabContent}>
+                        {activeTab === 'fund' && (
+                            <FundTab account={account} />
+                        )}
 
-                            {activeTab === 'transfer' && (
-                                <TransferTab account={account} />
-                            )}
+                        {activeTab === 'transfer' && (
+                            <TransferTab account={account} />
+                        )}
 
-                            {activeTab === 'withdraw' && (
-                                <WithdrawTab account={account} />
-                            )}
-                        </View>
-                    </>
-                )}
+                        {activeTab === 'withdraw' && (
+                            <WithdrawTab account={account} />
+                        )}
+                    </View>
+                </>
+            )}
 
-                {activeTab === 'publicTransfer' && (
-                    <PublicTransferTab account={account} />
-                )}
-            </ScrollView >
-        </View >
+            {activeTab === 'publicTransfer' && (
+                <PublicTransferTab account={account} />
+            )}
+        </KeyboardAwareScrollView >
     );
 };
 
@@ -135,7 +137,6 @@ export default TransactionScreen;
 
 const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
-        flex: 1,
         backgroundColor: colorTokens['bg.default'],
     },
     header: {
@@ -164,7 +165,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['text.primary'],
     },
     content: {
-        flex: 1,
+
     },
     accountSection: {
         marginBottom: spaceTokens[5],
