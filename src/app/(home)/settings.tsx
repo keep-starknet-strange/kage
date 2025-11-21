@@ -191,7 +191,7 @@ export default function SettingsScreen() {
                                 false: colorTokens['border.strong'], 
                                 true: colorTokens['brand.accent'] 
                             }}
-                            thumbColor={colorTokens['bg.elevated']}
+                            thumbColor={colorTokens['text.secondary']}
                         />
                     )}
                 </View>

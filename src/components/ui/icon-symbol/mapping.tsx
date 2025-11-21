@@ -65,7 +65,7 @@ const MAPPING = {
         android: { source: 'material', name: 'settings' }
     },
     'plus-circle': {
-        ios: 'plus.circle',
+        ios: 'plus.circle.fill',
         android: { source: 'material-community', name: 'plus-circle' }
     },
     'arrow-right-circle': {
@@ -199,10 +199,6 @@ const MAPPING = {
     'close': {
         ios: 'xmark',
         android: { source: 'material-community', name: 'close' }
-    },
-    'plus-circle-fill': {
-        ios: 'plus.circle.fill',
-        android: { source: 'material-community', name: 'plus-circle' }
     },
     'tray': {
         ios: 'tray',
