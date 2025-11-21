@@ -2,7 +2,7 @@ import { AddressView } from '@/components/address-view';
 import { AccountContextMenu } from '@/components/ui/account-context-menu';
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { TotalBalanceCard } from '@/components/ui/total-balance-card';
-import { fontStyles, fontTokens, radiusTokens, spaceTokens } from '@/design/tokens';
+import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';
 import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import { useDynamicSafeAreaInsets } from '@/providers/DynamicSafeAreaProvider';
@@ -10,7 +10,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemePro
 import { useProfileStore } from '@/stores/profileStore';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { FlatList, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
     const { insets } = useDynamicSafeAreaInsets();

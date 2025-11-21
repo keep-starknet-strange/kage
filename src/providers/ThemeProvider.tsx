@@ -1,4 +1,4 @@
-import { fontStyles, fontTokens, spaceTokens, ztarknetColorTokens } from '@/design/tokens';
+import { fontTokens, ztarknetColorTokens } from '@/design/tokens';
 import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 

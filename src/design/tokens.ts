@@ -58,22 +58,22 @@ export const fontTokens = {
   ubuntuMono: {
     regular: Platform.select({
       ios: 'UbuntuMono-Regular',
-      android: 'UbuntuMono_400Regular',
+      android: 'UbuntuMono',
       default: 'UbuntuMono_400Regular',
     }),
     italic: Platform.select({
       ios: 'UbuntuMono-Italic',
-      android: 'UbuntuMono_400Regular_Italic',
+      android: 'UbuntuMono',
       default: 'UbuntuMono_400Regular_Italic',
     }),
     bold: Platform.select({
       ios: 'UbuntuMono-Bold',
-      android: 'UbuntuMono_700Bold',
+      android: 'UbuntuMono',
       default: 'UbuntuMono_700Bold',
     }),
     boldItalic: Platform.select({
       ios: 'UbuntuMono-BoldItalic',
-      android: 'UbuntuMono_700Bold_Italic',
+      android: 'UbuntuMono',
       default: 'UbuntuMono_700Bold_Italic',
     }),
   },
