@@ -63,17 +63,6 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
         await keyValueStorage.set("accounts.classHashes", Object.fromEntries(classHashes.entries()));
     }
 
-
-    const getUniversalTxDetails = async (account: StarknetAccount): Promise<UniversalDetails> => {
-        const tipEstimate = await account.getEstimateTip('latest', {
-            maxBlocks: 3,
-            minTxsNecessary: 5
-        });
-        return {
-            tip: tipEstimate.recommendedTip,
-        }
-    }
-
     return {
         pendingTransactionsStack: [],
         deployStatus: new Map(),
@@ -120,11 +109,10 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             await fundOp.populateApprove();
             LOG.info("[TX]: 🚀 Funding account execute...");
             
-            const txDetails = await getUniversalTxDetails(signerAccount);
             const starknetTx = await signerAccount.execute([
                 fundOp.approve!,
                 fundOp.toCalldata()
-            ], txDetails);
+            ]);
 
             appendPendingTransaction({
                 type: "fund",
@@ -212,8 +200,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 LOG.info("[TX]: 🗝 Prooving rollover...");
                 const rolloverOp = await tongoAccount.rollover({ sender: from.address });
                 LOG.info("[TX]: 🚀 Rollover execute...");
-                const txDetails = await getUniversalTxDetails(signerAccount);
-                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()], txDetails);
+                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
             }
 
@@ -225,8 +212,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🚀 Transfer execute...");
-            const txDetails = await getUniversalTxDetails(signerAccount);
-            const starknetTx = await signerAccount.execute([transferOp.toCalldata()], txDetails);
+            const starknetTx = await signerAccount.execute([transferOp.toCalldata()]);
 
             appendPendingTransaction({
                 type: "transfer",
@@ -277,8 +263,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 LOG.info("[TX]: 🗝 Prooving rollover...");
                 const rolloverOp = await tongoAccount.rollover({ sender: to.address });
                 LOG.info("[TX]: 🚀 Rollover execute...");
-                const txDetails = await getUniversalTxDetails(signerAccount);
-                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()], txDetails);
+                const rolloverTx = await signerAccount.execute([rolloverOp.toCalldata()]);
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
             }
 
@@ -290,8 +275,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             });
 
             LOG.info("[TX]: 🚀 Withdraw execute...");
-            const txDetails = await getUniversalTxDetails(signerAccount);
-            const starknetTx = await signerAccount.execute([withdrawOp.toCalldata()], txDetails);
+            const starknetTx = await signerAccount.execute([withdrawOp.toCalldata()]);
 
             appendPendingTransaction({
                 type: "withdraw",
