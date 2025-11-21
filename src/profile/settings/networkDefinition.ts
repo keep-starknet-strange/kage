@@ -134,7 +134,7 @@ export default class NetworkDefinition {
     }
 
     static default(): NetworkDefinition {
-        return NetworkDefinition.sepolia();
+        return NetworkDefinition.mainnet();
     }
 
     static wellKnown(): NetworkDefinition[] {
