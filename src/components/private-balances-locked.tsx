@@ -1,7 +1,7 @@
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { Text, View } from "react-native";
-import { IconSymbol } from "./ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { PrimaryButton } from "./ui/primary-button";
 
 export interface PrivateBalancesLockedProps {

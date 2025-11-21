@@ -1,5 +1,5 @@
 import { DangerButton } from "@/components/ui/danger-button";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { showToastError } from "@/components/ui/toast";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";

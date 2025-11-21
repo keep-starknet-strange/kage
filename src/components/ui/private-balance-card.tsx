@@ -7,7 +7,7 @@ import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleProp, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import ActionButton from "./action-buttons";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { showToastError } from "./toast";
 
 export interface PrivateBalanceCardProps {

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
-import { IconSymbol, IconSymbolName } from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
@@ -91,7 +91,7 @@ export default function AccessVaultModal() {
         }
     }
 
-    const getBiometryIcon = (type: BiometryType | null): IconSymbolName => {
+    const getBiometryIcon = (type: BiometryType | null) => {
         switch (type) {
             case BiometryType.FACE_ID:
             case BiometryType.FACE:

@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { defaultScreenOptions } from '@/providers/ThemeProvider';
 
 export default function WalletLayout() {

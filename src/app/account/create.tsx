@@ -1,4 +1,4 @@
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { SimpleHeader } from '@/components/ui/simple-header';
 import { fontStyles, radiusTokens, spaceTokens } from '@/design/tokens';

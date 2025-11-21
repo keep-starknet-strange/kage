@@ -1,10 +1,12 @@
-// Fallback for using MaterialIcons on Android and web.
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { SymbolViewProps } from "expo-symbols";
+import { ComponentProps } from "react";
 
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
-import { ComponentProps } from 'react';
-import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
+export type AndroidIconMapping = | { source: 'material'; name: ComponentProps<typeof MaterialIcons>['name'] }
+    | { source: 'material-community'; name: ComponentProps<typeof MaterialCommunityIcons>['name'] };
+
+export type IOSIconMapping = SymbolViewProps['name'];
 
 /**
  * Platform-specific icon configuration
@@ -12,10 +14,8 @@ import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
  * - android: Material Icon or Material Community Icon name with source
  */
 export type PlatformIconMapping = {
-    ios: SymbolViewProps['name'];
-    android:
-    | { source: 'material'; name: ComponentProps<typeof MaterialIcons>['name'] }
-    | { source: 'material-community'; name: ComponentProps<typeof MaterialCommunityIcons>['name'] };
+    ios: IOSIconMapping;
+    android: AndroidIconMapping
 };
 
 /**
@@ -214,33 +214,12 @@ const MAPPING = {
     },
 } satisfies IconMapping;
 
-export type IconSymbolName = keyof typeof MAPPING;
-
-/**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on custom icon names that map to platform-specific icons.
- */
-export function IconSymbol({
-    name,
-    size = 24,
-    color,
-    style,
-}: {
-    name: IconSymbolName;
-    size?: number;
-    color: string | OpaqueColorValue;
-    style?: StyleProp<TextStyle>;
-    weight?: SymbolWeight;
-}) {
-    const iconConfig = MAPPING[name].android;
-    if (iconConfig.source === 'material-community') {
-        return <MaterialCommunityIcons color={color} size={size} name={iconConfig.name} style={style} />;
-    } else if (iconConfig.source === 'material') {
-        return <MaterialIcons color={color} size={size} name={iconConfig.name} style={style} />;
-    }
-}
-
-export function sfSymbol(name: IconSymbolName): SymbolViewProps['name'] {
+export function sfSymbol(name: IconSymbolName): IOSIconMapping {
     return MAPPING[name].ios;
 }
+
+export function androidSymbol(name: IconSymbolName): AndroidIconMapping {
+    return MAPPING[name].android;
+}
+
+export type IconSymbolName = keyof typeof MAPPING;

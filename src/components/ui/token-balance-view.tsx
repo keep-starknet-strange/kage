@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { Text, View } from "react-native";
 import { PrivateAddressView } from "./private-address-view";
 import { Image } from "expo-image";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 export interface PublicTokenBalanceViewProps {
     balance: PublicTokenBalance;

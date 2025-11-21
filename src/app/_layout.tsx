@@ -17,6 +17,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from "react";
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
+import { StatusBar } from 'expo-status-bar';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -136,6 +137,7 @@ function AppStructure({
             <AccessVaultModal />
             <NetworkBanner network={currentNetworkDefinition} />
             <KageToast />
+            <StatusBar style="light" />
         </>
     );
 }

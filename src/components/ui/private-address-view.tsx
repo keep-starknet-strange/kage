@@ -5,7 +5,7 @@ import formattedAddress from '@/utils/formattedAddress';
 import * as Clipboard from 'expo-clipboard';
 import { useMemo, useRef, useState } from "react";
 import { Animated, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from './icon-symbol';
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 export type PrivateAddressViewProps = {
     address: PrivateTokenAddress;

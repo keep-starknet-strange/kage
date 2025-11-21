@@ -8,7 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 export interface TransactionToastProps {
     id: string;

@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { AddressView } from "../address-view";
 import { AccountContextMenu } from "./account-context-menu";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 interface AccountHeaderProps {
     account: Account | null;

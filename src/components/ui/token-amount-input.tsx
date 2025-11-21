@@ -5,7 +5,7 @@ import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/t
 import { stringToBigint, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { useEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { ModalPicker } from "./modal-picker";
 import { Image } from "expo-image";
 

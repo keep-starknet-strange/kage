@@ -10,7 +10,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
 import { AddressView } from "../address-view";
 import ActionButton from "./action-buttons";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 export interface PublicBalanceCardProps {
     account: Account;

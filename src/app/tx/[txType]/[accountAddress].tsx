@@ -3,7 +3,7 @@ import { PublicTransferTab } from "@/components/screens/tx/public-transfer-tab";
 import { TransferTab } from "@/components/screens/tx/transfer-tab";
 import { WithdrawTab } from "@/components/screens/tx/withdraw-tab";
 import AccountHeader from "@/components/ui/account-header";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";

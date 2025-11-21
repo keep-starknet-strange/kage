@@ -1,7 +1,7 @@
 import { SymbolView, SymbolWeight } from 'expo-symbols';
-import { StyleProp, ViewStyle } from 'react-native';
-import { IconSymbolName, sfSymbol } from './icon-symbol';
 import { useMemo } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
+import { IconSymbolName, sfSymbol } from './mapping';
 
 export function IconSymbol({
   name,

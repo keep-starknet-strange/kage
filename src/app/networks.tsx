@@ -1,4 +1,4 @@
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { SimpleHeader } from "@/components/ui/simple-header";
 import { showToastError } from "@/components/ui/toast";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
@@ -8,7 +8,6 @@ import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useProfileStore } from "@/stores/profileStore";
-import { LOG } from "@/utils/logs";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";

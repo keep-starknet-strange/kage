@@ -1,6 +1,6 @@
 import { PrivateBalancesLocked } from '@/components/private-balances-locked';
 import AccountHeader from '@/components/ui/account-header';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { PrivateBalanceCard } from '@/components/ui/private-balance-card';
 import { PublicBalanceCard } from '@/components/ui/public-balance-card';
 import { SecondaryButton } from '@/components/ui/secondary-button';

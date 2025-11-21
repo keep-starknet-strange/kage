@@ -5,7 +5,7 @@ import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
 import { useState } from "react";
 import { ActivityIndicator, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { RenameAccountModal } from "./rename-account-modal";
 import { showToastError } from "./toast";
 

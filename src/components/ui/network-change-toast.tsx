@@ -3,7 +3,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemePro
 import { NetworkId } from "@/profile/misc";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { Pressable, Text, View } from "react-native";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 export interface NetworkChangeToastProps {
     networkId: NetworkId;

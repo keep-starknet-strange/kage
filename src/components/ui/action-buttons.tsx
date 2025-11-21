@@ -1,7 +1,8 @@
 import { fontStyles, opacityTokens, spaceTokens } from '@/design/tokens';
 import { ThemedStyleSheet, useTheme, useThemedStyle } from '@/providers/ThemeProvider';
 import { Pressable, Text, View, ViewStyle } from 'react-native';
-import { IconSymbol, IconSymbolName } from './icon-symbol';
+import { IconSymbol } from '@/components/ui/icon-symbol/icon-symbol';
+import { IconSymbolName } from './icon-symbol/mapping';
 
 export interface ActionButtonProps {
     icon: IconSymbolName;

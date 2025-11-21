@@ -3,7 +3,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemePro
 import * as Clipboard from 'expo-clipboard';
 import { useEffect, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 
 export interface ErrorToastProps {
     id: string;
