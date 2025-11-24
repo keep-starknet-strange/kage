@@ -83,13 +83,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#232323",
-          "image": "./favicon_kit/android-chrome-512x512.png",
+          "backgroundColor": "#0a0908",
+          "image": "./resources/logo/kage-outline.png",
           "dark": {
-            "image": "./favicon_kit/android-chrome-512x512.png",
-            "backgroundColor": "#000000"
+            "image": "./resources/logo/kage-outline.png",
+            "backgroundColor": "#0a0908"
           },
-          "imageWidth": 200
+          "imageWidth": 160,
+          "resizeMode": "native"
         }
       ],
       [
