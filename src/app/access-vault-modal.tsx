@@ -128,7 +128,13 @@ export default function AccessVaultModal() {
             presentationStyle="pageSheet"
         >
             <KeyboardAwareScrollView
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[
+                    styles.scrollContent, 
+                    { 
+                        paddingTop: Platform.select({ "android": insets.top }),
+                        paddingBottom: insets.bottom,
+                    }
+                ]}
                 keyboardShouldPersistTaps="handled"
                 style={styles.container}
             >
@@ -232,7 +238,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     scrollContent: {
         justifyContent: 'center',
         paddingHorizontal: spaceTokens[5],
-        paddingBottom: spaceTokens[6],
         flexGrow: 1,
     },
     header: {

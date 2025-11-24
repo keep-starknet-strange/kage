@@ -3,7 +3,8 @@ import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import Identifiable from "@/types/Identifiable";
 import { ReactNode, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
+import { Modal, Platform, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ModalPickerProps<T extends Identifiable> = {
     items: T[];
@@ -29,6 +30,7 @@ export function ModalPicker<T extends Identifiable>({
     renderModalItem = renderItem,
 }: ModalPickerProps<T>) {
     const styles = useThemedStyle(themedStyleSheet);
+    const insets = useSafeAreaInsets();
     const { colors: colorTokens } = useTheme();
     const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -70,7 +72,13 @@ export function ModalPicker<T extends Identifiable>({
                 onRequestClose={() => setIsModalVisible(false)}
             >
                 <Pressable
-                    style={styles.modalContent}
+                    style={[
+                        styles.modalContent,
+                        {
+                            paddingTop: Platform.select({ android: insets.top }),
+                            paddingBottom: insets.bottom
+                        }
+                    ]}
                     onPress={(e) => e.stopPropagation()}
                 >
                     <View style={styles.modalHeader}>
@@ -144,7 +152,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     modalContent: {
         flex: 1,
         backgroundColor: colorTokens['bg.elevated'],
-        paddingBottom: spaceTokens[6],
     },
     modalHeader: {
         flexDirection: 'row',

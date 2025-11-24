@@ -7,10 +7,11 @@ import { fiatBalanceToFormatted } from "@/utils/formattedBalance";
 import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
+import { Modal, Platform, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
 import { AddressView } from "../address-view";
 import ActionButton from "./action-buttons";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface PublicBalanceCardProps {
     account: Account;
@@ -22,6 +23,7 @@ const FundModal = (
     { account, isVisible, onRequestClose }: { account: Account, isVisible: boolean, onRequestClose: () => void }
 ) => {
     const styles = useThemedStyle(themedStyleSheet);
+    const insets = useSafeAreaInsets();
     const { colors: colorTokens } = useTheme();
     return (
         <Modal
@@ -32,7 +34,13 @@ const FundModal = (
             onRequestClose={onRequestClose}
         >
             <Pressable
-                style={styles.modalContent}
+                style={[
+                    styles.modalContent,
+                    {
+                        paddingTop: Platform.select({ android: insets.top }),
+                        paddingBottom: insets.bottom
+                    }
+                ]}
                 onPress={(e) => e.stopPropagation()}
             >
                 <View style={styles.modalHeader}>
@@ -167,7 +175,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     modalContent: {
         flex: 1,
         backgroundColor: colorTokens['bg.elevated'],
-        paddingBottom: spaceTokens[6],
     },
     modalHeader: {
         flexDirection: 'row',
