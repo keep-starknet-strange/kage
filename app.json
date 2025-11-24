@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "kage",
+    "name": "KAGE",
     "slug": "kage",
     "scheme": "kage",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./kage-logo.png",
+    "icon": "./resources/logo/ios/app-icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
@@ -18,15 +18,16 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./favicon_kit/android-chrome-512x512.png",
-        "backgroundColor": "#0B0F10"
+        "foregroundImage": "./resources/logo/android/foreground.png",
+        "monochromeImage": "./resources/logo/android/foreground.png",
+        "backgroundColor": "#0a080a"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.starknet.kage"
     },
     "web": {
-      "favicon": "./favicon_kit/favicon-48x48.png"
+      "favicon": "./resources/logo/web/favicon-48x48.png"
     },
     "plugins": [
       "expo-router",

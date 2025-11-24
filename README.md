@@ -1,7 +1,7 @@
 # KAGE — Privacy is STARK Normal
 
 <p align="center">
-  <img src="./kage-logo.png" alt="KAGE logo" width="120" height="120" />
+  <img src="./resources/logo/ios/app-icon.png" alt="KAGE logo" width="120" height="120" />
 </p>
 
 **Codename:** KAGE (影, “shadow”; easy to pronounce: “kah‑geh”)  
