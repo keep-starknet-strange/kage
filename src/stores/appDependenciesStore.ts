@@ -1,8 +1,11 @@
+import StarKMSProvider from "@/crypto/kms/StarKMSProvider";
 import { MobilePKDFPerformer } from "@/crypto/pbkdf/MobilePBKDFPerformer";
 import { WebPKDFPerformer } from "@/crypto/pbkdf/WebPBKDFPerformer";
 import { BiometricsProvider, BiometricsProviderImpl } from "@/crypto/provider/biometrics/BiometricsProvider";
 import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
 import { EMIP3CryptoProvider } from "@/crypto/provider/EMIP3CryptoProvider";
+import AVNUMarketRepository from "@/market/AVNUMarketRespository";
+import { MarketRepository } from "@/market/MarketRepository";
 import EncryptedStorage from "@/storage/encrypted/EncryptedStorage";
 import MobileEncryptedStorage from "@/storage/encrypted/MobileEncryptedStorage";
 import WebEncryptedStorage from "@/storage/encrypted/WebEncryptedStorage";
@@ -13,15 +16,13 @@ import MobileProfileStorage from "@/storage/profile/MobileProfileStorage";
 import ProfileStorage from "@/storage/profile/ProfileStorage";
 import WebProfileStorage from "@/storage/profile/WebProfileStorage";
 import SeedPhraseVault from "@/storage/SeedPhraseVault";
+import { AppError } from "@/types/appError";
 import { platform } from "@/utils/platform";
 import Constants from 'expo-constants';
+import { Platform } from "react-native";
 import { create } from "zustand";
 import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
-import { Platform } from "react-native";
-import { AppError } from "@/types/appError";
-import { MarketRepository } from "@/market/MarketRepository";
-import AVNUMarketRepository from "@/market/AVNUMarketRespository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -73,6 +74,7 @@ export const useAppDependenciesStore = create<AppDependencies>(() => {
         publicBalanceRepository: new PublicBalanceRepository(),
         privateBalanceRepository: new PrivateBalanceRepository(),
         marketRepository: new AVNUMarketRepository(),
+        kmsProvider: new StarKMSProvider(),
     }
 });
 

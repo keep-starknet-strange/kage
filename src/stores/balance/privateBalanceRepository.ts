@@ -83,7 +83,7 @@ export default class PrivateBalanceRepository extends BalanceRepository {
         for (const [account, tokenKeyPairs] of result.tokens.entries()) {
             for (const tokenKeyPair of tokenKeyPairs) {
                 // @ts-ignore
-                const tongoToken = new TongoToken(tokenKeyPair.keyPairs.spendingKeyPair.privateSpendingKey, tokenKeyPair.token.tongoAddress, this.provider);
+                const tongoToken = new TongoToken(tokenKeyPair.keyPair.privateKey, tokenKeyPair.token.tongoAddress, this.provider);
                 this.tongoCache.set(this.cacheKey(account, tokenKeyPair.token), tongoToken);
                 this.tongoAddressToAccountAddress.set(tongoToken.tongoAddress(), account.address);
             }

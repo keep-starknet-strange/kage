@@ -35,12 +35,12 @@ export class AccountSigner extends Signer {
             }
         );
 
-        const keyPairs = result.signing.get(this.account);
+        const keyPair = result.signing.get(this.account);
 
-        if (!keyPairs) {
+        if (!keyPair) {
             throw new AppError("Signing key not found for account ", this.account.address);
         }
 
-        return keyPairs.spendingKeyPair.privateSpendingKey;
+        return keyPair.privateKey;
     }
 }

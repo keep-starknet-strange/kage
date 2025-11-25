@@ -1,9 +1,9 @@
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SimpleHeader } from "@/components/ui/simple-header";
 import { showToastError } from "@/components/ui/toast";
+import { KeyPair, kmsProvider } from "@/crypto/kms/KMSProvider";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { AccountAddress } from "@/profile/account";
-import { NetworkId } from "@/profile/misc";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
@@ -11,7 +11,7 @@ import { DeployedStatus, useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
 import { useTempStore } from "@/stores/tempStore";
 import { AppError } from "@/types/appError";
-import { deriveAccountAddress, deriveStarknetKeyPairs, getStarknetPublicKeyFromPrivate, StarknetKeyPair } from "@starkms/key-management";
+import SeedPhraseWords from "@/types/seedPhraseWords";
 import { useNavigation, useRouter } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
@@ -58,19 +58,15 @@ export default function RestoreWalletScreen() {
         });
     }, [navigation, insets.top, router]);
 
-    const deriveAccountData = useCallback(async (startIndex: number, selectedNetwork: NetworkDefinition, seedPhraseWords: string) => {
-        const accountData: Map<AccountAddress, { index: number, keyPair: StarknetKeyPair }> = new Map();
+    const deriveAccountData = useCallback(async (startIndex: number, selectedNetwork: NetworkDefinition, seedPhraseWords: SeedPhraseWords) => {
+        const accountData: Map<AccountAddress, { index: number, keyPair: KeyPair }> = new Map();
         for (let i = startIndex; i < startIndex + MAX_ACCOUNTS_PER_BATCH; i++) {
-            const keyPair = deriveStarknetKeyPairs({
-                accountIndex: 0,
-                addressIndex: i,
-            }, seedPhraseWords, true);
+            const keyPair = kmsProvider.deriveKeyPair({
+                type: "account-key-pair",
+                accountIndex: i
+            }, seedPhraseWords);
 
-            const publicKey = getStarknetPublicKeyFromPrivate(keyPair.spendingKeyPair.privateSpendingKey, true);
-            const accountAddress = AccountAddress.fromHex(deriveAccountAddress(
-                publicKey,
-                { classHash: selectedNetwork.accountClassHash, salt: "0x0" }
-            ).address);
+            const accountAddress = kmsProvider.deriveAccountAddress(keyPair.publicKey, selectedNetwork.accountClassHash, "0x0");
 
             accountData.set(accountAddress, { index: i, keyPair });
         }
@@ -100,14 +96,13 @@ export default function RestoreWalletScreen() {
             setProgress("Deriving account addresses...");
 
             let startIndex = 0;
-            const accountData: Map<AccountAddress, { index: number; keyPair: StarknetKeyPair }> = new Map();
+            const accountData: Map<AccountAddress, { index: number; keyPair: KeyPair }> = new Map();
             const deployedAccounts: Map<AccountAddress, DeployedStatus> = new Map();
 
             setTimeout(async () => {
-                const seedPhraseWordsString = seedPhraseWords.toString();
                 while (true) {
                     console.log("Deriving account data from index", startIndex);
-                    const derivedData = await deriveAccountData(startIndex, selectedNetwork, seedPhraseWordsString);
+                    const derivedData = await deriveAccountData(startIndex, selectedNetwork, seedPhraseWords);
                     derivedData.forEach((keyPairWithIndex, accountAddress) => {
                         accountData.set(accountAddress, keyPairWithIndex);
                     });
@@ -131,7 +126,7 @@ export default function RestoreWalletScreen() {
                     }
                 }
 
-                const accountDataMap = new Map<AccountAddress, { index: number; keyPair: StarknetKeyPair }>();
+                const accountDataMap = new Map<AccountAddress, { index: number; keyPair: KeyPair }>();
                 deployedAccounts.forEach((status, accountAddress) => {
                     if (status === "deployed") {
                         const keyPairWithIndex = accountData.get(accountAddress);
@@ -146,7 +141,7 @@ export default function RestoreWalletScreen() {
                 await restore(
                     selectedNetwork,
                     passphrase,
-                    seedPhraseWords.getWords(),
+                    seedPhraseWords,
                     accountDataMap
                 )
             }, 500); // Wait for the UI to update. KMS is slow...

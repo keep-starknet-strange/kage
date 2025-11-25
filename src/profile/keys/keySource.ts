@@ -1,26 +1,17 @@
-import { getStarknetPublicKeyFromPrivate, grindKey, joinMnemonicWords, StarknetKeyConst } from "@starkms/key-management";
-import { KeySourceKind } from "./keySourceKind";
-import { CoinType } from "./coinType";
-import { ethers } from "ethers";
-import { encode } from "starknet";
+import { kmsProvider } from "@/crypto/kms/KMSProvider";
 import Identifiable from "@/types/Identifiable";
+import SeedPhraseWords from "@/types/seedPhraseWords";
+import { KeySourceKind } from "./keySourceKind";
 
 export type KeySourceId = string;
 
 export namespace KeySourceId {
-    const { addHexPrefix } = encode;
-
-    export function from(seedPhraseWords: string[]): KeySourceId {
-        const getIdPath = `m/${StarknetKeyConst.PURPOSE}'/${CoinType.STARKNET}'/365'`
-        const mnemonic = joinMnemonicWords(seedPhraseWords);
-        const derivedNode = ethers.HDNodeWallet.fromPhrase(
-            mnemonic,
-            undefined,
-            getIdPath,
-        )
-
-        const privateKeyHex = addHexPrefix(grindKey(derivedNode.privateKey));
-        return getStarknetPublicKeyFromPrivate(privateKeyHex, true);
+    export function from(seedPhrase: SeedPhraseWords): KeySourceId {
+        const keyPair = kmsProvider.deriveKeyPair({
+            type: "get-id",
+        }, seedPhrase);
+        
+        return keyPair.publicKey;
     }
 }
 
@@ -36,8 +27,8 @@ export default class KeySource implements Identifiable {
         this.kind = kind;
     }
 
-    static fromSeedPhrase(seedPhraseWords: string[]): KeySource {
-        const id = KeySourceId.from(seedPhraseWords);
+    static fromSeedPhrase(seedPhrase: SeedPhraseWords): KeySource {
+        const id = KeySourceId.from(seedPhrase);
         return new KeySource(id, KeySourceKind.SEED_PHRASE);
     }
 }

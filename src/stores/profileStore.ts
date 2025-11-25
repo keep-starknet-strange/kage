@@ -1,13 +1,14 @@
+import { KeyPair } from "@/crypto/kms/KMSProvider";
 import Account, { AccountAddress } from "@/profile/account";
+import { NetworkId } from "@/profile/misc";
 import Profile from "@/profile/profile";
 import { ProfileState } from "@/profile/profileState";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { AppError } from "@/types/appError";
-import { generateMnemonicWords, StarknetKeyPair } from "@starkms/key-management";
+import SeedPhraseWords from "@/types/seedPhraseWords";
 import { create } from "zustand";
 import { RequestAccessFn } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
-import { NetworkId } from "@/profile/misc";
 
 export interface ProfileStoreState {
     readonly profileState: ProfileState;
@@ -17,8 +18,8 @@ export interface ProfileStoreState {
     restore: (
         networkDefinition: NetworkDefinition,
         passphrase: string,
-        seedPhraseWords: string[],
-        accountData: Map<AccountAddress, {index: number; keyPair: StarknetKeyPair}>
+        seedPhrase: SeedPhraseWords,
+        accountData: Map<AccountAddress, {index: number; keyPair: KeyPair}>
     ) => Promise<void>;
     addAccount: (accountName: string, requestAccess: RequestAccessFn) => Promise<void>;
     renameAccount: (account: Account, newName: string) => Promise<void>;
@@ -59,11 +60,11 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
             throw new AppError("Profile state cannot be created", profileState);
         }
 
-        const seedPhraseWords = generateMnemonicWords();
-        const profile = Profile.createFromSeedPhrase(seedPhraseWords);
-        const updatedProfile = profile.addAccountOnCurrentNetwork(accountName, seedPhraseWords);
+        const seedPhrase = SeedPhraseWords.generate();
+        const profile = Profile.createFromSeedPhrase(seedPhrase);
+        const updatedProfile = profile.addAccountOnCurrentNetwork(accountName, seedPhrase);
 
-        await seedPhraseVault.setup(passphrase, seedPhraseWords);
+        await seedPhraseVault.setup(passphrase, seedPhrase);
 
         await profileStorage.storeProfile(updatedProfile);
         set({ profileState: updatedProfile });
@@ -72,10 +73,10 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
     restore: async (
         networkDefinition: NetworkDefinition,
         passphrase: string,
-        seedPhraseWords: string[],
+        seedPhrase: SeedPhraseWords,
         accountData: Map<AccountAddress, {
             index: number;
-            keyPair: StarknetKeyPair;
+            keyPair: KeyPair;
         }>,
     ) => {
         const { profileState } = get();
@@ -85,7 +86,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
             throw new AppError("Profile state cannot be created", profileState);
         }
 
-        const profile = Profile.createFromSeedPhraseOnNetwork(networkDefinition, seedPhraseWords);
+        const profile = Profile.createFromSeedPhraseOnNetwork(networkDefinition, seedPhrase);
         const data = Array.from(accountData.entries()).map(([accountAddress, { index, keyPair }]) => ({
             index,
             accountAddress,
@@ -97,7 +98,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
 
         await profileStorage.storeProfile(updatedProfile);
 
-        const created = seedPhraseVault.setup(passphrase, seedPhraseWords);
+        const created = seedPhraseVault.setup(passphrase, seedPhrase);
         if (!created) {
             throw new AppError("Failed to store seed phrase in vault");
         }
@@ -123,7 +124,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
             cancelAndroid: "Cancel",
         });
 
-        const updatedProfile = profileState.addAccountOnCurrentNetwork(accountName, result.seedPhrase.getWords());
+        const updatedProfile = profileState.addAccountOnCurrentNetwork(accountName, result.seedPhrase);
         await profileStorage.storeProfile(updatedProfile);
 
         set({ profileState: updatedProfile });

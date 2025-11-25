@@ -1,14 +1,15 @@
+import { KeyPair } from "@/crypto/kms/KMSProvider";
+import { AppError } from "@/types/appError";
 import { Type } from "class-transformer";
+import Account, { AccountAddress } from "./account";
 import Header from "./header/header";
 import KeySource, { KeySourceId } from "./keys/keySource";
+import { KeySourceKind } from "./keys/keySourceKind";
+import { NetworkId } from "./misc";
 import Network from "./network";
 import NetworkDefinition from "./settings/networkDefinition";
 import Settings from "./settings/settings";
-import Account, { AccountAddress } from "./account";
-import { AppError } from "@/types/appError";
-import { StarknetKeyPair } from "@starkms/key-management";
-import { KeySourceKind } from "./keys/keySourceKind";
-import { NetworkId } from "./misc";
+import SeedPhraseWords from "@/types/seedPhraseWords";
 
 export default class Profile {
     @Type(() => Header)
@@ -65,20 +66,20 @@ export default class Profile {
         return this.accountsOnCurrentNetwork.find(account => account.address === address) ?? null;
     }
 
-    addAccountOnCurrentNetwork(accountName: string, seedPhraseWords: string[]): Profile {
+    addAccountOnCurrentNetwork(accountName: string, seedPhrase: SeedPhraseWords): Profile {
         const { network, networkDefinition } = this.currentNetworkWithDefinition;
 
         // First check if key source exists
-        const keySourceId = KeySourceId.from(seedPhraseWords);
+        const keySourceId = KeySourceId.from(seedPhrase);
         const keySource = this.keySources.find(keySource => keySource.id === keySourceId);
 
         let keySources = [...this.keySources];
         if (!keySource) {
-            const newKeySource = KeySource.fromSeedPhrase(seedPhraseWords);
+            const newKeySource = KeySource.fromSeedPhrase(seedPhrase);
             keySources.push(newKeySource);
         }
 
-        const updatedNetwork = network.addNewAccount(accountName, networkDefinition.accountClassHash, seedPhraseWords);
+        const updatedNetwork = network.addNewAccount(accountName, networkDefinition.accountClassHash, seedPhrase);
         const updatedNetworks = this.networks.map(network => network.networkId === updatedNetwork.networkId ? updatedNetwork : network);
 
         return new Profile(
@@ -94,7 +95,7 @@ export default class Profile {
             index: number;
             accountAddress: AccountAddress;
             keySourceId: KeySourceId;
-            keyPair: StarknetKeyPair;
+            keyPair: KeyPair;
         }[]
     ): Profile {
         const { network } = this.currentNetworkWithDefinition;
@@ -159,20 +160,20 @@ export default class Profile {
     }
 
     static createFromSeedPhrase(
-        seedPhraseWords: string[]
+        seedPhrase: SeedPhraseWords
     ) {
         return this.createFromSeedPhraseOnNetwork(
             NetworkDefinition.default(),
-            seedPhraseWords
+            seedPhrase
         );
     }
 
     static createFromSeedPhraseOnNetwork(
         networkDefinition: NetworkDefinition,
-        seedPhraseWords: string[]
+        seedPhrase: SeedPhraseWords
     ) {
         const settings = Settings.createFromNetworkDefinition(networkDefinition);
-        const hdKeySource = KeySource.fromSeedPhrase(seedPhraseWords);
+        const hdKeySource = KeySource.fromSeedPhrase(seedPhrase);
         const header = Header.createByCurrentDevice();
         const network = Network.createEmpty(networkDefinition.chainId);
 

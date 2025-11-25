@@ -1,11 +1,10 @@
-import EncryptedStorage, { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
-import { base64ToBytes, bytesToBase64, bytesToString, stringToBytes } from "@/crypto/utils/encoding";
 import { CryptoProvider } from "@/crypto/provider/CryptoProvider";
-import { joinMnemonicWords } from "@starkms/key-management";
+import { base64ToBytes, bytesToBase64, bytesToString, stringToBytes } from "@/crypto/utils/encoding";
 import { randomBytes } from "@/crypto/utils/Random";
 import { KeySourceId } from "@/profile/keys/keySource";
-import SeedPhraseWords from "@/types/seedPhraseWords";
+import EncryptedStorage, { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
 import { AppError } from "@/types/appError";
+import SeedPhraseWords from "@/types/seedPhraseWords";
 
 const SALT_KEY = "salt";
 const ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY = "encrypted_seed_phrase_encryption_key";
@@ -19,18 +18,18 @@ export default class SeedPhraseVault {
         private readonly cryptoProvider: CryptoProvider,
     ) { }
 
-    async setup(passphrase: string, seedPhraseWords: string[]): Promise<void> {
+    async setup(passphrase: string, seedPhrase: SeedPhraseWords): Promise<void> {
         const passphraseBytes = stringToBytes(passphrase);
         const salt = randomBytes(32);
 
         const keyUser = await this.cryptoProvider.deriveKey(passphraseBytes, salt);
         const seedEncryptionKey = randomBytes(32);
-        const seedPhraseBytes = stringToBytes(joinMnemonicWords(seedPhraseWords));
+        const seedPhraseBytes = stringToBytes(seedPhrase.toString());
 
         const encryptedSeedPhrase = await this.cryptoProvider.encrypt(seedPhraseBytes, seedEncryptionKey);
         const encryptedSeedEncryptionKey = await this.cryptoProvider.encrypt(seedEncryptionKey, keyUser);
 
-        const keySourceId = KeySourceId.from(seedPhraseWords);
+        const keySourceId = KeySourceId.from(seedPhrase);
         const saltSaved = await this.encryptedStorage.setItem(
             SALT_KEY,
             bytesToBase64(salt)

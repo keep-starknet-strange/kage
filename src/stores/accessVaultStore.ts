@@ -1,14 +1,16 @@
+import { KeyPair } from "@/crypto/kms/KMSProvider";
 import Account from "@/profile/account";
 import HDKeyInstance from "@/profile/keyInstance";
 import { KeySourceId } from "@/profile/keys/keySource";
 import { KeySourceKind } from "@/profile/keys/keySourceKind";
 import { ProfileState } from "@/profile/profileState";
 import { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
-import { AppError, CancellationError } from "@/types/appError";
+import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import Token from "@/types/token";
 import { groupBy } from "@/utils/collections";
-import { deriveStarknetKeyPairs, pathHash, StarknetKeyPair } from "@starkms/key-management";
+import formattedAddress from "@/utils/formattedAddress";
+import { LOG } from "@/utils/logs";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";
@@ -38,8 +40,8 @@ export type SeedPhraseOutput = {
 export type Input = PrivateKeysInput | PassphraseInput | SeedPhraseInput;
 
 export type PrivateKeysOutput = {
-    signing: Map<Account, StarknetKeyPair>;
-    tokens: Map<Account, { token: Token, keyPairs: StarknetKeyPair }[]>;
+    signing: Map<Account, KeyPair>;
+    tokens: Map<Account, { token: Token, keyPair: KeyPair }[]>;
 }
 
 export type Output<I extends Input> =
@@ -91,6 +93,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
             const storage = appDependencies.keyValueStorage;
             const biometricsProvider = appDependencies.biometricsProvider;
             const seedPhraseVault = appDependencies.seedPhraseVault;
+            const kmsProvider = appDependencies.kmsProvider;
 
             const profileState = useProfileStore.getState().profileState;
             if (!ProfileState.isProfile(profileState)) {
@@ -106,8 +109,8 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
             const groupedByKind = groupBy(keySources, keySource => keySource.kind);
 
-            const signingResult: Map<Account, StarknetKeyPair> = new Map();
-            const tokensResult: Map<Account, { token: Token, keyPairs: StarknetKeyPair }[]> = new Map();
+            const signingResult: Map<Account, KeyPair> = new Map();
+            const tokensResult: Map<Account, { token: Token, keyPair: KeyPair }[]> = new Map();
 
             for (const [kind, keySources] of groupedByKind) {
                 switch (kind) {
@@ -144,33 +147,40 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                         }
 
                         for (const signingAccount of relatedSigningAccounts) {
-                            const seedPhrase = seedPhrasesMap.get(signingAccount.keyInstance.keySourceId)?.toString();
+                            const seedPhrase = seedPhrasesMap.get(signingAccount.keyInstance.keySourceId);
                             if (!seedPhrase) {
                                 throw new AppError(`Seed phrase not found for account ${signingAccount.address}`);
                             }
 
-                            const keyPairs = deriveStarknetKeyPairs({
-                                accountIndex: 0,
-                                addressIndex: (signingAccount.keyInstance as HDKeyInstance).index,
-                            }, seedPhrase, true)
-                            signingResult.set(signingAccount, keyPairs);
+                            const start = performance.now();
+                            const keyPair = kmsProvider.deriveKeyPair({
+                                type: "account-key-pair",
+                                accountIndex: (signingAccount.keyInstance as HDKeyInstance).index,
+                            }, seedPhrase);
+                            const end = performance.now();
+                            LOG.warn(`Signing ${formattedAddress(signingAccount.address, "compact")} took ${end - start}ms`);
+                            signingResult.set(signingAccount, keyPair);
                         }
 
                         for (const [account, tokens] of relatedTokens) {
-                            const seedPhrase = seedPhrasesMap.get(account.keyInstance.keySourceId)?.toString();
+                            const seedPhrase = seedPhrasesMap.get(account.keyInstance.keySourceId);
                             if (!seedPhrase) {
                                 throw new AppError(`Seed phrase not found for account ${account.address}`);
                             }
 
                             for (const token of tokens) {
-                                const tokenIndex = pathHash(`${account.address}.${token.contractAddress}.${token.tongoAddress}`);
-                                const keyPairs = deriveStarknetKeyPairs({
+                                const start = performance.now();
+                                const keyPair = kmsProvider.deriveKeyPair({
+                                    type: "token-key-pair",
                                     accountIndex: (account.keyInstance as HDKeyInstance).index,
-                                    addressIndex: tokenIndex,
-                                }, seedPhrase, true);
+                                    accountAddress: account.address,
+                                    token: token,
+                                }, seedPhrase);
+                                const end = performance.now();
+                                LOG.warn(`Token ${token.symbol} for ${formattedAddress(account.address, "compact")} took ${end - start}ms`);
 
                                 const existingTokens = tokensResult.get(account) ?? [];
-                                existingTokens.push({ token, keyPairs });
+                                existingTokens.push({ token, keyPair });
                                 tokensResult.set(account, existingTokens);
                             }
                         }

@@ -1,9 +1,10 @@
+import { KeyPair, kmsProvider } from "@/crypto/kms/KMSProvider";
+import SeedPhraseWords from "@/types/seedPhraseWords";
 import { Type } from "class-transformer";
 import Account, { AccountAddress } from "./account";
-import { NetworkId } from "./misc";
-import { KeySourceId } from "./keys/keySource";
 import HDKeyInstance from "./keyInstance";
-import { deriveAccountAddress, deriveStarknetKeyPairs, getStarknetPublicKeyFromPrivate, joinMnemonicWords, StarknetKeyPair } from "@starkms/key-management";
+import { KeySourceId } from "./keys/keySource";
+import { NetworkId } from "./misc";
 
 export default class Network {
     readonly networkId: NetworkId;
@@ -31,24 +32,24 @@ export default class Network {
     addNewAccount(
         accountName: string,
         accountClassHash: string,
-        seedPhraseWords: string[]
+        seedPhrase: SeedPhraseWords
     ): Network {
-        const keySourceId = KeySourceId.from(seedPhraseWords);
+        const keySourceId = KeySourceId.from(seedPhrase);
         const newIndex = this.nextAccountIndex(keySourceId);
 
-        const keyPair = deriveStarknetKeyPairs({
-            accountIndex: 0,
-            addressIndex: newIndex, // TODO check that with Teddy
-        }, joinMnemonicWords(seedPhraseWords), true)
+        const keyPair = kmsProvider.deriveKeyPair({
+            type: "account-key-pair",
+            accountIndex: newIndex,
+        }, seedPhrase);
 
-        const publicKey = getStarknetPublicKeyFromPrivate(keyPair.spendingKeyPair.privateSpendingKey, true);
-        const accountAddress = deriveAccountAddress(
-            publicKey,
-            { classHash: accountClassHash, salt: "0x0" }
-        ).address;
+        const accountAddress = kmsProvider.deriveAccountAddress(
+            keyPair.publicKey, 
+            accountClassHash, 
+            "0x0"
+        );
 
         return this.addAccounts([{
-            accountAddress: AccountAddress.fromHex(accountAddress), 
+            accountAddress, 
             accountName, 
             index: newIndex, 
             keySourceId, 
@@ -62,12 +63,13 @@ export default class Network {
             accountName: string,
             index: number,
             keySourceId: KeySourceId,
-            keyPair: StarknetKeyPair
+            keyPair: KeyPair
         }[]
     ): Network {
         const newAccounts: Account[] = [...this.accounts];
         for (const data of accountData) {
-            const publicKey = getStarknetPublicKeyFromPrivate(data.keyPair.spendingKeyPair.privateSpendingKey, true);
+            // TODO Check that
+            const publicKey = data.keyPair.publicKey;
             const keyInstance = new HDKeyInstance(data.keySourceId, publicKey, data.index);
             const newAccount = new Account(data.accountAddress, data.accountName, this.networkId, keyInstance);
             newAccounts.push(newAccount);

@@ -2,18 +2,28 @@ module.exports = function (api) {
   // Get the platform from the caller (e.g., 'web', 'ios', 'android')
   const platform = api.caller((caller) => caller?.platform);
   const configPlatform = platform === 'web' ? 'web' : 'mobile';
-  
+
   // Cache based on the platform to allow different configs per platform
   api.cache.using(() => configPlatform);
-  
+
   return {
     presets: [
       ["babel-preset-expo"]
     ],
     plugins: [
+      [
+        'module-resolver',
+        {
+          alias: {
+            'crypto': 'react-native-quick-crypto',
+            'stream': 'readable-stream',
+            'buffer': '@craftzdog/react-native-buffer',
+          },
+        },
+      ],
       ["@babel/plugin-proposal-decorators", { "legacy": true }],
       'babel-plugin-transform-typescript-metadata',
-      
+
       // Add platform-specific plugins here if needed
       ...(configPlatform === 'web' ? [
         ["@babel/plugin-transform-class-properties", { "loose": true }]
