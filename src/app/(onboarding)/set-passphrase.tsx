@@ -141,7 +141,7 @@ export default function SetPassphraseScreen() {
                                 returnKeyType="done"
                                 enterKeyHint="done"
                                 onSubmitEditing={() => {
-                                    handleCreateAccount();
+                                    mode === "create" ? handleCreateAccount() : handleRestoreWallet()
                                 }}
                             />
                             <Pressable
