@@ -3,6 +3,8 @@ import {
   logger,
 } from "react-native-logs";
 import * as ExpoDevice from 'expo-device';
+import { logger as starknetLogger } from 'starknet';
+starknetLogger.setLogLevel("ERROR");
 
 const deviceName = ExpoDevice.deviceName ?? "Unknown Device";
 

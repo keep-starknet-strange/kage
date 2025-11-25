@@ -1,7 +1,6 @@
 import NetworkBanner from '@/components/ui/network-banner';
 import KageToast, { showToastError } from '@/components/ui/toast';
-import Account, { AccountAddress } from '@/profile/account';
-import Profile from '@/profile/profile';
+import Account from '@/profile/account';
 import { ProfileState } from '@/profile/profileState';
 import NetworkDefinition from '@/profile/settings/networkDefinition';
 import { AppProviders } from '@/providers/AppProviders';
@@ -11,60 +10,21 @@ import { useOnChainStore } from '@/stores/onChainStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { useRpcStore } from '@/stores/useRpcStore';
 import { LOG } from '@/utils/logs';
-import { symmetricDifference } from '@/utils/sets';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect } from "react";
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useRef } from "react";
+import { AppState } from 'react-native';
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
-import { StatusBar } from 'expo-status-bar';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+    const appState = useRef(AppState.currentState);
+    
     useEffect(() => {
-        const startSubscriptions = async (profile: Profile) => {
-            const { networkId: rpcStoreNetworkId, changeNetwork: changeRpcNetwork } = useRpcStore.getState();
-            const currentNetworkDefinition = profile.currentNetworkWithDefinition.networkDefinition;
-
-            if (rpcStoreNetworkId !== currentNetworkDefinition.chainId) {
-                await changeRpcNetwork(currentNetworkDefinition);
-            }
-
-            const { changeNetwork: changeBalanceNetwork, requestRefresh, subscribeToBalanceUpdates } = useBalanceStore.getState();
-            await changeBalanceNetwork(currentNetworkDefinition.chainId, useRpcStore.getState().provider);
-            
-
-            const accounts = profile.accountsOnCurrentNetwork as Account[];
-            await requestRefresh(accounts, accounts);
-            setTimeout(async () => {
-                await subscribeToBalanceUpdates(accounts);
-            }, 1000);
-        }
         const { initialize, profileState: profileStateOnMount } = useProfileStore.getState();
-        const unsubscribe = useProfileStore.subscribe((state, prevState) => {
-            if (state.profileState === null) {
-                void useBalanceStore.getState().unsubscribeFromBalanceUpdates();
-                return;
-            }
-
-            const prevNetworkId = ProfileState.isProfile(prevState.profileState) ? prevState.profileState.currentNetworkWithDefinition.networkDefinition.chainId : null;
-            const newNetworkId = ProfileState.isProfile(state.profileState) ? state.profileState.currentNetworkWithDefinition.networkDefinition.chainId : null;
-
-            if (prevNetworkId !== newNetworkId && ProfileState.isProfile(state.profileState)) {
-                startSubscriptions(state.profileState);
-                return;
-            }
-
-            const prevAccounts = ProfileState.isProfile(prevState.profileState) ? new Set(prevState.profileState.accountsOnCurrentNetwork.map((account) => account.id)) : new Set<AccountAddress>();
-            const newAccounts = ProfileState.isProfile(state.profileState) ? new Set(state.profileState.accountsOnCurrentNetwork.map((account) => account.id)) : new Set<AccountAddress>();
-
-            if (symmetricDifference(newAccounts, prevAccounts).size > 0 && ProfileState.isProfile(state.profileState)) {
-                LOG.info("Starting subscriptions for new accounts");
-                startSubscriptions(state.profileState);
-                return;
-            }
-        });
 
         if (!ProfileState.isInitialized(profileStateOnMount)) {
             LOG.info("Initializing profile");
@@ -73,46 +33,100 @@ export default function RootLayout() {
                 .catch(error => {
                     showToastError(error);
                 });
-        } else if (ProfileState.isProfile(profileStateOnMount)) {
-            startSubscriptions(profileStateOnMount);
-        } else if (profileStateOnMount === null) {
-            void useBalanceStore.getState().unsubscribeFromBalanceUpdates();
         }
 
+        const appStateSubscription = AppState.addEventListener('change', (state) => {
+            if (appState.current === 'background' && state === 'active') {
+                const {profileState} = useProfileStore.getState();
+                const {subscribeToBalanceUpdates} = useBalanceStore.getState();
+                if (ProfileState.isProfile(profileState)) {
+                    subscribeToBalanceUpdates(profileState.accountsOnCurrentNetwork as Account[]);
+                }
+            }
+
+            if (appState.current === 'active' && state === 'background') {
+                const {profileState} = useProfileStore.getState();
+                const {unsubscribeFromBalanceUpdates} = useBalanceStore.getState();
+
+                if (ProfileState.isProfile(profileState)) {
+                    unsubscribeFromBalanceUpdates();
+                }
+            }
+
+            appState.current = state;
+        });
+
         return () => {
-            unsubscribe();
-            void useBalanceStore.getState().unsubscribeFromBalanceUpdates();
+            appStateSubscription.remove();
         }
     }, []);
 
-    const currentNetworkDefinition = useProfileStore(state => {
+    const accounts = useProfileStore(state => {
         if (!ProfileState.isProfile(state.profileState)) {
             return null;
         }
-        return state.profileState.currentNetworkWithDefinition.networkDefinition;
+        return state.profileState.accountsOnCurrentNetwork as Account[];
     });
-    const isOnboarded = useProfileStore(state => ProfileState.isOnboarded(state.profileState));
 
-    const accounts = useProfileStore(state => ProfileState.isProfile(state.profileState) ? state.profileState.currentNetwork.accounts : null);
-    useEffect(() => {
-        if (accounts) {
-            useOnChainStore.getState().checkAccountsDeployed(accounts as Account[]);
+    const networkDefinition = useProfileStore(state => {
+        if (!ProfileState.isProfile(state.profileState)) {
+            return null;
         }
-    }, [accounts]);
+        return state.profileState.currentNetworkDefinition;
+    });
 
+    useEffect(() => {
+        const setNetworks = async () => {
+            const { setNetwork: setRpcNetwork, reset: resetRpc } = useRpcStore.getState();
+            const { setNetwork: setBalanceNetwork, reset: resetBalance, unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
+
+            if (networkDefinition === null) {
+                await resetBalance();
+                await resetRpc();
+                return;
+            }
+
+
+            const provider = setRpcNetwork(networkDefinition);
+            await setBalanceNetwork(networkDefinition.chainId, provider);
+        }
+
+        const checkAccounts = async () => {
+            if (accounts === null) {
+                return;
+            }
+
+            const { checkAccountsDeployed } = useOnChainStore.getState();
+            const { requestRefresh, subscribeToBalanceUpdates } = useBalanceStore.getState();
+
+            try {
+                await checkAccountsDeployed(accounts);
+                await requestRefresh(accounts, accounts);
+                await subscribeToBalanceUpdates(accounts);
+            } catch (error) {
+                showToastError(error);
+            }
+        }
+
+        setNetworks().then(() => {
+            checkAccounts();
+        });
+    }, [networkDefinition, accounts]);
+
+    const isOnboarded = useProfileStore(state => ProfileState.isOnboarded(state.profileState));
     return (
         <AppProviders>
-            <AppStructure isOnboarded={isOnboarded} currentNetworkDefinition={currentNetworkDefinition} />
+            <AppStructure isOnboarded={isOnboarded} currentNetworkDefinition={networkDefinition} />
         </AppProviders>
     );
 }
 
-function AppStructure({ 
-    isOnboarded, 
-    currentNetworkDefinition 
-}: { 
-    isOnboarded: boolean, 
-    currentNetworkDefinition: NetworkDefinition | null 
+function AppStructure({
+    isOnboarded,
+    currentNetworkDefinition
+}: {
+    isOnboarded: boolean,
+    currentNetworkDefinition: NetworkDefinition | null
 }) {
     const screenOptions = defaultScreenOptions();
     return (

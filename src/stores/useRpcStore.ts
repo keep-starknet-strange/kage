@@ -1,83 +1,112 @@
 import { NetworkId } from "@/profile/misc";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
+import { AppError } from "@/types/appError";
 import { LOG } from "@/utils/logs";
 import { RpcProvider, WebSocketChannel } from "starknet";
 import { create } from "zustand";
 
 export interface RpcState {
-    networkId: NetworkId;
-    provider: RpcProvider;
-    wsChannel: WebSocketChannel;
+    networkId: NetworkId | null;
+    providerUrl: URL | null;
+    wsChannelUrl: URL | null;
 
-    changeNetwork: (network: NetworkDefinition) => Promise<RpcProvider>;
+    provider: RpcProvider | null;
+    wsChannel: WebSocketChannel | null;
+
+    setNetwork: (network: NetworkDefinition) => RpcProvider;
+    getProvider: () => RpcProvider;
     subscribeToWS: () => Promise<WebSocketChannel>;
-    unsubscribeFromWS: () => void;
+    unsubscribeFromWS: () => Promise<void>;
 
     reset: () => Promise<void>;
 }
 
 export const useRpcStore = create<RpcState>((set, get) => {
-    const mainnet = NetworkDefinition.mainnet()
-    const initialWsChannel = new WebSocketChannel({ nodeUrl: mainnet.wsUrl.toString() });
-
     return {
-        networkId: "SN_MAIN",
-        provider: new RpcProvider({ nodeUrl: mainnet.rpcUrl.toString(), batch: 0 }),
-        wsChannel: initialWsChannel,
+        networkId: null,
+        providerUrl: null,
+        wsChannelUrl: null,
 
-        changeNetwork: async (network: NetworkDefinition) => {
+        provider: null,
+        wsChannel: null,
+
+        setNetwork: (network: NetworkDefinition) => {
             const { networkId, provider } = get();
 
             if (networkId === network.chainId) {
+                if (provider === null) {
+                    throw new AppError("Provider is not set");
+                }
+
                 return provider;
             }
 
-            LOG.info("Change RPC network to", network.chainId);
-
+            LOG.info("SET RPC to", network.chainId);
             const newProvider = new RpcProvider({ nodeUrl: network.rpcUrl.toString(), batch: 0 })
-            const newWsChannel = new WebSocketChannel({ nodeUrl: network.wsUrl.toString() })
 
             set({
                 networkId: network.chainId,
+                providerUrl: network.rpcUrl,
+                wsChannelUrl: network.wsUrl,
                 provider: newProvider,
-                wsChannel: newWsChannel,
+                wsChannel: null,
             });
 
             return newProvider;
         },
+        getProvider: () => {
+            const { provider } = get();
+            if (provider === null) {
+                throw new AppError("Provider is not set");
+            }
+            return provider;
+        },
         subscribeToWS: async () => {
-            const { wsChannel } = get();
+            const { wsChannel, wsChannelUrl } = get();
 
-            LOG.info("📣 Connecting...");
-            await wsChannel.waitForConnection();
+            if (wsChannelUrl === null) {
+                throw new AppError("WebSocket URL is not set");
+            }
+
+            const resultChannel = wsChannel ?? new WebSocketChannel({ nodeUrl: wsChannelUrl.toString(), autoReconnect: false });
+
+            LOG.info(`📣 Connecting to ${wsChannelUrl.toString()}...`);
+            await resultChannel.waitForConnection();
             LOG.info("✅ Connected");
 
-            return wsChannel;
+            set({
+                wsChannel: resultChannel,
+            });
+            
+            return resultChannel;
         },
         unsubscribeFromWS: async () => {
             const { wsChannel } = get();
 
-            set({
-                wsChannel: new WebSocketChannel({ nodeUrl: wsChannel.nodeUrl }),
-            });
-
-            if (wsChannel.isConnected()) {
+            if (wsChannel !== null && wsChannel.isConnected()) {
                 LOG.info("🛑 Disconnecting...");
                 wsChannel.disconnect();
+                await wsChannel.waitForDisconnection();
                 LOG.info("🛑 Disconnected");
+
+                set({
+                    wsChannel: null,
+                });
             }
         },
 
         reset: async () => {
             const { unsubscribeFromWS } = get();
             await unsubscribeFromWS();
-            
+
             set({
-                networkId: "SN_MAIN",
-                provider: new RpcProvider({ nodeUrl: mainnet.rpcUrl.toString(), batch: 0 }),
-                wsChannel: new WebSocketChannel({ nodeUrl: mainnet.wsUrl.toString() }),
+                networkId: null,
+                providerUrl: null,
+                wsChannelUrl: null,
+                provider: null,
+                wsChannel: null,
             });
-            
+
         }
     }
 });

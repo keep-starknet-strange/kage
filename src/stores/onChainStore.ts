@@ -69,8 +69,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         fund: async (from: Account, amount: PublicAmount, signer: Account) => {
             const { requestAccess } = useAccessVaultStore.getState();
-            const { provider } = useRpcStore.getState();
             const { appendPendingTransaction } = get();
+            const provider = useRpcStore.getState().getProvider();
 
             const result = await requestAccess({
                 requestFor: "privateKeys",
@@ -126,8 +126,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         publicTransfer: async (from: Account, amount: PublicAmount, recipient: AccountAddress) => {
             const { requestAccess } = useAccessVaultStore.getState();
-            const { provider } = useRpcStore.getState();
             const { appendPendingTransaction } = get();
+            const provider = useRpcStore.getState().getProvider();
 
             const result = await requestAccess({
                 requestFor: "privateKeys",
@@ -164,8 +164,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         transfer: async (from: Account, amount: PrivateAmount, signer: Account, recipient: PrivateTokenRecipient) => {
             const { requestAccess } = useAccessVaultStore.getState();
-            const { provider } = useRpcStore.getState();
             const { appendPendingTransaction } = get();
+            const provider = useRpcStore.getState().getProvider();
 
             const result = await requestAccess({
                 requestFor: "privateKeys",
@@ -226,8 +226,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         withdraw: async (to: Account, amount: PrivateAmount, signer: Account) => {
             const { requestAccess } = useAccessVaultStore.getState();
-            const { provider } = useRpcStore.getState();
             const { appendPendingTransaction } = get();
+            const provider = useRpcStore.getState().getProvider();
 
             const result = await requestAccess({
                 requestFor: "privateKeys",
@@ -287,8 +287,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
         },
 
         checkAccountsDeployed: async (accounts: Account[]) => {
-            const { provider } = useRpcStore.getState();
             const { checkAccountAddressesDeployed } = get();
+            const provider = useRpcStore.getState().getProvider();
 
             try {
                 const deployedAccounts = await checkAccountAddressesDeployed(accounts.map(account => account.address), provider);
@@ -299,7 +299,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                     deployedAccounts.set(account.address, "unknown");
                 }
                 set({ deployStatus: deployedAccounts });
-                showToastError(error);
+                throw error;
             }
         },
 
@@ -346,7 +346,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const { deployStatus, appendPendingTransaction } = get();
             const { profileState } = useProfileStore.getState();
             const { requestAccess } = useAccessVaultStore.getState();
-            const { provider } = useRpcStore.getState();
+            const provider = useRpcStore.getState().getProvider();
 
             if (!ProfileState.isProfile(profileState)) {
                 throw new AppError("Profile state is not initialized", profileState);
@@ -388,7 +388,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
 
         appendPendingTransaction: (transaction: Transaction) => {
             const { removePendingTransaction } = get();
-            const { provider } = useRpcStore.getState();
+            const provider = useRpcStore.getState().getProvider();
 
             if (transaction.type === "deployAccount") {
                 set({ deployStatus: updateStatus(get().deployStatus, transaction.account, "deploying") });

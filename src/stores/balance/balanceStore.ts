@@ -22,13 +22,13 @@ type PresetNetworkId = keyof typeof tokensConfig;
 const PRICE_REFRESH_INTERVAL_MS = 60000;
 
 export interface BalanceState {
-    networkId: NetworkId;
+    networkId: NetworkId | null;
     unlockedPrivateBalances: Set<AccountAddress>;
 
     publicBalances: ReadonlyMap<AccountAddress, PublicTokenBalance[]>,
     privateBalances: ReadonlyMap<AccountAddress, PrivateTokenBalance[]>,
 
-    changeNetwork: (networkId: NetworkId, rpcProvider: RpcProvider) => Promise<void>,
+    setNetwork: (networkId: NetworkId, rpcProvider: RpcProvider) => Promise<void>,
     requestRefresh: (publicBalancesFor: Account[], privateBalancesFor: Account[]) => Promise<void>,
     unlockPrivateBalances: (accounts: Account[]) => Promise<void>,
     lockPrivateBalances: (accounts: Account[]) => Promise<void>,
@@ -44,14 +44,9 @@ export interface BalanceState {
 
 export const useBalanceStore = create<BalanceState>((set, get) => {
 
-    const mainnetTokens = new Map(tokensConfig.SN_MAIN.tokens.map((token) => {
-        const address = TokenAddress.create(token.erc20);
-        return [address, new Token(address, token.tongo, token.symbol, token.decimals)]
-    }));
-
     const privateBalanceRepository = new PrivateBalanceRepository();
     const publicBalanceRepository = new PublicBalanceRepository();
-    let networkTokens = mainnetTokens;
+    let networkTokens = new Map<TokenAddress, Token>();
 
     const publicTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
     const privateTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
@@ -90,15 +85,19 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
     })
 
     return {
-        networkId: "SN_MAIN",
+        networkId: null,
         unlockedPrivateBalances: new Set(),
         publicBalances: new Map(),
         privateBalances: new Map(),
 
-        changeNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider) => {
+        setNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider) => {
+            const { networkId: currentNetworkId } = get();
+            if (currentNetworkId === networkId) {
+                return;
+            }
             const { marketRepository } = useAppDependenciesStore.getState();
 
-            LOG.info("Changing balance network to", networkId);
+            LOG.info("Balance network to", networkId);
 
             privateBalanceRepository.setNetwork(networkId, rpcProvider);
             publicBalanceRepository.setNetwork(networkId, rpcProvider);
@@ -326,25 +325,34 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         unsubscribeFromBalanceUpdates: async () => {
-            LOG.info("Unsubscribing from balance updates");
             const { unsubscribeFromWS } = useRpcStore.getState();
 
-            await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
-            await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            if (publicTokenSubscriptions.size > 0) {
+                LOG.info("Unsubscribing from public balance updates");
+                await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            }
+
+            if (privateTokenSubscriptions.size > 0) {
+                LOG.info("Unsubscribing from private balance updates");
+                await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
+            }
+
             publicTokenSubscriptions.clear();
             privateTokenSubscriptions.clear();
-
-            unsubscribeFromWS();
-
+            await unsubscribeFromWS();
             get().stopPriceRefresh();
         },
 
         startPriceRefresh: async () => {
             const { networkId, stopPriceRefresh } = get();
+            if (networkId === null) {
+                LOG.warn("No network set, skipping price refresh");
+                return;
+            }
             const { marketRepository } = useAppDependenciesStore.getState();
 
             stopPriceRefresh();
-
+            LOG.info("Starting price refresh");
             intervalId = setInterval(async () => {
                 const tokenAddresses = Array.from(networkTokens.keys());
                 try {
@@ -386,6 +394,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
         stopPriceRefresh: () => {
             if (intervalId) {
+                LOG.info("Stopping price refresh");
                 clearInterval(intervalId);
                 intervalId = null;
             }
@@ -395,10 +404,10 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             const { unsubscribeFromBalanceUpdates, stopPriceRefresh } = get();
             await unsubscribeFromBalanceUpdates();
             stopPriceRefresh();
-            networkTokens = mainnetTokens;
+            networkTokens = new Map<TokenAddress, Token>();
 
             set({
-                networkId: "SN_MAIN",
+                networkId: null,
                 unlockedPrivateBalances: new Set(),
             });
         }

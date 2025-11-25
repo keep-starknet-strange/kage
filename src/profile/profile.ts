@@ -36,7 +36,7 @@ export default class Profile {
     }
 
     get currentNetworkWithDefinition(): { network: Network, networkDefinition: NetworkDefinition } {
-        const networkDefinition = this.settings.networks.currentNetworkDefinition;
+        const networkDefinition = this.currentNetworkDefinition;
         const network = this.networks.find(network => network.networkId === networkDefinition.chainId);
         if (!network) {
             throw new AppError(`Network ${networkDefinition.chainId} not found.`);
@@ -51,6 +51,10 @@ export default class Profile {
 
     get accountsOnCurrentNetwork(): readonly Account[] {
         return this.currentNetwork.accounts;
+    }
+
+    get currentNetworkDefinition(): NetworkDefinition {
+        return this.settings.networks.currentNetworkDefinition;
     }
 
     getKeySourceById(id: KeySourceId): KeySource | null {
