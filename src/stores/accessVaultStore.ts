@@ -152,13 +152,10 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                                 throw new AppError(`Seed phrase not found for account ${signingAccount.address}`);
                             }
 
-                            const start = performance.now();
                             const keyPair = kmsProvider.deriveKeyPair({
                                 type: "account-key-pair",
                                 accountIndex: (signingAccount.keyInstance as HDKeyInstance).index,
                             }, seedPhrase);
-                            const end = performance.now();
-                            LOG.warn(`Signing ${formattedAddress(signingAccount.address, "compact")} took ${end - start}ms`);
                             signingResult.set(signingAccount, keyPair);
                         }
 
@@ -169,15 +166,12 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                             }
 
                             for (const token of tokens) {
-                                const start = performance.now();
                                 const keyPair = kmsProvider.deriveKeyPair({
                                     type: "token-key-pair",
                                     accountIndex: (account.keyInstance as HDKeyInstance).index,
                                     accountAddress: account.address,
                                     token: token,
                                 }, seedPhrase);
-                                const end = performance.now();
-                                LOG.warn(`Token ${token.symbol} for ${formattedAddress(account.address, "compact")} took ${end - start}ms`);
 
                                 const existingTokens = tokensResult.get(account) ?? [];
                                 existingTokens.push({ token, keyPair });

@@ -7,10 +7,7 @@ import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
-import { useBalanceStore } from "@/stores/balance/balanceStore";
-import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
-import { useRpcStore } from "@/stores/useRpcStore";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
@@ -21,10 +18,6 @@ export default function SettingsScreen() {
     const { keyValueStorage, seedPhraseVault, biometricsProvider } = useAppDependenciesStore();
     const { requestAccess } = useAccessVaultStore();
     const { delete: deleteProfile } = useProfileStore();
-    const { reset: resetOnChainStore } = useOnChainStore();
-    const { reset: resetRpcStore } = useRpcStore();
-    const { reset: resetBalanceStore } = useBalanceStore();
-
     const [isResolvingBiometrics, setIsResolvingBiometrics] = useState(false);
     const [supportedBiometryType, setSupportedBiometryType] = useState<BiometryType | null>(null);
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
