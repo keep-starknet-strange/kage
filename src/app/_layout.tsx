@@ -49,6 +49,7 @@ export default function RootLayout() {
                 const {unsubscribeFromBalanceUpdates} = useBalanceStore.getState();
 
                 if (ProfileState.isProfile(profileState)) {
+                    console.log("IN APP STATE");
                     unsubscribeFromBalanceUpdates();
                 }
             }
@@ -77,10 +78,12 @@ export default function RootLayout() {
 
     useEffect(() => {
         const setNetworks = async () => {
+            const { reset: resetOnChainCachedState } = useOnChainStore.getState();
             const { setNetwork: setRpcNetwork, reset: resetRpc } = useRpcStore.getState();
-            const { setNetwork: setBalanceNetwork, reset: resetBalance, unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
+            const { setNetwork: setBalanceNetwork, reset: resetBalance } = useBalanceStore.getState();
 
             if (networkDefinition === null) {
+                resetOnChainCachedState();
                 await resetBalance();
                 await resetRpc();
                 return;

@@ -7,6 +7,7 @@ import { ProfileState } from "@/profile/profileState";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { useDynamicSafeAreaInsets } from "@/providers/DynamicSafeAreaProvider";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
+import { useOnChainStore } from "@/stores/onChainStore";
 import { useProfileStore } from "@/stores/profileStore";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
@@ -42,11 +43,14 @@ export default function NetworksScreen() {
             return;
         }
 
+        const { reset: resetOnChainCachedState } = useOnChainStore.getState();
+
         try {
             setSwitchingToNetwork(networkId);
             
             await changeNetwork(networkId);
-
+            resetOnChainCachedState();
+            
             Toast.show({
                 type: "networkChange",
                 props: {

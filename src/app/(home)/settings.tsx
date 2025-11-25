@@ -91,9 +91,6 @@ export default function SettingsScreen() {
         
         try {
             await deleteProfile();
-            await resetBalanceStore();
-            await resetOnChainStore();
-            await resetRpcStore();
             keyValueStorage.clear();
         } catch (e) {
             showToastError(e);
