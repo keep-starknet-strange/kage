@@ -25,7 +25,15 @@ export class AccountSigner extends Signer {
     }
 
     private async getSigningKey(): Promise<string> {
-        const result = await this.vault.requestAccess({ requestFor: "privateKeys", signing: [this.account], tokens: new Map() });
+        const result = await this.vault.requestAccess(
+            { requestFor: "privateKeys", signing: [this.account], tokens: new Map() },
+            {
+                title: "Signing Transaction...",
+                subtitleAndroid: `Authorize to sign transaction for ${this.account.address}`,
+                descriptionAndroid: "KAGE needs your authentication to securely sign the transaction using your private keys.",
+                cancelAndroid: "Cancel",
+            }
+        );
 
         const keyPairs = result.signing.get(this.account);
 

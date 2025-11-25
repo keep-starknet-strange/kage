@@ -129,7 +129,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                         let seedPhrasesMap: Map<KeySourceId, SeedPhraseWords>;
                         if (useBiometrics) {
                             set({ prompt: { input: { requestFor: "keySources", keySourceIds: ids }, validateWith: "biometrics" } });
-                            seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, ids);
+                            seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase", cancelAndroid: "Cancel" }, ids);
                             set({ prompt: null });
                         } else {
                             let passphrase = await new Promise<string>((resolve, reject) => {

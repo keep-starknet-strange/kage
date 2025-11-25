@@ -8,8 +8,8 @@ import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultSt
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { CancellationError } from "@/types/appError";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { KeyboardAvoidingView, KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { ActivityIndicator, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AccessVaultModal() {

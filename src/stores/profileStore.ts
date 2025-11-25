@@ -116,6 +116,11 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const result = await requestAccess({
             requestFor: "seedPhrase",
             keySourceId: profileState.keySources[0].id,
+        }, {
+            title: "Creating Account...",
+            subtitleAndroid: `Authorize to create account ${accountName}`,
+            descriptionAndroid: "KAGE needs your authentication to securely create an account using your private keys.",
+            cancelAndroid: "Cancel",
         });
 
         const updatedProfile = profileState.addAccountOnCurrentNetwork(accountName, result.seedPhrase.getWords());

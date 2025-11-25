@@ -15,6 +15,7 @@ import { useAccessVaultStore } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";
 import { useRpcStore } from "./useRpcStore";
+import formattedAddress from "@/utils/formattedAddress";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
 
@@ -76,6 +77,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 requestFor: "privateKeys",
                 signing: [signer],
                 tokens: new Map([[from, [amount.token]]])
+            }, {
+                title: "Funding Account...",
+                subtitleAndroid: `Authorize to fund account ${formattedAddress(from.address, "compact")}`,
+                descriptionAndroid: "KAGE needs your authentication to securely fund your account using your private keys.",
+                cancelAndroid: "Cancel",
             });
 
             const signerKeyPairs = result.signing.get(signer);
@@ -133,6 +139,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 requestFor: "privateKeys",
                 signing: [from],
                 tokens: new Map()
+            }, {
+                title: "Public Transfer...",
+                subtitleAndroid: `Authorize to transfer ${amount.formatted()} to ${formattedAddress(recipient, "compact")}`,
+                descriptionAndroid: "KAGE needs your authentication to securely transfer your public tokens.",
+                cancelAndroid: "Cancel",
             });
 
             const signerKeyPairs = result.signing.get(from);
@@ -171,6 +182,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 requestFor: "privateKeys",
                 signing: [signer],
                 tokens: new Map([[from, [amount.token]]])
+            }, {
+                title: "Private Transfer...",
+                subtitleAndroid: `Authorize to transfer ${amount.formatted()} to ${formattedAddress(recipient.privateTokenAddress.base58, "compact")}`,
+                descriptionAndroid: "KAGE needs your authentication to securely transfer your private tokens.",
+                cancelAndroid: "Cancel",
             });
 
             const signerKeyPairs = result.signing.get(signer);
@@ -233,6 +249,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 requestFor: "privateKeys",
                 signing: [signer],
                 tokens: new Map([[to, [amount.token]]])
+            }, {
+                title: "Withdrawing...",
+                subtitleAndroid: `Authorize to withdraw ${amount.formatted()} from ${formattedAddress(to.address, "compact")}`,
+                descriptionAndroid: "KAGE needs your authentication to securely withdraw your private tokens.",
+                cancelAndroid: "Cancel",
             });
 
             const signerKeyPairs = result.signing.get(signer);
@@ -361,6 +382,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 requestFor: "privateKeys",
                 signing: [account],
                 tokens: new Map()
+            }, {
+                title: "Deploying Account...",
+                subtitleAndroid: `Authorize to deploy account ${formattedAddress(account.address, "compact")}`,
+                descriptionAndroid: "KAGE needs your authentication to securely deploy your account using your private keys.",
+                cancelAndroid: "Cancel",
             });
 
             const keyPairs = result.signing.get(account);

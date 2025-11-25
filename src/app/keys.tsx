@@ -88,7 +88,15 @@ export default function KeysScreen() {
 
         try {
             setLoadingSeedPhrase(true);
-            const output = await requestAccess({ requestFor: "seedPhrase", keySourceId });
+            const output = await requestAccess(
+                { requestFor: "seedPhrase", keySourceId },
+                {
+                    title: "Accessing Seed Phrase...",
+                    subtitleAndroid: `Authorize to access seed phrase`,
+                    descriptionAndroid: "KAGE needs your authentication to securely access your seed phrase.",
+                    cancelAndroid: "Cancel",
+                }
+            );
             setSeedPhraseWords(output.seedPhrase.getWords());
             setViewingSeedPhraseForKeyId(keySourceId);
         } catch (error) {

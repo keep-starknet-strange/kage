@@ -68,7 +68,17 @@ export default class PrivateBalanceRepository extends BalanceRepository {
             }
         }
 
-        const result = await requestAccess({ requestFor: "privateKeys", signing: [], tokens: accountTokens });
+        const accountsNumber = forAccounts.length > 1 ? `${forAccounts.length} accounts` : "1 account";
+
+        const result = await requestAccess(
+            { requestFor: "privateKeys", signing: [], tokens: accountTokens },
+            {
+                title: "Unlocking Private Balances...",
+                subtitleAndroid: `Authorize to unlock private balances for ${accountsNumber}`,
+                descriptionAndroid: "KAGE needs your authentication to securely unlock your private balances.",
+                cancelAndroid: "Cancel",
+            }
+        );
 
         for (const [account, tokenKeyPairs] of result.tokens.entries()) {
             for (const tokenKeyPair of tokenKeyPairs) {
