@@ -11,25 +11,26 @@ KAGE is a Expo React Native wallet proof of concept that demonstrates confidenti
 
 ## KAGE Features
 
+> [!WARNING]  
 > **Disclaimer:** KAGE is an experimental proof-of-concept application provided for research and demonstration purposes only.  
 > It is **not production-ready**, has not undergone security audits, and **should not be used to manage real funds**.
 
 KAGE offers a comprehensive suite of features for managing both public and confidential balances on Starknet.
 
-**Wallet Management**: Create new wallets with randomly generated mnemonic seed phrases or restore existing wallets using known 24-word seed phrases. Each wallet supports multiple accounts derived from a single seed phrase using Hierarchical Deterministic (HD) derivation. You can freely customize account names and labels. KAGE is compatible with both Starknet Mainnet and the Sepolia testnet.
+**Wallet Management**: Create new wallets with randomly generated mnemonic seed phrases or restore existing wallets using known 24-word seed phrases. Each wallet supports multiple accounts derived from a single seed phrase using Hierarchical Deterministic (HD) derivation. You can freely customize account names. KAGE is compatible with both Starknet Mainnet and the Sepolia testnet.
 
 **Tongo Confidential Operations**: Alongside standard public transfers on Starknet, KAGE integrates the [Tongo SDK](https://docs.tongo.cash/sdk/overview.html) to support confidential transactions (more details in the next section). The following Tongo operations are supported:
 - Fund / Shield: Convert ERC-20 tokens into a Tongo encrypted balance.
 - Send: Transfer encrypted amounts between Tongo accounts without revealing the transferred amount.
-- Rollover: Convert an account’s pending encrypted balance into a usable balance.
+- Rollover: Convert an account’s pending encrypted balance into a usable balance. Rollovers are hidden to the users that is they are performed during a transfer/withdraw operation if there is an pending balance.
 - Withdraw / Unshield: Convert encrypted Tongo balance back into ERC-20 tokens and send them to the Starknet account address.
 - Ragequit: Not supported at this stage ([details here](https://docs.tongo.cash/sdk/operations/ragequit.html)).
 
 **ERC-20 token supported (Tongo Instances)**:
-- Mainnet: ETH, STRK, wBTC, USDC, DAI
+- Mainnet: ETH, STRK, wBTC, USDC, USDT, DAI
 - Sepolia: ETH, STRK, USDC
 
-**Security Architecture**: Seed phrases are encrypted with ChaCha20-Poly1305 and stored in secure, hardware-backed device storage—iOS Keychain on iOS and Android Keystore (with TEE/StrongBox support) on Android. During setup, you can optionally enable passphrase protection and biometric authentication. Biometrics gate access to sensitive operations, and all cryptographic keys remain on the device at all times.
+**Security Architecture**: Seed phrases are encrypted with ChaCha20-Poly1305 and stored in secure, hardware-backed device storage—iOS Keychain on iOS and Android Keystore (with TEE/StrongBox support) on Android. In settings, you can optionally enable passphrase protection and biometric authentication. Biometrics gate access to sensitive operations, and all cryptographic keys remain on the device at all times.
 
 **Balance Management**: Public and private/shielded balances are displayed separately per account. Public balances (STRK and ERC-20 tokens) update in real-time via WebSocket connections. Private balances use Tongo's dual balance system: spending balance for transfers/withdrawals, and pending balance requiring rollover after receiving transfers. Fiat equivalents (USD) are fetched from the [AVNU Markets API](https://doc.avnu.fi/avnu-spot/markets). Private balances are locked by default and require authentication to unlock.
 
@@ -128,8 +129,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/micbakos"><img src="https://avatars.githubusercontent.com/u/6217006?v=4?s=100" width="100px;" alt="micbakos"/><br /><sub><b>micbakos</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/pow/commits?author=micbakos" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xsisyfos"><img src="https://avatars.githubusercontent.com/u/107465625?v=4?s=100" width="100px;" alt="0xsisyfos"/><br /><sub><b>0xsisyfos</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/pow/commits?author=0xsisyfos" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/micbakos"><img src="https://avatars.githubusercontent.com/u/6217006?v=4?s=100" width="100px;" alt="micbakos"/><br /><sub><b>micbakos</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/kage/commits?author=micbakos" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xsisyfos"><img src="https://avatars.githubusercontent.com/u/107465625?v=4?s=100" width="100px;" alt="0xsisyfos"/><br /><sub><b>0xsisyfos</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/kage/commits?author=0xsisyfos" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/teddyjfpender"><img src="https://avatars.githubusercontent.com/u/92999717?v=4" width="100px;" alt="teddyjfpender"/><br /><sub><b>teddyjfpender</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/kage/commits?author=teddyjfpender" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/AbdelStark"><img src="https://avatars.githubusercontent.com/u/45264458?v=4" width="100px;" alt="AbdelStark"/><br /><sub><b>AbdelStark</b></sub></a><br /><a href="https://github.com/keep-starknet-strange/kage/commits?author=AbdelStark" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>
