@@ -1,6 +1,6 @@
-import { hkdf } from '@noble/hashes/hkdf.js'
-import { sha256, sha512 } from '@noble/hashes/sha2.js'
-import { pbkdf2Async } from '@noble/hashes/pbkdf2.js'
+import { hkdf } from '@noble/hashes/hkdf.js';
+import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
+import { sha256, sha512 } from '@noble/hashes/sha2.js';
 import 'react-native-get-random-values';
 
 // Needed for get-id functionality to work.
@@ -8,8 +8,29 @@ import "@ethersproject/shims";
 import "reflect-metadata";
 
 // Install react-native-quick-crypto
-import { install } from 'react-native-quick-crypto';
+import crypto, { install } from "react-native-quick-crypto";
 install();
+
+import { ethers } from "ethers";
+ethers.randomBytes.register((length) => {
+  return new Uint8Array(crypto.randomBytes(length));
+});
+
+ethers.computeHmac.register((algo, key, data) => {
+    return crypto.createHmac(algo, key).update(data).digest();
+});
+
+ethers.pbkdf2.register((passwd, salt, iter, keylen, algo) => {
+  return crypto.pbkdf2Sync(passwd, salt, iter, keylen, algo);
+});
+
+ethers.sha256.register((data) => {
+  return crypto.createHash('sha256').update(data.slice().buffer).digest();
+});
+
+ethers.sha512.register((data) => {
+  return crypto.createHash('sha512').update(data.slice().buffer).digest();
+});
 
 type CryptoKeyLike = { __raw: Uint8Array };
 
