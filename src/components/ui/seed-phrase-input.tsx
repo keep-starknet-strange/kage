@@ -6,6 +6,7 @@ import { wordlist } from "@scure/bip39/wordlists/english";
 import * as Clipboard from 'expo-clipboard';
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleProp, Text, TextInput, TouchableOpacity, View, ViewStyle } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 interface SeedPhraseInputProps {
   onSeedPhraseChange: (words: SeedPhraseWords | null) => void;
@@ -111,10 +112,10 @@ export const SeedPhraseInput = ({
       </View>
 
       {/* Words Grid */}
-      <ScrollView
-        style={styles.scrollView}
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.gridContainer}
         keyboardShouldPersistTaps="handled"
+        bottomOffset={50}
       >
         {words.map((word, index) => {
           const isValid = isWordValid(word);
@@ -172,7 +173,10 @@ export const SeedPhraseInput = ({
             </View>
           );
         })}
-      </ScrollView>
+
+        {/* This is a hack to ensure that the last row aligns correctly */}
+        <View style={[styles.wordContainer, {opacity: 0}]}/>
+      </KeyboardAwareScrollView>
     </View>
   );
 };
@@ -214,14 +218,11 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     ...fontStyles.ubuntuMono.semibold,
     color: colorTokens['status.error'],
   },
-  scrollView: {
-    flex: 1,
-  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: spaceTokens[1],
+    gap: spaceTokens[2],
   },
   wordContainer: {
     width: '30%',
@@ -231,13 +232,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     borderRadius: radiusTokens.sm,
     borderWidth: 1,
     borderColor: colorTokens['border.subtle'],
-    paddingHorizontal: spaceTokens[2],
-    minHeight: 48,
+    paddingHorizontal: spaceTokens[1],
+    height: 48,
   },
   wordNumberContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spaceTokens[1],
+    marginRight: spaceTokens[0],
   },
   wordNumber: {
     fontSize: 12,
