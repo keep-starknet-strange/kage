@@ -1,5 +1,6 @@
 import { AccountAddress } from "@/profile/account";
 import { CoinType } from "@/profile/keys/coinType";
+import { LOG } from "@/utils/logs";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import { deriveAccountAddress, deriveStarknetKeyPairs, generateMnemonicWords, getStarknetPublicKeyFromPrivate, grindKey, joinMnemonicWords, pathHash, StarknetKeyConst, validateMnemonic } from "@starkms/key-management";
 import { ethers } from "ethers";
@@ -8,6 +9,8 @@ import { KeyDerivationArgs, KeyPair, KMSProvider } from "./KMSProvider";
 
 export default class StarKMSProvider implements KMSProvider {
     deriveKeyPair(args: KeyDerivationArgs, seedPhrase: SeedPhraseWords): KeyPair {
+        const startTime = Date.now();
+
         switch (args.type) {
             case "account-key-pair":
                 const accountKeyPairs = deriveStarknetKeyPairs(
@@ -19,6 +22,7 @@ export default class StarKMSProvider implements KMSProvider {
                     true
                 );
 
+                LOG.info(`[KMS] deriveKeyPair(account-key-pair) completed in ${Date.now() - startTime}ms`);
                 return {
                     privateKey: accountKeyPairs.spendingKeyPair.privateSpendingKey,
                     publicKey: accountKeyPairs.spendingKeyPair.publicSpendingKey,
@@ -33,6 +37,7 @@ export default class StarKMSProvider implements KMSProvider {
                     seedPhrase.toString(),
                     true
                 );
+                LOG.info(`[KMS] deriveKeyPair(token-key-pair) completed in ${Date.now() - startTime}ms`);
                 return {
                     privateKey: tokenKeyPairs.spendingKeyPair.privateSpendingKey,
                     publicKey: tokenKeyPairs.spendingKeyPair.publicSpendingKey,
@@ -42,14 +47,18 @@ export default class StarKMSProvider implements KMSProvider {
 
                 const getIdPath = `m/${StarknetKeyConst.PURPOSE}'/${CoinType.STARKNET}'/365'`
                 const mnemonic = seedPhrase.toString();
+
+                const hdWalletStart = Date.now();
                 const derivedNode = ethers.HDNodeWallet.fromPhrase(
                     mnemonic,
                     undefined,
                     getIdPath,
                 )
+                LOG.info(`[KMS] HDNodeWallet.fromPhrase completed in ${Date.now() - hdWalletStart}ms`);
 
                 const privateKeyHex = addHexPrefix(grindKey(derivedNode.privateKey));
                 const pubKey = getStarknetPublicKeyFromPrivate(privateKeyHex, true);
+                LOG.info(`[KMS] deriveKeyPair(get-id) completed in ${Date.now() - startTime}ms`);
                 return {
                     privateKey: privateKeyHex,
                     publicKey: pubKey,
