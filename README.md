@@ -60,6 +60,7 @@ npx expo run:android
 - View public and private balances separately for each account
 - Real-time balance updates via WebSocket connections
 - View your seed phrase and which accounts/private balances it controls.
+- View fiat balance (USD) using [AVNU Markets API](https://doc.avnu.fi/avnu-spot/integration/api-references#open-api-specifications).
 
 #### Transactions supported
 
@@ -91,3 +92,4 @@ npx expo run:android
 * Allowing user to add custom networks
 * Backing up user's configuration (export to file - Restore from file). 
 * View private/public transaction history 
+* Allow user to view fiat balances in different currencies.
