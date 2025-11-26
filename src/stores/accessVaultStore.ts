@@ -9,8 +9,6 @@ import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import Token from "@/types/token";
 import { groupBy } from "@/utils/collections";
-import formattedAddress from "@/utils/formattedAddress";
-import { LOG } from "@/utils/logs";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";

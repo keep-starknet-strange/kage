@@ -3,19 +3,16 @@ import { AppError, CancellationError } from "@/types/appError";
 import { Transaction } from "@/types/transaction";
 import React from "react";
 import Toast, { ToastConfig } from "react-native-toast-message";
+import uuid from 'react-native-uuid';
 import { RpcError, TimeoutError, WebSocketNotConnectedError } from "starknet";
 import { ErrorToast } from "./error-toast";
-import { TransactionToast } from "./transaction-toast";
-import uuid from 'react-native-uuid';
-import { LOG } from "@/utils/logs";
 import { NetworkChangeToast } from "./network-change-toast";
+import { TransactionToast } from "./transaction-toast";
 
 export function showToastError(error: any) {
     if (error instanceof CancellationError) {
         return;
     }
-
-    LOG.error(error)
 
     let message = "";
     let details: string | null = null;
@@ -89,7 +86,6 @@ const toastConfig: ToastConfig = {
     networkChange: ({ props }) => (
         <NetworkChangeToast
             networkId={props.networkId}
-            onPress={props.onPress}
         />
     )
 };

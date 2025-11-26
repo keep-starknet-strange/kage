@@ -1,54 +1,37 @@
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
+import { IconSymbolName } from "@/components/ui/icon-symbol/mapping";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 import { BiometryType } from "@/crypto/provider/biometrics/BiometryType";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import { RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
+import { AuthorizationType, RequestAccessPrompt, useAccessVaultStore } from "@/stores/accessVaultStore";
 import { useAppDependenciesStore } from "@/stores/appDependenciesStore";
 import { CancellationError } from "@/types/appError";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const STAY_VISIBLE_MAX_DELAY = 1000;
 
 export default function AccessVaultModal() {
     const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
     const { biometricsProvider } = useAppDependenciesStore();
     const [inputPassphrase, setInputPassphrase] = useState("");
     const [isInputVisible, setIsInputVisible] = useState(false);
-    const [biometryType, setBiometryType] = useState<BiometryType | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const insets = useSafeAreaInsets();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
-    // Get biometry type when modal opens
-    useEffect(() => {
-        if (prompt?.validateWith === "biometrics") {
-            biometricsProvider.getBiometricsType().then(setBiometryType);
-        }
-    }, [prompt, biometricsProvider]);
-
-    const onRequestClose = () => {
-        if (!isSubmitting) {
-            void handlePassphraseReject(new CancellationError());
-        }
-    }
-
-    const onPassphraseSubmit = async (passphrase: string) => {
-        if (inputPassphrase.length === 0 || isSubmitting) {
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            await handlePassphraseSubmit(passphrase);
-        } finally {
-            setIsSubmitting(false);
-            setInputPassphrase("");
-        }
-    }
+    const onCreateRef = useRef<number>(0);
+    const [viewDetails, setViewDetails] = useState<{
+        title: string;
+        description: string;
+        validateWith: AuthorizationType;
+        icon: IconSymbolName;
+    } | null>(null);
 
     const getTitle = (prompt: RequestAccessPrompt): string => {
         if (prompt.input.requestFor === "passphrase") {
@@ -63,7 +46,7 @@ export default function AccessVaultModal() {
         return "Authentication Required";
     }
 
-    const getDescription = (prompt: RequestAccessPrompt): string => {
+    const getDescription = (prompt: RequestAccessPrompt, biometryType: BiometryType | null): string => {
         if (prompt.input.requestFor === "passphrase") {
             return "Enter your passphrase to enable biometric authentication for future access.";
         } else if (prompt.input.requestFor === "keySources") {
@@ -113,24 +96,67 @@ export default function AccessVaultModal() {
         }
     }
 
-    if (!prompt) {
-        return null;
+    useEffect(() => {
+        if (prompt) {
+            onCreateRef.current = Date.now();
+            if (prompt.validateWith === "biometrics") {
+                biometricsProvider.getBiometricsType().then((type) => {
+                    setViewDetails({
+                        title: getTitle(prompt),
+                        description: getDescription(prompt, type),
+                        validateWith: prompt.validateWith,
+                        icon: prompt.validateWith === "biometrics" ? getBiometryIcon(type) : "key",
+                    });
+                });
+            } else {
+                setViewDetails({
+                    title: getTitle(prompt),
+                    description: getDescription(prompt, null),
+                    validateWith: prompt.validateWith,
+                    icon: "key",
+                });
+            }
+        } else {
+            const now = Date.now();
+            const delay = Math.max(0, STAY_VISIBLE_MAX_DELAY - (now - onCreateRef.current));
+            console.log("delay", delay);
+            setTimeout(() => {
+                setViewDetails(null);
+            }, delay);
+        }
+    }, [prompt, biometricsProvider]);
+
+    const onRequestClose = () => {
+        if (!isSubmitting) {
+            void handlePassphraseReject(new CancellationError());
+        }
     }
 
-    const title = getTitle(prompt);
-    const description = getDescription(prompt);
+    const onPassphraseSubmit = async (passphrase: string) => {
+        if (inputPassphrase.length === 0 || isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await handlePassphraseSubmit(passphrase);
+        } finally {
+            setIsSubmitting(false);
+            setInputPassphrase("");
+        }
+    }
 
     return (
         <Modal
-            visible={prompt !== null}
+            visible={viewDetails !== null}
             animationType="slide"
             onRequestClose={onRequestClose}
             presentationStyle="pageSheet"
         >
             <KeyboardAwareScrollView
                 contentContainerStyle={[
-                    styles.scrollContent, 
-                    { 
+                    styles.scrollContent,
+                    {
                         paddingTop: Platform.select({ "android": insets.top }),
                         paddingBottom: insets.bottom,
                     }
@@ -142,17 +168,17 @@ export default function AccessVaultModal() {
                 <View style={styles.header}>
                     <View style={styles.iconContainer}>
                         <IconSymbol
-                            name={prompt.validateWith === "biometrics" ? getBiometryIcon(biometryType) : "key"}
+                            name={viewDetails?.icon ?? "key"}
                             size={40}
                             color={colorTokens['brand.accent']}
                         />
                     </View>
-                    <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.description}>{description}</Text>
+                    <Text style={styles.title}>{viewDetails?.title}</Text>
+                    <Text style={styles.description}>{viewDetails?.description}</Text>
                 </View>
 
                 {/* Biometrics View */}
-                {prompt.validateWith === "biometrics" && (
+                {viewDetails?.validateWith === "biometrics" && (
                     <View style={styles.biometricsContainer}>
                         <ActivityIndicator
                             size="large"
@@ -165,7 +191,7 @@ export default function AccessVaultModal() {
                 )}
 
                 {/* Passphrase View */}
-                {prompt.validateWith === "passphrase" && (
+                {viewDetails?.validateWith === "passphrase" && (
                     <View style={styles.passphraseContainer}>
                         <View style={styles.inputWrapper}>
                             <View style={styles.inputIconContainer}>
