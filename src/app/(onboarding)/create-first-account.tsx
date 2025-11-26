@@ -10,7 +10,7 @@ import { AppError } from "@/types/appError";
 import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 
 export default function CreateFirstAccountScreen() {
     const navigation = useNavigation();
@@ -99,14 +99,23 @@ export default function CreateFirstAccountScreen() {
             <View style={{ flex: 1 }} />
 
             {/* Button Section */}
-            <View style={[styles.buttonSection]}>
+            <KeyboardStickyView
+                style={{
+                    paddingHorizontal: spaceTokens[3],
+                    paddingBottom: spaceTokens[3],
+                }}
+                offset={{
+                    closed: 0,
+                    opened: spaceTokens[3],
+                }}
+            >
                 <PrimaryButton
                     title={isCreating ? "Creating Account..." : "Create Account"}
                     onPress={handleCreateAccount}
                     disabled={!isFormValid}
                     loading={isCreating}
                 />
-            </View>
+            </KeyboardStickyView>
         </View>
     );
 }
@@ -163,10 +172,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.success'],
         marginTop: -spaceTokens[1],
-    },
-    buttonSection: {
-        paddingHorizontal: spaceTokens[3],
-        paddingBottom: spaceTokens[3],
     },
 }));
 

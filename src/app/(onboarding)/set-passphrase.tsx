@@ -7,7 +7,7 @@ import { useTempStore } from "@/stores/tempStore";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 
 const MIN_PASSPHRASE_LENGTH = 7;
 
@@ -65,7 +65,7 @@ export default function SetPassphraseScreen() {
     };
 
     return (
-        <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+        <View style={[styles.container]}>
             <KeyboardAwareScrollView
                 bottomOffset={spaceTokens[4]}
             >
@@ -171,13 +171,19 @@ export default function SetPassphraseScreen() {
             <View style={{ flex: 1 }} />
 
             {/* Button Section */}
-            <View style={styles.buttonSection}>
+            <KeyboardStickyView
+                style={{ paddingBottom: insets.bottom + spaceTokens[3] }}
+                offset={{
+                    closed: 0,
+                    opened: spaceTokens[3],
+                }}
+            >
                 <PrimaryButton
                     title={mode === "create" ? "Create Account" : "Restore Wallet"}
                     onPress={mode === "create" ? handleCreateAccount : handleRestoreWallet}
                     disabled={!isFormValid}
                 />
-            </View>
+            </KeyboardStickyView>
         </View>
     );
 }
@@ -251,8 +257,5 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     helperError: {
         color: colorTokens['status.error'],
-    },
-    buttonSection: {
-        paddingVertical: spaceTokens[3],
     },
 }));
