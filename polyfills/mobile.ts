@@ -3,14 +3,13 @@ import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
 import { sha256, sha512 } from '@noble/hashes/sha2.js';
 import 'react-native-get-random-values';
 
-// Needed for get-id functionality to work.
-import "@ethersproject/shims";
 import "reflect-metadata";
 
 // Install react-native-quick-crypto
 import crypto, { install } from "react-native-quick-crypto";
 install();
 
+// Polyfill ethers https://docs.ethers.org/v6/cookbook/react-native/
 import { ethers } from "ethers";
 ethers.randomBytes.register((length) => {
   return new Uint8Array(crypto.randomBytes(length));
