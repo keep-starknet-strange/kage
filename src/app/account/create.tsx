@@ -11,8 +11,10 @@ import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useTranslation } from "react-i18next";
 
 export default function CreateAccountScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const navigation = useNavigation();
     const { insets } = useDynamicSafeAreaInsets();
@@ -28,17 +30,17 @@ export default function CreateAccountScreen() {
     const handleCreate = async () => {
         // Validate account name
         if (!accountName.trim()) {
-            setError('Account name is required');
+            setError(t('accounts.validation.required'));
             return;
         }
 
         if (accountName.trim().length < 2) {
-            setError('Account name must be at least 2 characters');
+            setError(t('accounts.validation.tooShort'));
             return;
         }
 
         if (accountName.trim().length > 50) {
-            setError('Account name must be less than 50 characters');
+            setError(t('accounts.validation.tooLong'));
             return;
         }
 
@@ -51,7 +53,7 @@ export default function CreateAccountScreen() {
             router.back();
         } catch (err) {
             LOG.error('Failed to create account:', err);
-            setError(err instanceof Error ? err.message : 'Failed to create account');
+            setError(err instanceof Error ? err.message : t('accounts.validation.createFailed'));
         } finally {
             setIsCreating(false);
         }
@@ -61,12 +63,12 @@ export default function CreateAccountScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Create Account"
+                    title={t('accounts.create.title')}
                     onBackPress={() => router.back()}
                 />
             ),
         });
-    }, [navigation, insets.top, router]);
+    }, [navigation, insets.top, router, t]);
 
     return (
         <KeyboardAwareScrollView
@@ -83,13 +85,13 @@ export default function CreateAccountScreen() {
                     />
                 </View>
 
-                <Text style={styles.title}>New Account</Text>
+                <Text style={styles.title}>{t('accounts.create.header')}</Text>
                 <Text style={styles.description}>
-                    Choose a name for your new account. This will help you identify it later.
+                    {t('accounts.create.description')}
                 </Text>
 
                 <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Account Name</Text>
+                    <Text style={styles.label}>{t('accounts.create.label')}</Text>
                     <TextInput
                         style={[
                             styles.input,
@@ -101,7 +103,7 @@ export default function CreateAccountScreen() {
                             setAccountName(text);
                             setError(null);
                         }}
-                        placeholder="e.g., Main Account"
+                        placeholder={t('accounts.create.placeholder')}
                         placeholderTextColor={colorTokens['text.muted']}
                         editable={!isCreating}
                         autoFocus
@@ -111,12 +113,12 @@ export default function CreateAccountScreen() {
                         <Text style={styles.errorText}>{error}</Text>
                     )}
                     <Text style={styles.hintText}>
-                        {accountName.length}/50 characters
+                        {t('common.characters', { count: accountName.length, max: 50 })}
                     </Text>
                 </View>
 
                 <PrimaryButton
-                    title={isCreating ? 'Creating...' : 'Create Account'}
+                    title={isCreating ? t('accounts.create.buttonCreating') : t('accounts.create.button')}
                     onPress={handleCreate}
                     disabled={!accountName.trim() || isCreating}
                     loading={isCreating}

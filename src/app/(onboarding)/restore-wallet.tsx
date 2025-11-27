@@ -16,6 +16,7 @@ import { useNavigation, useRouter } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { RpcProvider } from "starknet";
+import { useTranslation } from "react-i18next";
 
 const MAX_ACCOUNTS_PER_BATCH = 10;
 const GAP_TO_STOP_SEARCH = 5;
@@ -31,12 +32,13 @@ function isNetworkEligibleForRestore(networkDefinition: NetworkDefinition): bool
 }
 
 export default function RestoreWalletScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const navigation = useNavigation();
     const { insets } = useDynamicSafeAreaInsets();
     const [isRestoring, setIsRestoring] = useState(false);
     const [visibleNetworks, setVisibleNetworks] = useState<NetworkDefinition[]>(NETWORKS);
-    const [progress, setProgress] = useState<string>("Ready to restore your wallet");
+    const [progress, setProgress] = useState<string>(t('onboarding.restoreWallet.status.ready'));
     const [selectedNetwork, setSelectedNetwork] = useState<NetworkDefinition | null>(null);
 
     const { consumeTempPassphrase, consumeTempSeedPhraseWords } = useTempStore();
@@ -50,13 +52,13 @@ export default function RestoreWalletScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Restore Wallet"
+                    title={t('onboarding.restoreWallet.title')}
                     onBackPress={() => router.back()}
                     style={{ paddingTop: insets.top }}
                 />
             ),
         });
-    }, [navigation, insets.top, router]);
+    }, [navigation, insets.top, router, t]);
 
     const deriveAccountData = useCallback(async (startIndex: number, selectedNetwork: NetworkDefinition, seedPhraseWords: SeedPhraseWords) => {
         const accountData: Map<AccountAddress, { index: number, keyPair: KeyPair }> = new Map();
@@ -76,7 +78,7 @@ export default function RestoreWalletScreen() {
     const handleRestoreWallet = async () => {
         try {
             if (!selectedNetwork) {
-                throw new AppError("No network selected");
+                throw new AppError(t('errors.noNetwork'));
             }
 
             setIsRestoring(true);
@@ -84,16 +86,16 @@ export default function RestoreWalletScreen() {
 
             const seedPhraseWords = consumeTempSeedPhraseWords();
             if (!seedPhraseWords) {
-                throw new AppError("No seed phrase words found");
+                throw new AppError(t('errors.noSeedPhrase'));
             }
 
             const passphrase = consumeTempPassphrase() ?? null;
             if (!passphrase) {
-                throw new AppError("No passphrase found");
+                throw new AppError(t('errors.noPassphrase'));
             }
 
             const rpcProvider = getRpcProvider(selectedNetwork);
-            setProgress("Deriving account addresses...");
+            setProgress(t('onboarding.restoreWallet.status.deriving'));
 
             let startIndex = 0;
             const accountData: Map<AccountAddress, { index: number; keyPair: KeyPair }> = new Map();
@@ -107,7 +109,7 @@ export default function RestoreWalletScreen() {
                         accountData.set(accountAddress, keyPairWithIndex);
                     });
 
-                    setProgress("Searching for deployed accounts on the network...");
+                    setProgress(t('onboarding.restoreWallet.status.searching'));
 
                     const onChainData = await checkAccountAddressesDeployed(Array.from(accountData.keys()), rpcProvider);
 
@@ -157,13 +159,13 @@ export default function RestoreWalletScreen() {
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <Text style={styles.subtitle}>
-                        Your wallet will be restored from your seed phrase. This process will search for accounts on the current network and restore them.
+                        {t('onboarding.restoreWallet.description')}
                     </Text>
                 </View>
 
                 {/* Network Picker */}
                 <View style={styles.networkSection}>
-                    <Text style={styles.sectionLabel}>Select Network</Text>
+                    <Text style={styles.sectionLabel}>{t('onboarding.restoreWallet.selectNetwork')}</Text>
                     <View style={styles.networkOptions}>
                         {visibleNetworks.map((network) => (
                             <TouchableOpacity
@@ -187,7 +189,7 @@ export default function RestoreWalletScreen() {
                                         
                                         {!isNetworkEligibleForRestore(network) && (
                                             <Text style={styles.networkOptionNameDisabled}>
-                                                (Not available for now...)
+                                                {t('onboarding.restoreWallet.networkNotAvailable')}
                                             </Text>
                                         )}
 
@@ -221,7 +223,7 @@ export default function RestoreWalletScreen() {
                 {/* Button Section */}
                 <View style={[styles.buttonSection, { marginBottom: insets.bottom }]}>
                     <PrimaryButton
-                        title={isRestoring ? "Restoring Wallet..." : "Restore Wallet"}
+                        title={isRestoring ? t('onboarding.restoreWallet.buttonRestoring') : t('onboarding.restoreWallet.button')}
                         onPress={handleRestoreWallet}
                         disabled={isRestoring}
                     />

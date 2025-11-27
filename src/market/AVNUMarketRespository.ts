@@ -1,10 +1,11 @@
+import { NetworkId } from "@/profile/misc";
 import { AppError } from "@/types/appError";
 import { TokenMetadata } from "@/types/token";
 import { TokenAddress } from "@/types/tokenAddress";
+import i18n from "@/utils/i18n";
 import { LOG } from "@/utils/logs";
-import { MarketRepository } from "./MarketRepository";
 import presetTokens from "res/config/tokens.json";
-import { NetworkId } from "@/profile/misc";
+import { MarketRepository } from "./MarketRepository";
 
 const TOKENS_URL = "https://starknet.impulse.avnu.fi/v3/tokens";
 const PRICES_URL = "https://starknet.impulse.avnu.fi/v3/tokens/prices";
@@ -97,7 +98,7 @@ export default class AVNUMarketRepository implements MarketRepository {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new AppError("Failed to fetch token prices", error);
+            throw new AppError(i18n.t('errors.failedToFetchTokenPrices'), error);
         }
 
         const dataJson: AVNUTokenPriceItem[] = await response.json();

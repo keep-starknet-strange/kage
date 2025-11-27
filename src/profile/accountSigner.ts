@@ -1,7 +1,8 @@
 import { AccessVaultState } from "@/stores/accessVaultStore";
+import { AppError } from "@/types/appError";
+import i18n from "@/utils/i18n";
 import { ec, Signature, Signer } from "starknet";
 import Account from "./account";
-import { AppError } from "@/types/appError";
 
 export class AccountSigner extends Signer {
 
@@ -28,17 +29,17 @@ export class AccountSigner extends Signer {
         const result = await this.vault.requestAccess(
             { requestFor: "privateKeys", signing: [this.account], tokens: new Map() },
             {
-                title: "Signing Transaction...",
+                title: i18n.t('biometricPrompts.signingTransaction.title'),
                 subtitleAndroid: `Authorize to sign transaction for ${this.account.address}`,
                 descriptionAndroid: "KAGE needs your authentication to securely sign the transaction using your private keys.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.signingTransaction.cancelAndroid'),
             }
         );
 
         const keyPair = result.signing.get(this.account);
 
         if (!keyPair) {
-            throw new AppError("Signing key not found for account ", this.account.address);
+            throw new AppError(i18n.t('errors.signingKeyNotFound'), this.account.address);
         }
 
         return keyPair.privateKey;

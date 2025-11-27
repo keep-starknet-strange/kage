@@ -4,6 +4,7 @@ import Account from "@/profile/account";
 import { StyleSheet, Text, View } from "react-native";
 import { ModalPicker } from "./modal-picker";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
+import { useTranslation } from "react-i18next";
 
 type AccountPickerProps = {
     accounts: Account[];
@@ -18,11 +19,15 @@ export function AccountPicker({
     accounts,
     selectedAccount,
     onSelectAccount,
-    label = "Select Account",
-    placeholder = "Choose an account",
+    label,
+    placeholder,
     disabled = false,
 }: AccountPickerProps) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
+    
+    const finalLabel = label || t('forms.accountPicker.label');
+    const finalPlaceholder = placeholder || t('forms.accountPicker.placeholder');
     
     const renderItem = (account: Account) => {
         return (
@@ -38,8 +43,8 @@ export function AccountPicker({
             items={accounts}
             selectedItem={selectedAccount}
             onSelectItem={onSelectAccount}
-            label={label}
-            placeholder={placeholder}
+            label={finalLabel}
+            placeholder={finalPlaceholder}
             disabled={disabled}
             renderItem={renderItem}
             renderModalItem={renderItem}

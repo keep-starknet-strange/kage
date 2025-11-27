@@ -3,6 +3,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemePro
 import { Text, View } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { PrimaryButton } from "./ui/primary-button";
+import { useTranslation } from "react-i18next";
 
 export interface PrivateBalancesLockedProps {
     isLoadingBalances: boolean;
@@ -14,17 +15,18 @@ export function PrivateBalancesLocked({
     isLoadingBalances,
     handleUnlockPrivateBalances,
 }: PrivateBalancesLockedProps) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
     
     return (
         <View style={styles.container}>
             <IconSymbol name="lock" size={48} color={colorTokens['text.muted']} />
-            <Text style={styles.label}>Private balances are locked</Text>
+            <Text style={styles.label}>{t('balance.private.locked')}</Text>
 
             <PrimaryButton
                 style={styles.unlockButton}
-                title="Unlock"
+                title={t('balance.private.unlockButton')}
                 loading={isLoadingBalances}
                 onPress={handleUnlockPrivateBalances}
             />

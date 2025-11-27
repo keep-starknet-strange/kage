@@ -18,8 +18,10 @@ import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 
 export default function KeysScreen() {
+    const { t } = useTranslation();
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const navigation = useNavigation();
@@ -91,16 +93,16 @@ export default function KeysScreen() {
             const output = await requestAccess(
                 { requestFor: "seedPhrase", keySourceId },
                 {
-                    title: "Accessing Seed Phrase...",
-                    subtitleAndroid: `Authorize to access seed phrase`,
-                    descriptionAndroid: "KAGE needs your authentication to securely access your seed phrase.",
-                    cancelAndroid: "Cancel",
+                    title: t('keys.accessingSeedPhrase'),
+                    subtitleAndroid: t('keys.authorizeSeedPhrase'),
+                    descriptionAndroid: t('keys.seedPhraseAuthDescription'),
+                    cancelAndroid: t('common.cancel'),
                 }
             );
             setSeedPhraseWords(output.seedPhrase.getWords());
             setViewingSeedPhraseForKeyId(keySourceId);
         } catch (error) {
-            LOG.error("Failed to read seed phrase", error);
+            LOG.error(t('keys.failedToReadSeedPhrase'), error);
             showToastError(error);
         } finally {
             setLoadingSeedPhrase(false);
@@ -123,20 +125,20 @@ export default function KeysScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Key Sources"
-                    subtitle="Manage your cryptographic keys and secured assets"
+                    title={t('keys.title')}
+                    subtitle={t('keys.subtitle')}
                     onBackPress={() => router.back()}
                 />
             ),
         });
-    }, [navigation, insets.top, router]);
+    }, [navigation, insets.top, router, t]);
 
     if (!profile) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.emptyState}>
                     <IconSymbol name="key-alert" size={48} color={colorTokens['text.muted']} />
-                    <Text style={styles.emptyStateText}>No profile found</Text>
+                    <Text style={styles.emptyStateText}>{t('keys.emptyState.noProfile')}</Text>
                 </View>
             </View>
         );
@@ -151,9 +153,9 @@ export default function KeysScreen() {
             {keysData.length === 0 ? (
                 <View style={styles.emptyState}>
                     <IconSymbol name="key-alert" size={48} color={colorTokens['text.muted']} />
-                    <Text style={styles.emptyStateText}>No key sources found</Text>
+                    <Text style={styles.emptyStateText}>{t('keys.emptyState.noKeySources')}</Text>
                     <Text style={styles.emptyStateSubtext}>
-                        Create an account to generate your first key source
+                        {t('keys.emptyState.noKeySourcesDescription')}
                     </Text>
                 </View>
             ) : (
@@ -208,6 +210,7 @@ function KeySourceItem({
     onCopySeedPhrase,
     isCopied
 }: KeySourceItemProps) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
     const rotateValue = useSharedValue(isExpanded ? 180 : 0);
@@ -239,7 +242,7 @@ function KeySourceItem({
                         />
                     </View>
                     <View style={styles.keySourceInfo}>
-                        <Text style={styles.keySourceTitle}>Key Source</Text>
+                        <Text style={styles.keySourceTitle}>{t('keys.keySource')}</Text>
                         <Text style={styles.keySourceId} numberOfLines={1}>
                             {formattedAddress(keySource.id, 'compact')}
                         </Text>
@@ -250,7 +253,7 @@ function KeySourceItem({
                                     size={12}
                                     color={colorTokens['text.secondary']}
                                 />
-                                <Text style={styles.statText}>{totalAccounts} account{totalAccounts !== 1 ? 's' : ''}</Text>
+                                <Text style={styles.statText}>{t('keys.accountCount', { count: totalAccounts })}</Text>
                             </View>
                             {totalTokens > 0 && (
                                 <View style={styles.statBadge}>
@@ -259,7 +262,7 @@ function KeySourceItem({
                                         size={12}
                                         color={colorTokens['text.secondary']}
                                     />
-                                    <Text style={styles.statText}>{totalTokens} private token{totalTokens !== 1 ? 's' : ''}</Text>
+                                    <Text style={styles.statText}>{t('keys.privateTokenCount', { count: totalTokens })}</Text>
                                 </View>
                             )}
                         </View>
@@ -290,7 +293,7 @@ function KeySourceItem({
                                 color={colorTokens['brand.accent']}
                             />
                             <Text style={styles.viewSeedPhraseButtonText}>
-                                {loadingSeedPhrase ? 'Loading...' : isViewingSeedPhrase ? 'Hide Recovery Phrase' : 'View Recovery Phrase'}
+                                {loadingSeedPhrase ? t('common.loading') : isViewingSeedPhrase ? t('keys.hideRecoveryPhrase') : t('keys.viewRecoveryPhrase')}
                             </Text>
                         </View>
                         {loadingSeedPhrase && (
@@ -302,10 +305,10 @@ function KeySourceItem({
                     {isViewingSeedPhrase && seedPhraseWords.length > 0 && (
                         <View style={styles.seedPhraseContainer}>
                             <View style={styles.seedPhraseHeader}>
-                                <Text style={styles.seedPhraseWarning}>⚠️ Never share your recovery phrase</Text>
+                                <Text style={styles.seedPhraseWarning}>{t('keys.neverShareWarning')}</Text>
                                 <TouchableOpacity onPress={onCopySeedPhrase}>
                                     <Text style={styles.copyButton}>
-                                        {isCopied ? '✓ Copied!' : 'Copy'}
+                                        {isCopied ? t('keys.copiedPhrase') : t('common.copy')}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -326,10 +329,10 @@ function KeySourceItem({
 
                     {/* Accounts List */}
                     <View style={styles.accountsSection}>
-                        <Text style={styles.accountsSectionTitle}>Accounts</Text>
+                        <Text style={styles.accountsSectionTitle}>{t('keys.accounts')}</Text>
                         {accounts.length === 0 ? (
                             <View style={styles.emptyAccounts}>
-                                <Text style={styles.emptyAccountsText}>No accounts using this key source</Text>
+                                <Text style={styles.emptyAccountsText}>{t('keys.emptyState.noAccounts')}</Text>
                             </View>
                         ) : (
                             accounts.map(({ account, tokens, isUnlocked }) => (
@@ -355,6 +358,7 @@ interface AccountItemProps {
 }
 
 function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
+    const { t } = useTranslation();
     const { unlockPrivateBalances } = useBalanceStore();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
@@ -390,7 +394,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
                             size={12}
                             color={colorTokens['status.success']}
                         />
-                        <Text style={styles.unlockedText}>Unlocked</Text>
+                        <Text style={styles.unlockedText}>{t('keys.unlocked')}</Text>
                     </View>
                 )}
             </View>
@@ -398,7 +402,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
             {/* Private Tokens */}
             {tokens.length > 0 ? (
                 <View style={styles.tokensSection}>
-                    <Text style={styles.tokensSectionTitle}>Private Tokens Secured</Text>
+                    <Text style={styles.tokensSectionTitle}>{t('keys.privateTokensSecured')}</Text>
                     <View style={styles.tokensList}>
                         {tokens.map((token, index) => (
                             <View key={`${token.id}-${index}`} style={styles.tokenChip}>
@@ -415,7 +419,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
             ) : (
                 <View style={styles.noTokens}>
                     {isUnlocked ? (
-                        <Text style={styles.noTokensText}>No private tokens with balance</Text>
+                        <Text style={styles.noTokensText}>{t('keys.noPrivateTokens')}</Text>
                     ) : (
                         <TouchableOpacity onPress={handleUnlock}>
                             <View style={styles.lockedTokens}>
@@ -425,7 +429,7 @@ function AccountItem({ account, tokens, isUnlocked }: AccountItemProps) {
                                     color={colorTokens['text.muted']}
                                 />
                                 <Text style={styles.lockedTokensText}>
-                                    Unlock to view private tokens
+                                    {t('keys.unlockToView')}
                                 </Text>
                             </View>
                         </TouchableOpacity>

@@ -17,10 +17,12 @@ import { PrivateTokenBalance, PublicTokenBalance } from '@/types/tokenBalance';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 type TabType = 'public' | 'private';
 
 export default function AccountDetailScreen() {
+    const { t } = useTranslation();
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const navigation = useNavigation();
@@ -82,9 +84,9 @@ export default function AccountDetailScreen() {
         return (
             <View style={[styles.container]}>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Account not found</Text>
+                    <Text style={styles.errorText}>{t('accounts.detail.notFound')}</Text>
                     <SecondaryButton
-                        title="Go Back"
+                        title={t('accounts.detail.goBackButton')}
                         onPress={() => router.back()}
                     />
                 </View>

@@ -6,6 +6,7 @@ import { ProfileState } from "@/profile/profileState";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
+import i18n from "@/utils/i18n";
 import { create } from "zustand";
 import { RequestAccessFn } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
@@ -34,7 +35,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { profileStorage } = useAppDependenciesStore.getState();
 
         if (!ProfileState.canChangeProfileState(profileState)) {
-            throw new AppError("Profile state cannot be updated", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeUpdated'), profileState);
         }
 
         set({ profileState: "retrieving" });
@@ -47,7 +48,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
                 set({ profileState: profile });
             }
         } catch (error) {
-            set({ profileState: { type: "profileStateError", error: Error("Failed to initialize profile") } });
+            set({ profileState: { type: "profileStateError", error: Error(i18n.t('errors.failedToInitializeProfile')) } });
             throw error;
         }
     },
@@ -57,7 +58,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
 
         if (!ProfileState.canCreateProfile(profileState)) {
-            throw new AppError("Profile state cannot be created", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeCreated'), profileState);
         }
 
         const seedPhrase = SeedPhraseWords.generate();
@@ -83,7 +84,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { seedPhraseVault, profileStorage } = useAppDependenciesStore.getState();
 
         if (!ProfileState.canCreateProfile(profileState)) {
-            throw new AppError("Profile state cannot be created", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeCreated'), profileState);
         }
 
         const profile = Profile.createFromSeedPhraseOnNetwork(networkDefinition, seedPhrase);
@@ -100,7 +101,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
 
         const created = seedPhraseVault.setup(passphrase, seedPhrase);
         if (!created) {
-            throw new AppError("Failed to store seed phrase in vault");
+            throw new AppError(i18n.t('errors.failedToStoreSeedPhrase'));
         }
 
         set({ profileState: updatedProfile });
@@ -111,17 +112,17 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { profileStorage } = useAppDependenciesStore.getState();
 
         if (!ProfileState.isProfile(profileState)) {
-            throw new AppError("Profile state cannot be updated", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeUpdated'), profileState);
         }
 
         const result = await requestAccess({
             requestFor: "seedPhrase",
             keySourceId: profileState.keySources[0].id,
         }, {
-            title: "Creating Account...",
+            title: i18n.t('biometricPrompts.creatingAccount.title'),
             subtitleAndroid: `Authorize to create account ${accountName}`,
             descriptionAndroid: "KAGE needs your authentication to securely create an account using your private keys.",
-            cancelAndroid: "Cancel",
+            cancelAndroid: i18n.t('biometricPrompts.creatingAccount.cancelAndroid'),
         });
 
         const updatedProfile = profileState.addAccountOnCurrentNetwork(accountName, result.seedPhrase);
@@ -135,7 +136,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { profileStorage } = useAppDependenciesStore.getState();
 
         if (!ProfileState.isProfile(profileState)) {
-            throw new AppError("Profile state cannot be updated", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeUpdated'), profileState);
         }
 
         const updatedProfile = profileState.renameAccount(account, newName);
@@ -148,7 +149,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { profileStorage } = useAppDependenciesStore.getState();
 
         if (!ProfileState.isProfile(profileState)) {
-            throw new AppError("Profile state cannot be updated", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeUpdated'), profileState);
         }
 
         const updatedProfile = profileState.changeNetwork(network);
@@ -161,7 +162,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
         const { profileStorage, seedPhraseVault } = useAppDependenciesStore.getState();
 
         if (!ProfileState.isProfile(profileState)) {
-            throw new AppError("Profile state cannot be deleted", profileState);
+            throw new AppError(i18n.t('errors.profileCannotBeDeleted'), profileState);
         }
 
         await profileStorage.deleteProfile();

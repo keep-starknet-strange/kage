@@ -11,8 +11,10 @@ import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
+import { useTranslation } from "react-i18next";
 
 export default function CreateFirstAccountScreen() {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const router = useRouter();
     const { insets } = useDynamicSafeAreaInsets();
@@ -27,13 +29,13 @@ export default function CreateFirstAccountScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Name your First Account"
+                    title={t('onboarding.createAccount.title')}
                     onBackPress={() => router.back()}
                     style={{ paddingTop: insets.top }}
                 />
             ),
         });
-    }, [navigation, insets.top, router]);
+    }, [navigation, insets.top, router, t]);
 
     const isFormValid = accountName.trim().length > 0;
 
@@ -43,7 +45,7 @@ export default function CreateFirstAccountScreen() {
 
         const passphrase = consumeTempPassphrase();
         if (!passphrase) {
-            showToastError(new AppError("No passphrase is set"));
+            showToastError(new AppError(t('errors.noPassphrase')));
             setIsCreating(false);
             return;
         }
@@ -65,19 +67,19 @@ export default function CreateFirstAccountScreen() {
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <Text style={styles.subtitle}>
-                        Choose a name to help you identify this account. You can always change it later.
+                        {t('onboarding.createAccount.description')}
                     </Text>
                 </View>
 
                 {/* Input Section */}
                 <View style={styles.inputSection}>
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Account Name</Text>
+                        <Text style={styles.label}>{t('onboarding.createAccount.label')}</Text>
                         <TextInput
                             style={styles.input}
                             value={accountName}
                             onChangeText={setAccountName}
-                            placeholder="e.g., My Main Account"
+                            placeholder={t('onboarding.createAccount.placeholder')}
                             placeholderTextColor={colorTokens['text.muted']}
                             autoCapitalize="words"
                             autoCorrect={false}
@@ -88,7 +90,7 @@ export default function CreateFirstAccountScreen() {
                         />
                         {accountName.trim().length > 0 && (
                             <Text style={styles.helperText}>
-                                ✓ Looks good
+                                {t('onboarding.createAccount.validation.looksGood')}
                             </Text>
                         )}
                     </View>
@@ -110,7 +112,7 @@ export default function CreateFirstAccountScreen() {
                 }}
             >
                 <PrimaryButton
-                    title={isCreating ? "Creating Account..." : "Create Account"}
+                    title={isCreating ? t('onboarding.createAccount.buttonCreating') : t('onboarding.createAccount.button')}
                     onPress={handleCreateAccount}
                     disabled={!isFormValid}
                     loading={isCreating}

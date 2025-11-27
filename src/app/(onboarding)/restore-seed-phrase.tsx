@@ -9,8 +9,10 @@ import SeedPhraseWords from "@/types/seedPhraseWords";
 import { useNavigation, useRouter } from "expo-router";
 import { useCallback, useLayoutEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function RestoreSeedPhraseScreen() {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const router = useRouter();
     const { insets } = useDynamicSafeAreaInsets();
@@ -24,13 +26,13 @@ export default function RestoreSeedPhraseScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Restore your Wallet"
+                    title={t('onboarding.restoreSeedPhrase.title')}
                     onBackPress={() => router.back()}
                     style={{ paddingTop: insets.top }}
                 />
             ),
         });
-    }, [navigation, router]);
+    }, [navigation, router, t]);
     
     const handleSetSeedPhrase = useCallback(
         (words: SeedPhraseWords | null) => {            
@@ -55,7 +57,7 @@ export default function RestoreSeedPhraseScreen() {
         <View style={styles.container}>
             <View style={styles.headerSection}>
                 <Text style={styles.subtitle}>
-                    Enter your recovery phrase in order to restore your wallet.
+                    {t('onboarding.restoreSeedPhrase.description')}
                 </Text>
             </View>
 
@@ -67,7 +69,7 @@ export default function RestoreSeedPhraseScreen() {
 
             <PrimaryButton
                 style={[styles.buttonSection, { marginBottom: insets.bottom + spaceTokens[3] }]}
-                title="Setup Passphrase"
+                title={t('onboarding.restoreSeedPhrase.button')}
                 onPress={handleNext}
                 disabled={!isFormValid}
             />

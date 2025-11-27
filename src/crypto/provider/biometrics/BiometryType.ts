@@ -1,4 +1,5 @@
 import { AppError } from "@/types/appError";
+import i18n from "@/utils/i18n";
 import { BIOMETRY_TYPE } from "react-native-keychain";
 
 export enum BiometryType {
@@ -26,7 +27,7 @@ export namespace BiometryType {
             case BIOMETRY_TYPE.OPTIC_ID:
                 return BiometryType.OPTIC_ID;
             default:
-                throw new AppError("Unsupported biometry type", biometryType);
+                throw new AppError(i18n.t('errors.unsupportedBiometryType'), biometryType);
         }
     }
 }

@@ -7,6 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleProp, Text, TextInput, TouchableOpacity, View, ViewStyle } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useTranslation } from "react-i18next";
 
 interface SeedPhraseInputProps {
   onSeedPhraseChange: (words: SeedPhraseWords | null) => void;
@@ -19,6 +20,7 @@ export const SeedPhraseInput = ({
   wordCount = 24, 
   style 
 }: SeedPhraseInputProps) => {
+  const { t } = useTranslation();
   const [words, setWords] = useState<string[]>(Array(wordCount).fill(''));
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -145,7 +147,7 @@ export const SeedPhraseInput = ({
                 }}
                 onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
                 onSubmitEditing={() => handleSubmitEditing(index)}
-                placeholder={`Word ${index + 1}`}
+                placeholder={t('forms.seedPhrase.wordPlaceholder', { number: index + 1 })}
                 placeholderTextColor={colorTokens['text.muted']}
                 autoCapitalize="none"
                 autoCorrect={false}

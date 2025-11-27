@@ -1,6 +1,7 @@
 import { Expose, Transform, Type } from "class-transformer";
 import { NetworkId } from "../misc";
 import { AppError } from "@/types/appError";
+import i18n from "@/utils/i18n";
 
 export default class NetworkDefinition {
     @Type(() => URL)
@@ -28,11 +29,11 @@ export default class NetworkDefinition {
         blockExplorerUrl: URL | null
     ) {
         if (rpcUrl === null && chainId !== "SN_MAIN" && chainId !== "SN_SEPOLIA") {
-            throw new AppError("RPC URL is required for non-mainnet or sepolia networks");
+            throw new AppError(i18n.t('errors.rpcUrlRequired'));
         }
 
         if (wsUrl === null && chainId !== "SN_MAIN" && chainId !== "SN_SEPOLIA") {
-            throw new AppError("WebSocket URL is required for non-mainnet or sepolia networks");
+            throw new AppError(i18n.t('errors.websocketUrlRequired'));
         }
 
         this._rpcUrl = rpcUrl;
@@ -55,17 +56,17 @@ export default class NetworkDefinition {
         if (this.chainId === "SN_MAIN") {
             const rpcUrlString = process.env.EXPO_PUBLIC_RPC_SN_MAIN;
             if (!rpcUrlString) {
-                throw new AppError("RPC URL is not set for mainnet in environment variables");
+                throw new AppError(i18n.t('errors.rpcUrlNotSetMainnet'));
             }
             return new URL(rpcUrlString);
         } else if (this.chainId === "SN_SEPOLIA") {
             const rpcUrlString = process.env.EXPO_PUBLIC_RPC_SN_SEPOLIA;
             if (!rpcUrlString) {
-                throw new AppError("RPC URL is not set for sepolia in environment variables");
+                throw new AppError(i18n.t('errors.rpcUrlNotSetSepolia'));
             }
             return new URL(rpcUrlString);
         } else {
-            throw new AppError("RPC URL is not set for this network");
+            throw new AppError(i18n.t('errors.rpcUrlNotSetNetwork'));
         }
     }
 
@@ -77,26 +78,26 @@ export default class NetworkDefinition {
         if (this.chainId === "SN_MAIN") {
             const wsUrlString = process.env.EXPO_PUBLIC_WS_SN_MAIN;
             if (!wsUrlString) {
-                throw new AppError("WebSocket URL is not set for mainnet in environment variables");
+                throw new AppError(i18n.t('errors.websocketUrlNotSetMainnet'));
             }
             return new URL(wsUrlString);
         } else if (this.chainId === "SN_SEPOLIA") {
             const wsUrlString = process.env.EXPO_PUBLIC_WS_SN_SEPOLIA;
             if (!wsUrlString) {
-                throw new AppError("WebSocket URL is not set for sepolia in environment variables");
+                throw new AppError(i18n.t('errors.websocketUrlNotSetSepolia'));
             }
             return new URL(wsUrlString);
         } else {
-            throw new AppError("WebSocket URL is not set for this network");
+            throw new AppError(i18n.t('errors.websocketUrlNotSetNetwork'));
         }
     }
 
     get displayName(): string {
         switch (this.chainId) {
             case "SN_MAIN":
-                return "Mainnet";
+                return i18n.t('networkNames.mainnet');
             case "SN_SEPOLIA":
-                return "Sepolia";
+                return i18n.t('networkNames.sepolia');
             default:
                 return this.chainId;
         }

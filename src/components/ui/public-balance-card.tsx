@@ -12,6 +12,7 @@ import { AddressView } from "../address-view";
 import ActionButton from "./action-buttons";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export interface PublicBalanceCardProps {
     account: Account;
@@ -22,6 +23,7 @@ export interface PublicBalanceCardProps {
 const FundModal = (
     { account, isVisible, onRequestClose }: { account: Account, isVisible: boolean, onRequestClose: () => void }
 ) => {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const insets = useSafeAreaInsets();
     const { colors: colorTokens } = useTheme();
@@ -44,7 +46,7 @@ const FundModal = (
                 onPress={(e) => e.stopPropagation()}
             >
                 <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>{"Fund Account"}</Text>
+                    <Text style={styles.modalTitle}>{t('balance.public.fundModal.title')}</Text>
                     <Pressable
                         style={styles.closeButton}
                         onPress={onRequestClose}
@@ -68,7 +70,7 @@ const FundModal = (
                                 openFaucet();
                             }}
                         >
-                            <Text style={styles.itemTitle}>{"From Faucet"}</Text>
+                            <Text style={styles.itemTitle}>{t('balance.public.fundModal.fromFaucet')}</Text>
                             <IconSymbol name="external-link" size={18} color={colorTokens['text.secondary']} />
                         </Pressable>
                     )}
@@ -78,7 +80,7 @@ const FundModal = (
                         onPress={() => { }}
                     >
                         <View style={styles.itemContent}>
-                            <Text style={styles.itemTitle}>{"From another Account"}</Text>
+                            <Text style={styles.itemTitle}>{t('balance.public.fundModal.fromAnotherAccount')}</Text>
                             <AddressView address={account.address} variant="full" />
                         </View>
                     </Pressable>
@@ -89,6 +91,7 @@ const FundModal = (
 }
 
 export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
+    const { t } = useTranslation();
     const { account, style } = props;
     const { publicBalances } = useBalanceStore()
     const [fiatBalance, setFiatBalance] = useState<string | null>(null);
@@ -103,7 +106,7 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
 
     return (
         <View style={[styles.container, style]}>
-            <Text style={styles.label}>{"Public Balance"}</Text>
+            <Text style={styles.label}>{t('balance.public.label')}</Text>
             <View style={styles.amountRow}>
                 <Text style={styles.amount}>
                     {fiatBalance}
@@ -113,7 +116,7 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
             <View style={styles.actionsContainer}>
                 <ActionButton
                     icon="plus-circle"
-                    label="Fund"
+                    label={t('balance.public.fundButton')}
                     onPress={() => {
                         setIsFundModalVisible(true);
                     }}
@@ -121,7 +124,7 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
                 />
                 <ActionButton
                     icon="arrow-right-circle"
-                    label="Send"
+                    label={t('balance.public.sendButton')}
                     onPress={() => {
                         props.onTransferPress();
                     }}

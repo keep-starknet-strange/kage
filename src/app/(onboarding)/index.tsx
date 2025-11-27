@@ -7,8 +7,10 @@ import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
 import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function WelcomeScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { insets } = useDynamicSafeAreaInsets();
     const styles = useThemedStyle(themedStyleSheet);
@@ -28,15 +30,15 @@ export default function WelcomeScreen() {
                     </View>
 
                     <View style={styles.textContainer}>
-                        <Text style={styles.appName}>KAGE</Text>
+                        <Text style={styles.appName}>{t('common.appName')}</Text>
                         <View style={styles.taglineContainer}>
-                            <Text style={styles.tagline}>Privacy is</Text>
+                            <Text style={styles.tagline}>{t('onboarding.welcome.tagline.privacyIs')}</Text>
                             <Image
                                 source={require("res/logo/starknet.png")}
                                 style={styles.starknetLogo}
                                 contentFit="contain"
                             />
-                            <Text style={styles.tagline}>Normal</Text>
+                            <Text style={styles.tagline}>{t('onboarding.welcome.tagline.normal')}</Text>
                         </View>
                     </View>
                 </View>
@@ -47,14 +49,14 @@ export default function WelcomeScreen() {
                 {/* Buttons Section */}
                 <View style={styles.buttonsContainer}>
                     <PrimaryButton
-                        title="Create new wallet"
+                        title={t('onboarding.welcome.createWallet')}
                         onPress={() => {
                             router.navigate({ pathname: "set-passphrase", params: { mode: "create" } });
                         }}
                     />
 
                     <SecondaryButton
-                        title="Restore wallet"
+                        title={t('onboarding.welcome.restoreWallet')}
                         onPress={() => {
                             router.navigate("restore-seed-phrase");
                         }}
@@ -64,7 +66,7 @@ export default function WelcomeScreen() {
                 {/* Footnote */}
                 <View style={styles.footnoteContainer}>
                     <Text style={styles.footnote}>
-                        Brought to you by the Starkware Exploration team
+                        {t('onboarding.welcome.footer')}
                     </Text>
                 </View>
             </View>

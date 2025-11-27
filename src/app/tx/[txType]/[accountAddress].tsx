@@ -15,10 +15,12 @@ import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useTranslation } from "react-i18next";
 
 type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
 
 const TransactionScreen = () => {
+    const { t } = useTranslation();
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const navigation = useNavigation();
@@ -48,9 +50,9 @@ const TransactionScreen = () => {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Account not found</Text>
+                    <Text style={styles.errorText}>{t('accounts.detail.notFound')}</Text>
                     <SecondaryButton
-                        title="Go Back"
+                        title={t('accounts.detail.goBackButton')}
                         onPress={() => router.back()}
                     />
                 </View>
@@ -76,7 +78,7 @@ const TransactionScreen = () => {
                                 color={activeTab === 'fund' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                             />
                             <Text style={[styles.tabText, activeTab === 'fund' && styles.activeTabText]}>
-                                Shield
+                                {t('balance.private.shieldButton')}
                             </Text>
                         </Pressable>
 
@@ -90,7 +92,7 @@ const TransactionScreen = () => {
                                 color={activeTab === 'transfer' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                             />
                             <Text style={[styles.tabText, activeTab === 'transfer' && styles.activeTabText]}>
-                                Transfer
+                                {t('balance.private.transferButton')}
                             </Text>
                         </Pressable>
 
@@ -104,7 +106,7 @@ const TransactionScreen = () => {
                                 color={activeTab === 'withdraw' ? colorTokens['text.primary'] : colorTokens['text.secondary']}
                             />
                             <Text style={[styles.tabText, activeTab === 'withdraw' && styles.activeTabText]}>
-                                Unshield
+                                {t('balance.private.unshieldButton')}
                             </Text>
                         </Pressable>
                     </View>

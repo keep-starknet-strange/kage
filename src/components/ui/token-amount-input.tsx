@@ -8,6 +8,7 @@ import { Text, TextInput, View } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { ModalPicker } from "./modal-picker";
 import { Image } from "expo-image";
+import { useTranslation } from "react-i18next";
 
 type AmountType<T extends TokenBalance> =
     T extends PrivateTokenBalance ? PrivateAmount :
@@ -23,12 +24,13 @@ type TokenAmountInputProps<T extends TokenBalance> = {
 };
 
 export function TokenAmountInput<T extends TokenBalance>({
-    label = "Amount",
+    label,
     onAmountChange,
-    placeholder = "0.0",
+    placeholder,
     disabled = false,
     balances
 }: TokenAmountInputProps<T>) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
     const [selectedBalance, setSelectedBalance] = useState<T | null>(null);
@@ -36,6 +38,9 @@ export function TokenAmountInput<T extends TokenBalance>({
     const [amountDecimal, setAmountDecimal] = useState<bigint | null>(null);
     const [hintMessage, setHintMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    
+    const finalLabel = label || t('forms.amount.label');
+    const finalPlaceholder = placeholder || t('forms.amount.placeholder');
 
     useEffect(() => {
         if (selectedBalance) {
@@ -78,19 +83,21 @@ export function TokenAmountInput<T extends TokenBalance>({
         const maxRange = selectedBalance.spendableBalance;
 
         if (amountDecimal > maxRange) {
-            setError("Exceeds balance")
+            setError(t('forms.amount.exceedsBalance'))
             return;
         } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {
-            6
-            setError(`Private ${selectedBalance.token.symbol} amount must be at least ${tokenAmountToFormatted(false, minRange, selectedBalance.token)}`)
+            setError(t('forms.amount.minPrivateAmount', { 
+                symbol: selectedBalance.token.symbol, 
+                minAmount: tokenAmountToFormatted(false, minRange, selectedBalance.token) 
+            }))
             return;
         } else if (amountDecimal < minRange) {
-            setError("Negative amounts are not allowed")
+            setError(t('forms.amount.negativeNotAllowed'))
             return;
         }
 
         setError(null);
-    }, [amountDecimal, selectedBalance]);
+    }, [amountDecimal, selectedBalance, t]);
 
     const handleChangeText = (text: string) => {
         if (!selectedBalance) {
@@ -145,7 +152,7 @@ export function TokenAmountInput<T extends TokenBalance>({
 
     return (
         <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
+            {finalLabel && <Text style={styles.label}>{finalLabel}</Text>}
             <View style={[
                 styles.inputContainer,
                 error && styles.inputContainerError,
@@ -155,7 +162,7 @@ export function TokenAmountInput<T extends TokenBalance>({
                     style={[styles.input, disabled && styles.inputDisabled]}
                     value={amountText}
                     onChangeText={handleChangeText}
-                    placeholder={placeholder}
+                    placeholder={finalPlaceholder}
                     keyboardType="numeric"
                     placeholderTextColor={colorTokens['text.muted']}
                     editable={!disabled}
@@ -165,7 +172,7 @@ export function TokenAmountInput<T extends TokenBalance>({
                     items={balances}
                     selectedItem={selectedBalance}
                     onSelectItem={setSelectedBalance}
-                    placeholder="Token"
+                    placeholder={t('forms.token.placeholder')}
                     disabled={disabled}
                     renderItem={renderItem}
                     renderModalItem={renderModalItem}

@@ -1,3 +1,5 @@
+import i18n from "@/utils/i18n";
+
 export class AppError extends Error {
     readonly details: any | null;
 
@@ -9,6 +11,6 @@ export class AppError extends Error {
 
 export class CancellationError extends AppError {
     constructor() {
-        super("Cancelled");
+        super(i18n.t('errors.cancelled'));
     }
 }

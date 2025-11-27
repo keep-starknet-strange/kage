@@ -4,6 +4,7 @@ import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemePro
 import { PrivateTokenAddress } from "@/types/privateRecipient";
 import { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type PrivateAddressInputProps = {
     label?: string;
@@ -13,16 +14,20 @@ type PrivateAddressInputProps = {
 };
 
 export function PrivateAddressInput({
-    label = "Private Address",
-    placeholder = "Enter private address...",
+    label,
+    placeholder,
     disabled = false,
     onAddressChange,
 }: PrivateAddressInputProps) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
     const [addressText, setAddressText] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [isValid, setIsValid] = useState<boolean>(false);
+    
+    const finalLabel = label || t('forms.privateAddress.label');
+    const finalPlaceholder = placeholder || t('forms.privateAddress.placeholder');
 
     useEffect(() => {
         if (!addressText || addressText.trim() === '') {
@@ -40,11 +45,11 @@ export function PrivateAddressInput({
             setIsValid(true);
             onAddressChange(parsedAddress);
         } else {
-            setError("Invalid private address format");
+            setError(t('forms.privateAddress.invalidFormat'));
             setIsValid(false);
             onAddressChange(null);
         }
-    }, [addressText, onAddressChange]);
+    }, [addressText, onAddressChange, t]);
 
     const handleChangeText = (text: string) => {
         setAddressText(text);
@@ -52,7 +57,7 @@ export function PrivateAddressInput({
 
     return (
         <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
+            {finalLabel && <Text style={styles.label}>{finalLabel}</Text>}
             <View style={[
                 styles.inputContainer,
                 error && styles.inputContainerError,
@@ -71,7 +76,7 @@ export function PrivateAddressInput({
                     style={[styles.input, disabled && styles.inputDisabled]}
                     value={addressText}
                     onChangeText={handleChangeText}
-                    placeholder={placeholder}
+                    placeholder={finalPlaceholder}
                     placeholderTextColor={colorTokens['text.muted']}
                     editable={!disabled}
                     autoCapitalize="none"
@@ -104,7 +109,7 @@ export function PrivateAddressInput({
             </View>
             {error && <Text style={styles.errorText}>{error}</Text>}
             {isValid && !error && (
-                <Text style={styles.hintText}>Valid private address</Text>
+                <Text style={styles.hintText}>{t('forms.privateAddress.validAddress')}</Text>
             )}
         </View>
     );

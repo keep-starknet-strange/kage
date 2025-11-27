@@ -17,6 +17,7 @@ import ProfileStorage from "@/storage/profile/ProfileStorage";
 import WebProfileStorage from "@/storage/profile/WebProfileStorage";
 import SeedPhraseVault from "@/storage/SeedPhraseVault";
 import { AppError } from "@/types/appError";
+import i18n from "@/utils/i18n";
 import { platform } from "@/utils/platform";
 import Constants from 'expo-constants';
 import { Platform } from "react-native";
@@ -40,13 +41,13 @@ function getApplicationId(): string {
     if (Platform.OS === "android") {
         const packageName = Constants.expoConfig?.android?.package;
         if (!packageName) {
-            throw new AppError("Android package not found in app.json");
+            throw new AppError(i18n.t('errors.androidPackageNotFound'));
         }
         return packageName;
     } else if (Platform.OS === "ios") {
         const bundleId = Constants.expoConfig?.ios?.bundleIdentifier
         if (!bundleId) {
-            throw new AppError("iOS bundle identifier not found in app.json");
+            throw new AppError(i18n.t('errors.androidPackageNotFound'));
         }
         return bundleId
     } else {

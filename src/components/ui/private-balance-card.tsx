@@ -9,6 +9,7 @@ import { ActivityIndicator, StyleProp, Text, TouchableOpacity, View, ViewStyle }
 import ActionButton from "./action-buttons";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { showToastError } from "./toast";
+import { useTranslation } from "react-i18next";
 
 export interface PrivateBalanceCardProps {
     account: Account;
@@ -19,6 +20,7 @@ export interface PrivateBalanceCardProps {
 }
 
 export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
     const { account, style } = props;
@@ -38,7 +40,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
 
     return (
         <View style={[styles.container, style]}>
-            <Text style={styles.label}>{"Private Balance"}</Text>
+            <Text style={styles.label}>{t('balance.private.label')}</Text>
             <View style={styles.amountRow}>
                 <Text style={styles.amount}>
                     {isUnlocked ? fiatBalance : '••••••'}
@@ -78,7 +80,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
             <View style={styles.actionsContainer}>
                 <ActionButton
                     icon="shield"
-                    label="Shield"
+                    label={t('balance.private.shieldButton')}
                     onPress={() => {
                         props.onFundPress();
                     }}
@@ -86,7 +88,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                 />
                 <ActionButton
                     icon="cash-lock"
-                    label="Transfer"
+                    label={t('balance.private.transferButton')}
                     onPress={() => {
                         props.onTransferPress();
                     }}
@@ -94,7 +96,7 @@ export const PrivateBalanceCard = (props: PrivateBalanceCardProps) => {
                 />
                 <ActionButton
                     icon="shield-off"
-                    label="Unshield"
+                    label={t('balance.private.unshieldButton')}
                     onPress={() => {
                         props.onWithdrawPress();
                     }}

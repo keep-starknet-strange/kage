@@ -13,8 +13,10 @@ import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
 
 export default function NetworksScreen() {
+    const { t } = useTranslation();
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const navigation = useNavigation();
@@ -69,20 +71,20 @@ export default function NetworksScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Networks"
-                    subtitle="Select your active blockchain network"
+                    title={t('networks.title')}
+                    subtitle={t('networks.subtitle')}
                     onBackPress={() => router.back()}
                 />
             ),
         });
-    }, [navigation, insets.top, router]);
+    }, [navigation, insets.top, router, t]);
 
     if (!profile) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.emptyState}>
                     <IconSymbol name="network-off" size={48} color={colorTokens['text.muted']} />
-                    <Text style={styles.emptyStateText}>No profile found</Text>
+                    <Text style={styles.emptyStateText}>{t('networks.emptyState.noProfile')}</Text>
                 </View>
             </View>
         );
@@ -97,9 +99,9 @@ export default function NetworksScreen() {
             {networksData.length === 0 ? (
                 <View style={styles.emptyState}>
                     <IconSymbol name="network-off" size={48} color={colorTokens['text.muted']} />
-                    <Text style={styles.emptyStateText}>No networks configured</Text>
+                    <Text style={styles.emptyStateText}>{t('networks.emptyState.noNetworks')}</Text>
                     <Text style={styles.emptyStateSubtext}>
-                        Configure networks in your profile settings
+                        {t('networks.emptyState.noNetworksDescription')}
                     </Text>
                 </View>
             ) : (
@@ -127,6 +129,7 @@ interface NetworkItemProps {
 }
 
 function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkItemProps) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
@@ -182,7 +185,7 @@ function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkIt
                             <Text style={styles.networkTitle}>{definition.displayName}</Text>
                             {definition.isTestNetwork && (
                                 <View style={styles.testBadge}>
-                                    <Text style={styles.testBadgeText}>TEST</Text>
+                                    <Text style={styles.testBadgeText}>{t('networks.testBadge')}</Text>
                                 </View>
                             )}
                         </View>
@@ -229,7 +232,7 @@ function NetworkItem({ definition, isSelected, isSwitching, onPress }: NetworkIt
                         color={colorTokens['text.secondary']}
                     />
                     <Text style={styles.detailText} numberOfLines={1}>
-                        RPC: {definition.rpcUrl.hostname}
+                        {t('networks.rpcLabel', { hostname: definition.rpcUrl.hostname })}
                     </Text>
                 </View>
             </View>

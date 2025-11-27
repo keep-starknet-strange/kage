@@ -11,8 +11,10 @@ import { useProfileStore } from "@/stores/profileStore";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function SettingsScreen() {
+    const { t } = useTranslation();
     const { insets } = useDynamicSafeAreaInsets();
     const router = useRouter();
     const { keyValueStorage, seedPhraseVault, biometricsProvider } = useAppDependenciesStore();
@@ -64,10 +66,10 @@ export default function SettingsScreen() {
 
                 if (passphrase) {
                     await seedPhraseVault.enableBiometrics(passphrase, {
-                        title: "Enable Biometrics",
-                        subtitleAndroid: "Confirming your change",
-                        descriptionAndroid: "KAGE needs to confirm your change to enable biometrics.",
-                        cancelAndroid: "Cancel",
+                        title: t('auth.enableBiometrics'),
+                        subtitleAndroid: t('auth.confirmingChange'),
+                        descriptionAndroid: t('auth.biometricsChangeDescription'),
+                        cancelAndroid: t('common.cancel'),
                     });
 
                     await keyValueStorage.set("device.biometrics.enabled", true);
@@ -116,13 +118,13 @@ export default function SettingsScreen() {
         >
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.title}>Settings</Text>
-                <Text style={styles.subtitle}>Manage your wallet preferences</Text>
+                <Text style={styles.title}>{t('settings.title')}</Text>
+                <Text style={styles.subtitle}>{t('settings.subtitle')}</Text>
             </View>
 
             {/* Security Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Security</Text>
+                <Text style={styles.sectionTitle}>{t('settings.sections.security')}</Text>
                 
                 <TouchableOpacity 
                     style={styles.settingsItem}
@@ -138,8 +140,8 @@ export default function SettingsScreen() {
                             />
                         </View>
                         <View style={styles.itemTextContainer}>
-                            <Text style={styles.itemTitle}>Keys</Text>
-                            <Text style={styles.itemDescription}>View and backup your keys</Text>
+                            <Text style={styles.itemTitle}>{t('settings.keys.title')}</Text>
+                            <Text style={styles.itemDescription}>{t('settings.keys.description')}</Text>
                         </View>
                     </View>
                     <IconSymbol
@@ -161,12 +163,12 @@ export default function SettingsScreen() {
                         </View>
                         <View style={styles.itemTextContainer}>
                             <Text style={styles.itemTitle}>
-                                {supportedBiometryType ? biometryTypeToString(supportedBiometryType) : 'Biometrics'}
+                                {supportedBiometryType ? biometryTypeToString(supportedBiometryType, t) : t('settings.biometrics.title')}
                             </Text>
                             <Text style={styles.itemDescription}>
-                                {!supportedBiometryType && 'Not available on this device'}
-                                {supportedBiometryType && isBiometricsEnabled && 'Enabled for quick access'}
-                                {supportedBiometryType && !isBiometricsEnabled && 'Disabled'}
+                                {!supportedBiometryType && t('settings.biometrics.notAvailable')}
+                                {supportedBiometryType && isBiometricsEnabled && t('settings.biometrics.enabled')}
+                                {supportedBiometryType && !isBiometricsEnabled && t('settings.biometrics.disabled')}
                             </Text>
                         </View>
                     </View>
@@ -189,7 +191,7 @@ export default function SettingsScreen() {
 
             {/* Configuration Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Configuration</Text>
+                <Text style={styles.sectionTitle}>{t('settings.sections.configuration')}</Text>
                 
                 <TouchableOpacity 
                     style={styles.settingsItem}
@@ -205,8 +207,8 @@ export default function SettingsScreen() {
                             />
                         </View>
                         <View style={styles.itemTextContainer}>
-                            <Text style={styles.itemTitle}>Networks</Text>
-                            <Text style={styles.itemDescription}>View and change the active network</Text>
+                            <Text style={styles.itemTitle}>{t('settings.networks.title')}</Text>
+                            <Text style={styles.itemDescription}>{t('settings.networks.description')}</Text>
                         </View>
                     </View>
                     <IconSymbol
@@ -219,7 +221,7 @@ export default function SettingsScreen() {
 
             {/* Danger Zone */}
             <View style={styles.dangerSection}>
-                <Text style={styles.dangerSectionTitle}>Danger Zone</Text>
+                <Text style={styles.dangerSectionTitle}>{t('settings.sections.dangerZone')}</Text>
                 <View style={styles.dangerCard}>
                     <View style={styles.dangerContent}>
                         <View style={styles.dangerIconContainer}>
@@ -230,14 +232,14 @@ export default function SettingsScreen() {
                             />
                         </View>
                         <View style={styles.dangerTextContainer}>
-                            <Text style={styles.dangerTitle}>Delete Wallet</Text>
+                            <Text style={styles.dangerTitle}>{t('settings.deleteWallet.title')}</Text>
                             <Text style={styles.dangerDescription}>
-                                Permanently delete your wallet. Make sure you have backed up your recovery phrase.
+                                {t('settings.deleteWallet.description')}
                             </Text>
                         </View>
                     </View>
                     <DangerButton
-                        title="Delete Wallet"
+                        title={t('settings.deleteWallet.button')}
                         onPress={handleDeleteWallet}
                         loading={isDeletingProfile}
                     />
@@ -247,22 +249,22 @@ export default function SettingsScreen() {
     );
 }
 
-function biometryTypeToString(biometryType: BiometryType): string {
+function biometryTypeToString(biometryType: BiometryType, t: any): string {
     switch (biometryType) {
         case BiometryType.TOUCH_ID:
-            return "Touch ID";
+            return t('auth.biometryTypes.touchId');
         case BiometryType.FACE_ID:
-            return "Face ID";
+            return t('auth.biometryTypes.faceId');
         case BiometryType.FINGERPRINT:
-            return "Fingerprint";
+            return t('auth.biometryTypes.fingerprint');
         case BiometryType.IRIS:
-            return "Iris";
+            return t('auth.biometryTypes.iris');
         case BiometryType.FACE:
-            return "Face";
+            return t('auth.biometryTypes.face');
         case BiometryType.OPTIC_ID:
-            return "Optic ID";
+            return t('auth.biometryTypes.opticId');
         default:
-            return "Unknown";
+            return t('auth.biometryTypes.unknown');
     }
 }
 

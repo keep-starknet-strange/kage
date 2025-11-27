@@ -6,6 +6,8 @@ import { PrivateAmount, PublicAmount } from "@/types/amount";
 import { AppError } from "@/types/appError";
 import { PrivateTokenRecipient } from "@/types/privateRecipient";
 import { Transaction } from "@/types/transaction";
+import formattedAddress from "@/utils/formattedAddress";
+import i18n from "@/utils/i18n";
 import { LOG } from "@/utils/logs";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
@@ -15,7 +17,6 @@ import { useAccessVaultStore } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";
 import { useRpcStore } from "./useRpcStore";
-import formattedAddress from "@/utils/formattedAddress";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
 
@@ -78,20 +79,20 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signing: [signer],
                 tokens: new Map([[from, [amount.token]]])
             }, {
-                title: "Funding Account...",
+                title: i18n.t('biometricPrompts.fundingAccount.title'),
                 subtitleAndroid: `Authorize to fund account ${formattedAddress(from.address, "compact")}`,
                 descriptionAndroid: "KAGE needs your authentication to securely fund your account using your private keys.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.fundingAccount.cancelAndroid'),
             });
 
             const signerKeyPair = result.signing.get(signer);
             if (!signerKeyPair) {
-                throw new AppError("Signing key not found for account", signer.address);
+                throw new AppError(i18n.t('errors.signingKeyNotFound'), signer.address);
             }
 
             const tokenKeyPairs = result.tokens.get(from);
             if (!tokenKeyPairs) {
-                throw new AppError("Token key not found for account", from.address);
+                throw new AppError(i18n.t('errors.tokenKeyNotFound'), from.address);
             }
 
             const tokenKeyPair = tokenKeyPairs.find(tokenKeyPair => tokenKeyPair.token.contractAddress === amount.token.contractAddress);
@@ -140,15 +141,15 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signing: [from],
                 tokens: new Map()
             }, {
-                title: "Public Transfer...",
+                title: i18n.t('biometricPrompts.publicTransfer.title'),
                 subtitleAndroid: `Authorize to transfer ${amount.formatted()} to ${formattedAddress(recipient, "compact")}`,
                 descriptionAndroid: "KAGE needs your authentication to securely transfer your public tokens.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.publicTransfer.cancelAndroid'),
             });
 
             const signerKeyPair = result.signing.get(from);
             if (!signerKeyPair) {
-                throw new AppError("Signing key not found for account", from.address);
+                throw new AppError(i18n.t('errors.signingKeyNotFound'), from.address);
             }
 
             const fromAccount = new StarknetAccount({
@@ -183,20 +184,20 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signing: [signer],
                 tokens: new Map([[from, [amount.token]]])
             }, {
-                title: "Private Transfer...",
+                title: i18n.t('biometricPrompts.privateTransfer.title'),
                 subtitleAndroid: `Authorize to transfer ${amount.formatted()} to ${formattedAddress(recipient.privateTokenAddress.base58, "compact")}`,
                 descriptionAndroid: "KAGE needs your authentication to securely transfer your private tokens.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.privateTransfer.cancelAndroid'),
             });
 
             const signerKeyPair = result.signing.get(signer);
             if (!signerKeyPair) {
-                throw new AppError("Signing key not found for account", signer.address);
+                throw new AppError(i18n.t('errors.signingKeyNotFound'), signer.address);
             }
 
             const tokenKeyPairs = result.tokens.get(from);
             if (!tokenKeyPairs) {
-                throw new AppError("Token key not found for account", from.address);
+                throw new AppError(i18n.t('errors.tokenKeyNotFound'), from.address);
             }
 
             const tokenKeyPair = tokenKeyPairs.find(tokenKeyPair => tokenKeyPair.token.contractAddress === amount.token.contractAddress);
@@ -250,20 +251,20 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signing: [signer],
                 tokens: new Map([[to, [amount.token]]])
             }, {
-                title: "Withdrawing...",
+                title: i18n.t('biometricPrompts.withdrawing.title'),
                 subtitleAndroid: `Authorize to withdraw ${amount.formatted()} from ${formattedAddress(to.address, "compact")}`,
                 descriptionAndroid: "KAGE needs your authentication to securely withdraw your private tokens.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.withdrawing.cancelAndroid'),
             });
 
             const signerKeyPair = result.signing.get(signer);
             if (!signerKeyPair) {
-                throw new AppError("Signing key not found for account", signer.address);
+                throw new AppError(i18n.t('errors.signingKeyNotFound'), signer.address);
             }
 
             const tokenKeyPairs = result.tokens.get(to);
             if (!tokenKeyPairs) {
-                throw new AppError("Token key not found for account", to.address);
+                throw new AppError(i18n.t('errors.tokenKeyNotFound'), to.address);
             }
 
             const tokenKeyPair = tokenKeyPairs.find(tokenKeyPair => tokenKeyPair.token.contractAddress === amount.token.contractAddress);
@@ -370,7 +371,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const provider = useRpcStore.getState().getProvider();
 
             if (!ProfileState.isProfile(profileState)) {
-                throw new AppError("Profile state is not initialized", profileState);
+                throw new AppError(i18n.t('errors.profileNotInitialized'), profileState);
             }
 
             const status = deployStatus.get(account.address);
@@ -383,15 +384,15 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signing: [account],
                 tokens: new Map()
             }, {
-                title: "Deploying Account...",
+                title: i18n.t('biometricPrompts.deployingAccount.title'),
                 subtitleAndroid: `Authorize to deploy account ${formattedAddress(account.address, "compact")}`,
                 descriptionAndroid: "KAGE needs your authentication to securely deploy your account using your private keys.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.deployingAccount.cancelAndroid'),
             });
 
             const keyPair = result.signing.get(account);
             if (!keyPair) {
-                throw new Error("Signing key not found for account " + account.address);
+                throw new Error(i18n.t('errors.signingKeyNotFound') + " " + account.address);
             }
 
             const starknetAccount = new StarknetAccount({

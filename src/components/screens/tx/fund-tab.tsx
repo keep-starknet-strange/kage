@@ -14,6 +14,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type FundTabProps = {
     account: Account;
@@ -22,6 +23,7 @@ type FundTabProps = {
 export function FundTab({
     account,
 }: FundTabProps) {
+    const { t } = useTranslation();
     const { profileState } = useProfileStore();
     const { fund } = useOnChainStore();
     const router = useRouter();
@@ -83,27 +85,27 @@ export function FundTab({
     return (
         <View style={styles.container}>
             <Text style={styles.description}>
-                Add private funds to your account.
+                {t('transactions.fund.description')}
             </Text>
 
             <AccountPicker
-                label="Fund from this account's public balance:"
+                label={t('transactions.fund.fromLabel')}
                 accounts={accounts}
                 selectedAccount={selectedAccount}
                 onSelectAccount={setSelectedAccount}
-                placeholder="Select an account"
+                placeholder={t('transactions.fund.selectAccountPlaceholder')}
             />
 
             <TokenAmountInput
-                label="Public Amount"
+                label={t('transactions.fund.publicAmountLabel')}
                 onAmountChange={setAmount}
                 balances={selectedAccountBalances ?? []}
-                placeholder="0.0"
+                placeholder={t('forms.amount.placeholder')}
                 disabled={!selectedAccountBalances}
             />
 
             <PrimaryButton
-                title="Fund Private Balance"
+                title={t('transactions.fund.fundButton')}
                 onPress={handleFund}
                 disabled={!amount}
                 loading={isFunding}

@@ -13,6 +13,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type PublicTransferTabProps = {
     account: Account;
@@ -21,6 +22,7 @@ type PublicTransferTabProps = {
 export function PublicTransferTab({
     account,
 }: PublicTransferTabProps) {
+    const { t } = useTranslation();
     const { publicTransfer } = useOnChainStore();
     const router = useRouter();
 
@@ -61,25 +63,25 @@ export function PublicTransferTab({
     return (
         <View style={styles.container}>
             <Text style={styles.description}>
-                Transfer tokens to another address.
+                {t('transactions.publicTransfer.description')}
             </Text>
 
             <AccountAddressInput
-                label="Recipient Address"
-                placeholder="Enter recipient's account address..."
+                label={t('transactions.publicTransfer.recipientLabel')}
+                placeholder={t('transactions.publicTransfer.recipientPlaceholder')}
                 from={account.address}
                 onAddressChange={setRecipientAddress}
             />
 
             <TokenAmountInput
-                label="Amount"
-                placeholder="0.0"
+                label={t('forms.amount.label')}
+                placeholder={t('forms.amount.placeholder')}
                 balances={publicBalances ?? []}
                 onAmountChange={setAmount}
             />
 
             <PrimaryButton
-                title="Send"
+                title={t('transactions.publicTransfer.sendButton')}
                 onPress={handleTransfer}
                 disabled={!recipientAddress || !amount}
                 loading={isTransferring}

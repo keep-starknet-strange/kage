@@ -13,12 +13,14 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type WithdrawTabProps = {
     account: Account;
 };
 
 export function WithdrawTab({ account }: WithdrawTabProps) {
+    const { t } = useTranslation();
     const { unlockPrivateBalances } = useBalanceStore();
     const { withdraw } = useOnChainStore();
     const router = useRouter();
@@ -82,18 +84,18 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
             ) : (
                 <>
                     <Text style={styles.description}>
-                        Withdraw tokens from your private balance to your public wallet.
+                        {t('transactions.withdraw.description')}
                     </Text>
 
                     <TokenAmountInput
-                        label="Amount"
-                        placeholder="0.0"
+                        label={t('forms.amount.label')}
+                        placeholder={t('forms.amount.placeholder')}
                         balances={privateBalances ?? []}
                         onAmountChange={setAmount}
                     />
 
                     <PrimaryButton
-                        title="Withdraw"
+                        title={t('transactions.withdraw.withdrawButton')}
                         onPress={handleWithdraw}
                         disabled={!amount}
                         loading={isWithdrawing}

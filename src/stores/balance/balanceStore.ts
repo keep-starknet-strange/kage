@@ -6,6 +6,7 @@ import Token from "@/types/token";
 import { TokenAddress } from "@/types/tokenAddress";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
 import { pubKeyFromData } from "@/utils/fatSolutions";
+import i18n from "@/utils/i18n";
 import { LOG } from "@/utils/logs";
 import { MapUtils } from "@/utils/map";
 import tokensConfig from "res/config/tokens.json";
@@ -112,10 +113,10 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                 }));
                 const feeTokenAddress = TokenAddress.create(preset.feeTokenAddress);
                 if (!tokens.has(feeTokenAddress)) {
-                    throw new AppError("Fee token not found for network " + networkId + ". Make sure tokens.json is configured properly.");
+                    throw new AppError(i18n.t('errors.feeTokenNotFound', { networkId }));
                 }
             } else {
-                throw new AppError("Network " + networkId + " is not configured in tokens.json. Dynamic presets not supported yet.");
+                throw new AppError(i18n.t('errors.networkNotConfigured', { networkId }));
             }
 
             const tokenMetadata = await marketRepository.getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress), networkId);

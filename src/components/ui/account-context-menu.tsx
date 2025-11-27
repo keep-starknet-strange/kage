@@ -9,12 +9,14 @@ import { ActivityIndicator, Modal, Pressable, Text, TouchableOpacity, View } fro
 import Animated from "react-native-reanimated";
 import { RenameAccountModal } from "./rename-account-modal";
 import { showToastError } from "./toast";
+import { useTranslation } from "react-i18next";
 
 export interface AccountContextMenuProps {
     account: Account;
 }
 
 export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
@@ -90,7 +92,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
                                         />
                                     )}
 
-                                    <Text style={[styles.menuItemText, { color: colorTokens['status.warning'] }]}>{isDeploying ? "Deploying..." : "Deploy Account"}</Text>
+                                    <Text style={[styles.menuItemText, { color: colorTokens['status.warning'] }]}>{isDeploying ? t('accounts.contextMenu.deploying') : t('accounts.contextMenu.deployAccount')}</Text>
                                 </TouchableOpacity>
                                 <View style={styles.menuDivider} />
                             </>
@@ -105,7 +107,7 @@ export const AccountContextMenu = ({ account }: AccountContextMenuProps) => {
                                 size={20}
                                 color={colorTokens['text.primary']}
                             />
-                            <Text style={styles.menuItemText}>Rename Account</Text>
+                            <Text style={styles.menuItemText}>{t('accounts.contextMenu.renameAccount')}</Text>
                         </TouchableOpacity>
                     </Animated.View>
                 </Pressable>

@@ -7,6 +7,7 @@ import { Modal, Pressable, Text, TextInput, View } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { PrimaryButton } from "./primary-button";
 import { SecondaryButton } from "./secondary-button";
+import { useTranslation } from "react-i18next";
 
 export interface RenameAccountModalProps {
     account: Account;
@@ -16,6 +17,7 @@ export interface RenameAccountModalProps {
 }
 
 export const RenameAccountModal = ({ account, visible, onClose, onRename }: RenameAccountModalProps) => {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
     const [accountName, setAccountName] = useState(account.name);
@@ -25,17 +27,17 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
     const handleRename = async () => {
         // Validate account name
         if (!accountName.trim()) {
-            setError('Account name is required');
+            setError(t('accounts.validation.required'));
             return;
         }
 
         if (accountName.trim().length < 2) {
-            setError('Account name must be at least 2 characters');
+            setError(t('accounts.validation.tooShort'));
             return;
         }
 
         if (accountName.trim().length > 50) {
-            setError('Account name must be less than 50 characters');
+            setError(t('accounts.validation.tooLong'));
             return;
         }
 
@@ -47,7 +49,7 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
             onClose();
         } catch (err) {
             LOG.error('Failed to rename account:', err);
-            setError(err instanceof Error ? err.message : 'Failed to rename account');
+            setError(err instanceof Error ? err.message : t('accounts.validation.renameFailed'));
         } finally {
             setIsRenaming(false);
         }
@@ -78,13 +80,13 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
                         behavior={"position"}
                         contentContainerStyle={styles.modalContent}
                     >
-                        <Text style={styles.title}>Rename Account</Text>
+                        <Text style={styles.title}>{t('accounts.rename.title')}</Text>
                         <Text style={styles.description}>
-                            Choose a new name for your account.
+                            {t('accounts.rename.description')}
                         </Text>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Account Name</Text>
+                            <Text style={styles.label}>{t('accounts.rename.label')}</Text>
                             <TextInput
                                 style={[
                                     styles.input,
@@ -96,7 +98,7 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
                                     setAccountName(text);
                                     setError(null);
                                 }}
-                                placeholder="e.g., Main Account"
+                                placeholder={t('accounts.rename.placeholder')}
                                 placeholderTextColor={colorTokens['text.muted']}
                                 editable={!isRenaming}
                                 autoFocus
@@ -106,20 +108,20 @@ export const RenameAccountModal = ({ account, visible, onClose, onRename }: Rena
                                 <Text style={styles.errorText}>{error}</Text>
                             )}
                             <Text style={styles.hintText}>
-                                {accountName.length}/50 characters
+                                {t('common.characters', { count: accountName.length, max: 50 })}
                             </Text>
                         </View>
 
                         <View style={styles.buttonContainer}>
                             <SecondaryButton
-                                title="Cancel"
+                                title={t('common.cancel')}
                                 onPress={handleClose}
                                 disabled={isRenaming}
                                 style={styles.cancelButton}
                             />
 
                             <PrimaryButton
-                                title={isRenaming ? 'Renaming...' : 'Rename'}
+                                title={isRenaming ? t('accounts.rename.buttonRenaming') : t('accounts.rename.button')}
                                 onPress={handleRename}
                                 disabled={!accountName.trim() || isRenaming}
                                 loading={isRenaming}

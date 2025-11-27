@@ -8,6 +8,7 @@ import { RpcError, TimeoutError, WebSocketNotConnectedError } from "starknet";
 import { ErrorToast } from "./error-toast";
 import { NetworkChangeToast } from "./network-change-toast";
 import { TransactionToast } from "./transaction-toast";
+import i18n from "@/utils/i18n";
 
 export function showToastError(error: any) {
     if (error instanceof CancellationError) {
@@ -23,21 +24,21 @@ export function showToastError(error: any) {
             details = JSON.stringify(error.details);
         }
     } else if (error instanceof WebSocketNotConnectedError) {
-        message = "WebSocket not connected";
+        message = i18n.t('errors.websocketNotConnected');
         details = error.message;
     } else if (error instanceof TimeoutError) {
-        message = "Request timed out";
+        message = i18n.t('errors.requestTimedOut');
         details = error.message;
     } else if (error instanceof RpcError) {
         if (error.isType('VALIDATION_FAILURE') && error.baseError.data.includes("exceed balance")) {
-            message = "Insufficient balance";
+            message = i18n.t('errors.insufficientBalance');
         } else {
             message = error.baseError.message;
         }
         details = JSON.stringify(error.baseError);
     } else if (error instanceof Error) {
         if (error.message === "invalid tag") {
-            message = "Wrong passphrase";
+            message = i18n.t('errors.wrongPassphrase');
         } else {
             message = error.message;
         }
@@ -47,7 +48,7 @@ export function showToastError(error: any) {
         type: "customError",
         props: {
             id: uuid.v4(),
-            title: "An error occurred",
+            title: i18n.t('errors.title'),
             subtitle: message,
             details: details,
         },

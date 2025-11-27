@@ -15,6 +15,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type TransferTabProps = {
     account: Account;
@@ -23,6 +24,7 @@ type TransferTabProps = {
 export function TransferTab({
     account,
 }: TransferTabProps) {
+    const { t } = useTranslation();
     const { unlockPrivateBalances } = useBalanceStore();
     const { transfer } = useOnChainStore();
     const router = useRouter();
@@ -87,23 +89,23 @@ export function TransferTab({
             ) : (
                 <>
                     <Text style={styles.description}>
-                        Transfer tokens to another address privately.
+                        {t('transactions.transfer.description')}
                     </Text>
 
                     <PrivateAddressInput
-                        label="Recipient Address"
-                        placeholder="Enter recipient's private address..."
+                        label={t('transactions.transfer.recipientLabel')}
+                        placeholder={t('transactions.transfer.recipientPlaceholder')}
                         onAddressChange={setRecipientAddress}
                     />
                     <TokenAmountInput
-                        label="Amount"
-                        placeholder="0.0"
+                        label={t('forms.amount.label')}
+                        placeholder={t('forms.amount.placeholder')}
                         balances={privateBalances ?? []}
                         onAmountChange={setAmount}
                     />
 
                     <PrimaryButton
-                        title="Transfer"
+                        title={t('transactions.transfer.transferButton')}
                         onPress={handleTransfer}
                         disabled={!recipientAddress || !amount}
                         loading={isTransferring}

@@ -1,6 +1,7 @@
 import { NetworkId } from "@/profile/misc";
 import NetworkDefinition from "@/profile/settings/networkDefinition";
 import { AppError } from "@/types/appError";
+import i18n from "@/utils/i18n";
 import { LOG } from "@/utils/logs";
 import { RpcProvider, WebSocketChannel } from "starknet";
 import { create } from "zustand";
@@ -35,7 +36,7 @@ export const useRpcStore = create<RpcState>((set, get) => {
 
             if (networkId === network.chainId) {
                 if (provider === null) {
-                    throw new AppError("Provider is not set");
+                    throw new AppError(i18n.t('errors.providerNotSet'));
                 }
 
                 return provider;
@@ -57,7 +58,7 @@ export const useRpcStore = create<RpcState>((set, get) => {
         getProvider: () => {
             const { provider } = get();
             if (provider === null) {
-                throw new AppError("Provider is not set");
+                throw new AppError(i18n.t('errors.providerNotSet'));
             }
             return provider;
         },
@@ -65,7 +66,7 @@ export const useRpcStore = create<RpcState>((set, get) => {
             const { wsChannel, wsChannelUrl } = get();
 
             if (wsChannelUrl === null) {
-                throw new AppError("WebSocket URL is not set");
+                throw new AppError(i18n.t('errors.websocketUrlNotSet'));
             }
 
             const resultChannel = wsChannel ?? new WebSocketChannel({ nodeUrl: wsChannelUrl.toString(), autoReconnect: false });

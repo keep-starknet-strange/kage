@@ -9,6 +9,7 @@ import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import Token from "@/types/token";
 import { groupBy } from "@/utils/collections";
+import i18n from "@/utils/i18n";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";
@@ -95,7 +96,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
             const profileState = useProfileStore.getState().profileState;
             if (!ProfileState.isProfile(profileState)) {
-                throw new AppError("Profile state is not initialized", profileState);
+                throw new AppError(i18n.t('errors.profileNotInitialized'), profileState);
             }
 
             const allAccounts = new Set(input.signing.concat(Array.from(input.tokens.keys())));
@@ -130,7 +131,10 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
                         let seedPhrasesMap: Map<KeySourceId, SeedPhraseWords>;
                         if (useBiometrics) {
                             set({ prompt: { input: { requestFor: "keySources", keySourceIds: ids }, validateWith: "biometrics" } });
-                            seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase", cancelAndroid: "Cancel" }, ids);
+                            seedPhrasesMap = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { 
+                                title: i18n.t('biometricPrompts.accessSeedPhrase.title'), 
+                                cancelAndroid: i18n.t('biometricPrompts.accessSeedPhrase.cancelAndroid') 
+                            }, ids);
                             set({ prompt: null });
                         } else {
                             let passphrase = await new Promise<string>((resolve, reject) => {
@@ -179,7 +183,7 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
 
                         break;
                     default:
-                        throw new AppError("Unsupported key source kind", kind);
+                        throw new AppError(i18n.t('errors.unsupportedKeySourceKind'), kind);
                 }
             }
 
@@ -206,7 +210,10 @@ export const useAccessVaultStore = create<AccessVaultState>((set) => ({
             let output: SeedPhraseOutput;
             if (useBiometrics) {
                 set({ prompt: { input: { requestFor: "keySources", keySourceIds: [input.keySourceId] }, validateWith: "biometrics" } });
-                const seedPhrases = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { title: "Access Seed Phrase" }, [input.keySourceId])
+                const seedPhrases = await seedPhraseVault.getSeedPhrasesWithBiometrics(authPrompt ?? { 
+                    title: i18n.t('biometricPrompts.accessSeedPhrase.title'),
+                    cancelAndroid: i18n.t('biometricPrompts.accessSeedPhrase.cancelAndroid')
+                }, [input.keySourceId])
                 const seedPhrase = seedPhrases.get(input.keySourceId);
                 if (!seedPhrase) {
                     throw new AppError(`Seed phrase not found for key source ${input.keySourceId}`);

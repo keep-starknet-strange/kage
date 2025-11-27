@@ -11,8 +11,10 @@ import { useProfileStore } from '@/stores/profileStore';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeScreen() {
+    const { t } = useTranslation();
     const { insets } = useDynamicSafeAreaInsets();
     const { colors } = useTheme();
     const router = useRouter();
@@ -31,7 +33,7 @@ export default function HomeScreen() {
             <TotalBalanceCard
                 accounts={accounts as Account[]}
             />
-            <Text style={[styles.sectionTitle, { color: colors['text.primary'] }]}>My Public Accounts</Text>
+            <Text style={[styles.sectionTitle, { color: colors['text.primary'] }]}>{t('home.sectionTitle')}</Text>
         </>
     );
 
@@ -55,13 +57,13 @@ export default function HomeScreen() {
 
     const renderEmpty = () => (
         <View style={styles.emptyState}>
-            <Text style={[styles.emptyStateText, { color: colors['text.muted'] }]}>No accounts yet</Text>
+            <Text style={[styles.emptyStateText, { color: colors['text.muted'] }]}>{t('home.emptyState')}</Text>
         </View>
     );
 
     const renderFooter = () => (
         <PrimaryButton
-            title="Add a new public account"
+            title={t('home.addAccount')}
             onPress={() => {
                 router.push('/account/create');
             }}

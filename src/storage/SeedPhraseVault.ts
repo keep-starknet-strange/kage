@@ -5,6 +5,7 @@ import { KeySourceId } from "@/profile/keys/keySource";
 import EncryptedStorage, { AuthPrompt } from "@/storage/encrypted/EncryptedStorage";
 import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
+import i18n from "@/utils/i18n";
 
 const SALT_KEY = "salt";
 const ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY = "encrypted_seed_phrase_encryption_key";
@@ -35,7 +36,7 @@ export default class SeedPhraseVault {
             bytesToBase64(salt)
         );
         if (!saltSaved) {
-            throw new AppError("Failed to store salt in encrypted storage for key source.", keySourceId);
+            throw new AppError(i18n.t('errors.failedToStoreSalt'), keySourceId);
         }
 
         const encryptedSeedPhraseKeyUserSaved = await this.encryptedStorage.setItem(
@@ -43,7 +44,7 @@ export default class SeedPhraseVault {
             bytesToBase64(encryptedSeedEncryptionKey)
         );
         if (!encryptedSeedPhraseKeyUserSaved) {
-            throw new AppError("Failed to store encrypted seed phrase encryption key in encrypted storage for key source.", keySourceId);
+            throw new AppError(i18n.t('errors.failedToStoreEncryptedKey'), keySourceId);
         }
 
         const encryptedSeedPhraseSaved = this.encryptedStorage.setItem(
@@ -51,21 +52,21 @@ export default class SeedPhraseVault {
             bytesToBase64(encryptedSeedPhrase)
         );
         if (!encryptedSeedPhraseSaved) { 
-            throw new AppError("Failed to store encrypted seed phrase in encrypted storage for key source.", keySourceId);
+            throw new AppError(i18n.t('errors.failedToStoreEncryptedSeedPhrase'), keySourceId);
         }
     }
 
     async enableBiometrics(passphrase: string, prompt: AuthPrompt): Promise<void> {
         const saltBase64 = await this.encryptedStorage.getItem(SALT_KEY);
         if (!saltBase64) {
-            throw new AppError("Salt not found in encrypted storage");
+            throw new AppError(i18n.t('errors.saltNotFound'));
         }
         const salt = base64ToBytes(saltBase64);
         const keyUser = await this.cryptoProvider.deriveKey(stringToBytes(passphrase), salt);
 
         const encryptedSeedPhraseEncryptionKeyBase64 = await this.encryptedStorage.getItem(ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY);
         if (!encryptedSeedPhraseEncryptionKeyBase64) {
-            throw new AppError("Encrypted seed phrase encryption key not found in encrypted storage");
+            throw new AppError(i18n.t('errors.encryptedKeyNotFound'));
         }
         const encryptedSeedPhraseEncryptionKey = base64ToBytes(encryptedSeedPhraseEncryptionKeyBase64);
         const seedEncryptionKey = await this.cryptoProvider.decrypt(encryptedSeedPhraseEncryptionKey, keyUser);
@@ -75,7 +76,7 @@ export default class SeedPhraseVault {
             prompt
         );
         if (!stored) {
-            throw new AppError("Failed to store seed encryption key in encrypted storage");
+            throw new AppError(i18n.t('errors.failedToStoreSeedEncryptionKey'));
         }
     }
 

@@ -1,0 +1,415 @@
+{
+  "common": {
+    "appName": "KAGE",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "hide": "Hide",
+    "show": "Show",
+    "loading": "Loading...",
+    "details": "Details:",
+    "view": "View",
+    "checkmark": "✓",
+    "characters": "{{count}}/{{max}} characters"
+  },
+  "auth": {
+    "enableBiometrics": "Enable Biometrics",
+    "unlockWallet": "Unlock Wallet",
+    "enterPassphrase": "Enter Passphrase",
+    "authenticationRequired": "Authentication Required",
+    "waitingForAuth": "Waiting for authentication...",
+    "passphrasePrompt": {
+      "enableBiometrics": "Enter your passphrase to enable biometric authentication for future access.",
+      "accessKeys": "Enter your passphrase to access your private keys.",
+      "authenticateWithBiometrics": "Authenticate with {{biometryName}} to access your private keys."
+    },
+    "biometryTypes": {
+      "faceId": "Face ID",
+      "touchId": "Touch ID",
+      "opticId": "Optic ID",
+      "fingerprint": "Fingerprint",
+      "faceRecognition": "Face Recognition",
+      "irisRecognition": "Iris Recognition",
+      "face": "Face",
+      "iris": "Iris",
+      "biometrics": "Biometrics",
+      "unknown": "Unknown"
+    },
+    "unlock": "Unlock",
+    "enterYourPassphrase": "Enter your passphrase",
+    "confirmingChange": "Confirming your change",
+    "biometricsChangeDescription": "KAGE needs to confirm your change to enable biometrics."
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Privacy is STARK Normal",
+      "tagline": {
+        "privacyIs": "Privacy is",
+        "normal": "Normal"
+      },
+      "createWallet": "Create new wallet",
+      "restoreWallet": "Restore wallet",
+      "footer": "Brought to you by the Starkware Exploration team"
+    },
+    "passphrase": {
+      "createTitle": "Create a passphrase",
+      "description": "Your passphrase will be used to encrypt and protect your wallet. Make sure it's strong and memorable.",
+      "label": "Passphrase",
+      "confirmLabel": "Confirm Passphrase",
+      "placeholder": "Enter your passphrase",
+      "confirmPlaceholder": "Confirm your passphrase",
+      "validation": {
+        "strong": "✓ Strong passphrase",
+        "tooShort": "At least {{min}} characters required",
+        "match": "✓ Passphrases match",
+        "noMatch": "Passphrases don't match"
+      }
+    },
+    "createAccount": {
+      "title": "Name your First Account",
+      "description": "Choose a name to help you identify this account. You can always change it later.",
+      "label": "Account Name",
+      "placeholder": "e.g., My Main Account",
+      "validation": {
+        "looksGood": "✓ Looks good"
+      },
+      "button": "Create Account",
+      "buttonCreating": "Creating Account..."
+    },
+    "restoreSeedPhrase": {
+      "title": "Restore your Wallet",
+      "description": "Enter your recovery phrase in order to restore your wallet.",
+      "button": "Setup Passphrase"
+    },
+    "restoreWallet": {
+      "title": "Restore Wallet",
+      "description": "Your wallet will be restored from your seed phrase. This process will search for accounts on the current network and restore them.",
+      "selectNetwork": "Select Network",
+      "networkNotAvailable": "(Not available for now...)",
+      "status": {
+        "ready": "Ready to restore your wallet",
+        "deriving": "Deriving account addresses...",
+        "searching": "Searching for deployed accounts on the network..."
+      },
+      "button": "Restore Wallet",
+      "buttonRestoring": "Restoring Wallet..."
+    }
+  },
+  "accounts": {
+    "create": {
+      "title": "Create Account",
+      "header": "New Account",
+      "description": "Choose a name for your new account. This will help you identify it later.",
+      "label": "Account Name",
+      "placeholder": "e.g., Main Account",
+      "button": "Create Account",
+      "buttonCreating": "Creating..."
+    },
+    "rename": {
+      "title": "Rename Account",
+      "description": "Choose a new name for your account.",
+      "label": "Account Name",
+      "placeholder": "e.g., Main Account",
+      "button": "Rename",
+      "buttonRenaming": "Renaming..."
+    },
+    "contextMenu": {
+      "deployAccount": "Deploy Account",
+      "deploying": "Deploying...",
+      "renameAccount": "Rename Account"
+    },
+    "detail": {
+      "notFound": "Account not found",
+      "goBackButton": "Go Back"
+    },
+    "validation": {
+      "required": "Account name is required",
+      "tooShort": "Account name must be at least 2 characters",
+      "tooLong": "Account name must be less than 50 characters",
+      "createFailed": "Failed to create account",
+      "renameFailed": "Failed to rename account"
+    }
+  },
+  "home": {
+    "sectionTitle": "My Public Accounts",
+    "emptyState": "No accounts yet",
+    "addAccount": "Add a new public account"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your wallet preferences",
+    "sections": {
+      "security": "Security",
+      "configuration": "Configuration",
+      "dangerZone": "Danger Zone"
+    },
+    "keys": {
+      "title": "Keys",
+      "description": "View and backup your keys"
+    },
+    "biometrics": {
+      "title": "Biometrics",
+      "notAvailable": "Not available on this device",
+      "enabled": "Enabled for quick access",
+      "disabled": "Disabled"
+    },
+    "networks": {
+      "title": "Networks",
+      "description": "View and change the active network"
+    },
+    "deleteWallet": {
+      "title": "Delete Wallet",
+      "description": "Permanently delete your wallet. Make sure you have backed up your recovery phrase.",
+      "button": "Delete Wallet"
+    }
+  },
+  "keys": {
+    "title": "Key Sources",
+    "subtitle": "Manage your cryptographic keys and secured assets",
+    "emptyState": {
+      "noProfile": "No profile found",
+      "noKeySources": "No key sources found",
+      "noKeySourcesDescription": "Create an account to generate your first key source",
+      "noAccounts": "No accounts using this key source"
+    },
+    "keySource": "Key Source",
+    "accountCount_one": "{{count}} account",
+    "accountCount_other": "{{count}} accounts",
+    "privateTokenCount_one": "{{count}} private token",
+    "privateTokenCount_other": "{{count}} private tokens",
+    "viewRecoveryPhrase": "View Recovery Phrase",
+    "hideRecoveryPhrase": "Hide Recovery Phrase",
+    "neverShareWarning": "⚠️ Never share your recovery phrase",
+    "copiedPhrase": "✓ Copied!",
+    "accounts": "Accounts",
+    "unlocked": "Unlocked",
+    "privateTokensSecured": "Private Tokens Secured",
+    "noPrivateTokens": "No private tokens with balance",
+    "unlockToView": "Unlock to view private tokens",
+    "accessingSeedPhrase": "Accessing Seed Phrase...",
+    "authorizeSeedPhrase": "Authorize to access seed phrase",
+    "seedPhraseAuthDescription": "KAGE needs your authentication to securely access your seed phrase.",
+    "failedToReadSeedPhrase": "Failed to read seed phrase"
+  },
+  "networks": {
+    "title": "Networks",
+    "subtitle": "Select your active blockchain network",
+    "emptyState": {
+      "noProfile": "No profile found",
+      "noNetworks": "No networks configured",
+      "noNetworksDescription": "Configure networks in your profile settings"
+    },
+    "testBadge": "TEST",
+    "rpcLabel": "RPC: {{hostname}}"
+  },
+  "transactions": {
+    "types": {
+      "fund": "Funding Transaction",
+      "transfer": "Private Transfer",
+      "withdraw": "Withdrawal",
+      "publicTransfer": "Public Transfer",
+      "deployAccount": "Deploy Transaction"
+    },
+    "status": {
+      "funding": "Funding {{amount}}",
+      "funded": "Funded {{amount}}",
+      "transferringPrivate": "Transferring privately {{amount}}",
+      "transferredPrivate": "Transferred privately {{amount}}",
+      "withdrawing": "Withdrawing {{amount}}",
+      "withdrew": "Withdrew {{amount}}",
+      "sending": "Sending {{amount}}",
+      "sent": "Sent {{amount}}",
+      "deploying": "Account \"{{accountName}}\" deploying on Starknet",
+      "deployed": "Account \"{{accountName}}\" deployed on Starknet"
+    },
+    "details": {
+      "from": "From",
+      "to": "To",
+      "amount": "Amount",
+      "signer": "Signer",
+      "txHash": "Transaction Hash:"
+    },
+    "fund": {
+      "description": "Add private funds to your account.",
+      "fromLabel": "Fund from this account's public balance:",
+      "selectAccountPlaceholder": "Select an account",
+      "publicAmountLabel": "Public Amount",
+      "fundButton": "Fund Private Balance"
+    },
+    "transfer": {
+      "description": "Transfer tokens to another address privately.",
+      "recipientLabel": "Recipient Address",
+      "recipientPlaceholder": "Enter recipient's private address...",
+      "transferButton": "Transfer"
+    },
+    "withdraw": {
+      "description": "Withdraw tokens from your private balance to your public wallet.",
+      "withdrawButton": "Withdraw"
+    },
+    "publicTransfer": {
+      "description": "Transfer tokens to another address.",
+      "recipientLabel": "Recipient Address",
+      "recipientPlaceholder": "Enter recipient's account address...",
+      "sendButton": "Send"
+    }
+  },
+  "forms": {
+    "amount": {
+      "label": "Amount",
+      "placeholder": "0.0",
+      "exceedsBalance": "Exceeds balance",
+      "negativeNotAllowed": "Negative amounts are not allowed",
+      "minPrivateAmount": "Private {{symbol}} amount must be at least {{minAmount}}"
+    },
+    "accountAddress": {
+      "label": "Account Address",
+      "placeholder": "Enter account address...",
+      "invalidFormat": "Invalid account address format",
+      "cannotSendToSelf": "You cannot send tokens to yourself"
+    },
+    "accountName": {
+      "label": "Account Name",
+      "placeholder": "e.g., Main Account",
+      "looksGood": "✓ Looks good",
+      "charCount": "{{count}}/50 characters"
+    },
+    "passphrase": {
+      "label": "Passphrase",
+      "placeholder": "Enter your passphrase"
+    },
+    "confirmPassphrase": {
+      "label": "Confirm Passphrase",
+      "placeholder": "Confirm your passphrase"
+    },
+    "privateAddress": {
+      "label": "Private Address",
+      "placeholder": "Enter private address...",
+      "invalidFormat": "Invalid private address format",
+      "validAddress": "Valid private address"
+    },
+    "accountPicker": {
+      "label": "Select Account",
+      "placeholder": "Choose an account"
+    },
+    "token": {
+      "placeholder": "Token"
+    },
+    "seedPhrase": {
+      "wordPlaceholder": "Word {{index}}"
+    }
+  },
+  "balance": {
+    "public": {
+      "label": "Public Balance",
+      "fundButton": "Fund",
+      "sendButton": "Send",
+      "fundModal": {
+        "title": "Fund Account",
+        "fromFaucet": "From Faucet",
+        "fromAnotherAccount": "From another Account"
+      }
+    },
+    "private": {
+      "label": "Private Balance",
+      "locked": "Private balances are locked",
+      "unlockButton": "Unlock",
+      "shieldButton": "Shield",
+      "transferButton": "Transfer",
+      "unshieldButton": "Unshield"
+    }
+  },
+  "navigation": {
+    "tabs": {
+      "accounts": "Accounts",
+      "settings": "Settings"
+    }
+  },
+  "errors": {
+    "noPassphrase": "No passphrase is set",
+    "noNetwork": "No network selected",
+    "noSeedPhrase": "No seed phrase words found",
+    "title": "An error occurred",
+    "websocketNotConnected": "WebSocket not connected",
+    "requestTimedOut": "Request timed out",
+    "insufficientBalance": "Insufficient balance",
+    "wrongPassphrase": "Wrong passphrase",
+    "unsupportedBiometryType": "Unsupported biometry type",
+    "cancelled": "Cancelled",
+    "profileNotInitialized": "Profile state is not initialized",
+    "unsupportedKeySourceKind": "Unsupported key source kind",
+    "providerNotSet": "Provider is not set",
+    "websocketUrlNotSet": "WebSocket URL is not set",
+    "profileCannotBeUpdated": "Profile state cannot be updated",
+    "failedToInitializeProfile": "Failed to initialize profile",
+    "profileCannotBeCreated": "Profile state cannot be created",
+    "failedToStoreSeedPhrase": "Failed to store seed phrase in vault",
+    "signingKeyNotFound": "Signing key not found for account",
+    "tokenKeyNotFound": "Token key not found for account",
+    "networkNotConfigured": "Network {{networkId}} is not configured in tokens.json. Dynamic presets not supported yet.",
+    "androidPackageNotFound": "Android package not found in app.json",
+    "failedToStoreSalt": "Failed to store salt in encrypted storage for key source.",
+    "failedToStoreEncryptedKey": "Failed to store encrypted seed phrase encryption key in encrypted storage for key source.",
+    "failedToStoreEncryptedSeedPhrase": "Failed to store encrypted seed phrase in encrypted storage for key source.",
+    "saltNotFound": "Salt not found in encrypted storage",
+    "encryptedKeyNotFound": "Encrypted seed phrase encryption key not found in encrypted storage",
+    "failedToStoreSeedEncryptionKey": "Failed to store seed encryption key in encrypted storage",
+    "profileCannotBeDeleted": "Profile state cannot be deleted",
+    "failedToFetchTokenPrices": "Failed to fetch token prices",
+    "feeTokenNotFound": "Fee token not found for network {{networkId}}. Make sure tokens.json is configured properly.",
+    "rpcUrlRequired": "RPC URL is required for non-mainnet or sepolia networks",
+    "websocketUrlRequired": "WebSocket URL is required for non-mainnet or sepolia networks",
+    "rpcUrlNotSetMainnet": "RPC URL is not set for mainnet in environment variables",
+    "rpcUrlNotSetSepolia": "RPC URL is not set for sepolia in environment variables",
+    "rpcUrlNotSetNetwork": "RPC URL is not set for this network",
+    "websocketUrlNotSetMainnet": "WebSocket URL is not set for mainnet in environment variables",
+    "websocketUrlNotSetSepolia": "WebSocket URL is not set for sepolia in environment variables",
+    "websocketUrlNotSetNetwork": "WebSocket URL is not set for this network"
+  },
+  "biometricPrompts": {
+    "signingTransaction": {
+      "title": "Signing Transaction...",
+      "cancelAndroid": "Cancel"
+    },
+    "accessSeedPhrase": {
+      "title": "Access Seed Phrase",
+      "cancelAndroid": "Cancel"
+    },
+    "creatingAccount": {
+      "title": "Creating Account...",
+      "cancelAndroid": "Cancel"
+    },
+    "fundingAccount": {
+      "title": "Funding Account...",
+      "cancelAndroid": "Cancel"
+    },
+    "publicTransfer": {
+      "title": "Public Transfer...",
+      "cancelAndroid": "Cancel"
+    },
+    "privateTransfer": {
+      "title": "Private Transfer...",
+      "cancelAndroid": "Cancel"
+    },
+    "withdrawing": {
+      "title": "Withdrawing...",
+      "cancelAndroid": "Cancel"
+    },
+    "deployingAccount": {
+      "title": "Deploying Account...",
+      "cancelAndroid": "Cancel"
+    },
+    "unlockingPrivateBalances": {
+      "title": "Unlocking Private Balances...",
+      "cancelAndroid": "Cancel"
+    }
+  },
+  "networkNames": {
+    "mainnet": "Mainnet",
+    "sepolia": "Sepolia"
+  },
+  "device": {
+    "unknownDevice": "Unknown Device"
+  }
+}

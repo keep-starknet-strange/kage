@@ -2,8 +2,10 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { defaultScreenOptions } from '@/providers/ThemeProvider';
+import { useTranslation } from 'react-i18next';
 
 export default function WalletLayout() {
+    const { t } = useTranslation();
     const screenOptions = defaultScreenOptions();
     return (
         <Tabs
@@ -11,7 +13,7 @@ export default function WalletLayout() {
             <Tabs.Screen
                 name="index"
                 options={{
-                    title: 'Accounts',
+                    title: t('navigation.tabs.accounts'),
 
                     tabBarIcon: ({color}) => <IconSymbol size={28} name="wallet" color={color}/>,
                 }}
@@ -19,7 +21,7 @@ export default function WalletLayout() {
             <Tabs.Screen
                 name="settings"
                 options={{
-                    title: 'Settings',
+                    title: t('navigation.tabs.settings'),
                     tabBarIcon: ({color}) => <IconSymbol size={28} name="settings" color={color}/>,
                 }}
             />

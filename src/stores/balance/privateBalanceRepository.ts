@@ -3,11 +3,12 @@ import { NetworkId } from "@/profile/misc";
 import { PrivateTokenAddress } from "@/types/privateRecipient";
 import Token from "@/types/token";
 import { PrivateTokenBalance } from "@/types/tokenBalance";
+import i18n from "@/utils/i18n";
 import { Account as TongoToken } from "@fatsolutions/tongo-sdk";
+import { TongoAddress } from "@fatsolutions/tongo-sdk/dist/types";
 import { RpcProvider } from "starknet";
 import { RequestAccessFn } from "../accessVaultStore";
 import BalanceRepository from "./balanceRepository";
-import { TongoAddress } from "@fatsolutions/tongo-sdk/dist/types";
 
 export default class PrivateBalanceRepository extends BalanceRepository {
 
@@ -73,10 +74,10 @@ export default class PrivateBalanceRepository extends BalanceRepository {
         const result = await requestAccess(
             { requestFor: "privateKeys", signing: [], tokens: accountTokens },
             {
-                title: "Unlocking Private Balances...",
+                title: i18n.t('biometricPrompts.unlockingPrivateBalances.title'),
                 subtitleAndroid: `Authorize to unlock private balances for ${accountsNumber}`,
                 descriptionAndroid: "KAGE needs your authentication to securely unlock your private balances.",
-                cancelAndroid: "Cancel",
+                cancelAndroid: i18n.t('biometricPrompts.unlockingPrivateBalances.cancelAndroid'),
             }
         );
 

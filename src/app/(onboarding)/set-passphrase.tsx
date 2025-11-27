@@ -8,12 +8,14 @@ import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
+import { useTranslation } from "react-i18next";
 
 const MIN_PASSPHRASE_LENGTH = 7;
 
 type OnboardingMode = 'create' | 'restore';
 
 export default function SetPassphraseScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const navigation = useNavigation();
     const { insets } = useDynamicSafeAreaInsets();
@@ -33,13 +35,13 @@ export default function SetPassphraseScreen() {
         navigation.setOptions({
             header: () => (
                 <SimpleHeader
-                    title="Create a passphrase"
+                    title={t('onboarding.passphrase.createTitle')}
                     onBackPress={() => router.back()}
                     style={{ paddingTop: insets.top }}
                 />
             ),
         });
-    }, [navigation, insets.top, router]);
+    }, [navigation, insets.top, router, t]);
 
     // Validation checks
     const isPassphraseLongEnough = passphrase.length >= MIN_PASSPHRASE_LENGTH;
@@ -72,7 +74,7 @@ export default function SetPassphraseScreen() {
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <Text style={styles.subtitle}>
-                        Your passphrase will be used to encrypt and protect your wallet. Make sure it's strong and memorable.
+                        {t('onboarding.passphrase.description')}
                     </Text>
                 </View>
 
@@ -80,13 +82,13 @@ export default function SetPassphraseScreen() {
                 <View style={styles.inputSection}>
                     {/* Passphrase Input */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Passphrase</Text>
+                        <Text style={styles.label}>{t('onboarding.passphrase.label')}</Text>
                         <View style={styles.inputWrapper}>
                             <TextInput
                                 style={styles.input}
                                 value={passphrase}
                                 onChangeText={setPassphrase}
-                                placeholder="Enter your passphrase"
+                                placeholder={t('onboarding.passphrase.placeholder')}
                                 placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showPassphrase}
                                 textContentType="newPassword"
@@ -104,7 +106,7 @@ export default function SetPassphraseScreen() {
                                 onPress={() => setShowPassphrase(!showPassphrase)}
                             >
                                 <Text style={styles.eyeButtonText}>
-                                    {showPassphrase ? "Hide" : "Show"}
+                                    {showPassphrase ? t('common.hide') : t('common.show')}
                                 </Text>
                             </Pressable>
                         </View>
@@ -116,22 +118,22 @@ export default function SetPassphraseScreen() {
                                 ]}
                             >
                                 {isPassphraseLongEnough
-                                    ? `✓ Strong passphrase`
-                                    : `At least ${MIN_PASSPHRASE_LENGTH} characters required`}
+                                    ? t('onboarding.passphrase.validation.strong')
+                                    : t('onboarding.passphrase.validation.tooShort', { min: MIN_PASSPHRASE_LENGTH })}
                             </Text>
                         )}
                     </View>
 
                     {/* Confirm Passphrase Input */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Confirm Passphrase</Text>
+                        <Text style={styles.label}>{t('onboarding.passphrase.confirmLabel')}</Text>
                         <View style={styles.inputWrapper}>
                             <TextInput
                                 ref={confirmPassphraseInputRef}
                                 style={styles.input}
                                 value={confirmPassphrase}
                                 onChangeText={setConfirmPassphrase}
-                                placeholder="Confirm your passphrase"
+                                placeholder={t('onboarding.passphrase.confirmPlaceholder')}
                                 placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!showConfirmPassphrase}
                                 textContentType="newPassword"
@@ -149,7 +151,7 @@ export default function SetPassphraseScreen() {
                                 onPress={() => setShowConfirmPassphrase(!showConfirmPassphrase)}
                             >
                                 <Text style={styles.eyeButtonText}>
-                                    {showConfirmPassphrase ? "Hide" : "Show"}
+                                    {showConfirmPassphrase ? t('common.hide') : t('common.show')}
                                 </Text>
                             </Pressable>
                         </View>
@@ -160,7 +162,7 @@ export default function SetPassphraseScreen() {
                                     doPassphrasesMatch ? styles.helperSuccess : styles.helperError
                                 ]}
                             >
-                                {doPassphrasesMatch ? "✓ Passphrases match" : "Passphrases don't match"}
+                                {doPassphrasesMatch ? t('onboarding.passphrase.validation.match') : t('onboarding.passphrase.validation.noMatch')}
                             </Text>
                         )}
                     </View>
@@ -179,7 +181,7 @@ export default function SetPassphraseScreen() {
                 }}
             >
                 <PrimaryButton
-                    title={mode === "create" ? "Create Account" : "Restore Wallet"}
+                    title={mode === "create" ? t('onboarding.createAccount.button') : t('onboarding.restoreWallet.button')}
                     onPress={mode === "create" ? handleCreateAccount : handleRestoreWallet}
                     disabled={!isFormValid}
                 />

@@ -4,6 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useEffect, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
+import { useTranslation } from "react-i18next";
 
 export interface ErrorToastProps {
     id: string;
@@ -14,6 +15,7 @@ export interface ErrorToastProps {
 }
 
 export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToastProps) => {
+    const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const styles = useThemedStyle(themedStyleSheet);
@@ -83,7 +85,7 @@ export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToast
                     <View style={styles.detailsContainer}>
                         <View style={styles.detailsDivider} />
                         <View style={styles.detailsHeader}>
-                            <Text style={styles.detailsLabel}>Details:</Text>
+                            <Text style={styles.detailsLabel}>{t('common.details')}</Text>
                             <TouchableOpacity 
                                 onPress={handleCopy}
                                 style={styles.copyButton}
@@ -94,7 +96,7 @@ export const ErrorToast = ({ id, title, subtitle, details, onPress }: ErrorToast
                                     color={colorTokens['text.inverted']} 
                                 />
                                 <Text style={styles.copyButtonText}>
-                                    {isCopied ? 'Copied!' : 'Copy'}
+                                    {isCopied ? t('common.copied') : t('common.copy')}
                                 </Text>
                             </TouchableOpacity>
                         </View>

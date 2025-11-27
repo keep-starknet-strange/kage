@@ -9,6 +9,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
+import { useTranslation } from "react-i18next";
 
 export interface TransactionToastProps {
     id: string;
@@ -18,6 +19,7 @@ export interface TransactionToastProps {
 }
 
 export const TransactionToast = ({ id, transaction, pending = false, onPress }: TransactionToastProps) => {
+    const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const currentNetworkDefinition = useProfileStore(state => ProfileState.isProfile(state.profileState) ? state.profileState.currentNetworkWithDefinition.networkDefinition : null);
@@ -74,30 +76,30 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
     const getTitle = () => {
         switch (transaction.type) {
             case "fund":
-                return "Funding Transaction";
+                return t('transactions.types.fund');
             case "transfer":
-                return "Private Transfer";
+                return t('transactions.types.transfer');
             case "withdraw":
-                return "Withdrawal";
+                return t('transactions.types.withdraw');
             case "publicTransfer":
-                return "Public Transfer";
+                return t('transactions.types.publicTransfer');
             case "deployAccount":
-                return "Deploy Transaction";
+                return t('transactions.types.deployAccount');
         }
     };
 
     const getSubtitle = () => {
         switch (transaction.type) {
             case "fund":
-                return pending ? `Funding ${transaction.amountFormatted}` : `Funded ${transaction.amountFormatted}`;
+                return pending ? t('transactions.status.funding', { amount: transaction.amountFormatted }) : t('transactions.status.funded', { amount: transaction.amountFormatted });
             case "transfer":
-                return pending ? `Transferring privately ${transaction.amountFormatted}` : `Transferred privately ${transaction.amountFormatted}`;
+                return pending ? t('transactions.status.transferringPrivate', { amount: transaction.amountFormatted }) : t('transactions.status.transferredPrivate', { amount: transaction.amountFormatted });
             case "withdraw":
-                return pending ? `Withdrawing ${transaction.amountFormatted}` : `Withdrew ${transaction.amountFormatted}`;
+                return pending ? t('transactions.status.withdrawing', { amount: transaction.amountFormatted }) : t('transactions.status.withdrew', { amount: transaction.amountFormatted });
             case "publicTransfer":
-                return pending ? `Sending ${transaction.amountFormatted}` : `Sent ${transaction.amountFormatted}`;
+                return pending ? t('transactions.status.sending', { amount: transaction.amountFormatted }) : t('transactions.status.sent', { amount: transaction.amountFormatted });
             case "deployAccount":
-                return pending ? `Account "${transaction.account.name}" deploying on Starknet` : `Account "${transaction.account.name}" deployed on Starknet`;
+                return pending ? t('transactions.status.deploying', { accountName: transaction.account.name }) : t('transactions.status.deployed', { accountName: transaction.account.name });
         }
     };
 
@@ -107,31 +109,31 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
         switch (transaction.type) {
             case "fund":
                 details.push(
-                    { label: "From", value: transaction.from.name },
-                    { label: "Amount", value: transaction.amountFormatted },
-                    { label: "Signer", value: transaction.signer.name }
+                    { label: t('transactions.details.from'), value: transaction.from.name },
+                    { label: t('transactions.details.amount'), value: transaction.amountFormatted },
+                    { label: t('transactions.details.signer'), value: transaction.signer.name }
                 );
                 break;
             case "transfer":
                 details.push(
-                    { label: "From", value: transaction.from.name },
-                    { label: "To", value: formattedAddress(transaction.recipient, 'compact') },
-                    { label: "Amount", value: transaction.amountFormatted },
-                    { label: "Signer", value: transaction.signer.name }
+                    { label: t('transactions.details.from'), value: transaction.from.name },
+                    { label: t('transactions.details.to'), value: formattedAddress(transaction.recipient, 'compact') },
+                    { label: t('transactions.details.amount'), value: transaction.amountFormatted },
+                    { label: t('transactions.details.signer'), value: transaction.signer.name }
                 );
                 break;
             case "withdraw":
                 details.push(
-                    { label: "To", value: transaction.to.name },
-                    { label: "Amount", value: transaction.amountFormatted },
-                    { label: "Signer", value: transaction.signer.name }
+                    { label: t('transactions.details.to'), value: transaction.to.name },
+                    { label: t('transactions.details.amount'), value: transaction.amountFormatted },
+                    { label: t('transactions.details.signer'), value: transaction.signer.name }
                 );
                 break;
             case "publicTransfer":
                 details.push(
-                    { label: "From", value: transaction.from.name },
-                    { label: "To", value: formattedAddress(transaction.recipient, 'compact') },
-                    { label: "Amount", value: transaction.amountFormatted }
+                    { label: t('transactions.details.from'), value: transaction.from.name },
+                    { label: t('transactions.details.to'), value: formattedAddress(transaction.recipient, 'compact') },
+                    { label: t('transactions.details.amount'), value: transaction.amountFormatted }
                 );
                 break;
         }
@@ -212,7 +214,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                         {/* Transaction Hash */}
                         <View style={styles.txHashSection}>
                             <View style={styles.txHashHeader}>
-                                <Text style={styles.txHashLabel}>Transaction Hash:</Text>
+                                <Text style={styles.txHashLabel}>{t('transactions.details.txHash')}</Text>
                                 <View style={styles.txHashActions}>
                                     <TouchableOpacity
                                         onPress={handleCopyTxHash}
@@ -224,7 +226,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                                             color={colorTokens['text.inverted']}
                                         />
                                         <Text style={styles.actionButtonText}>
-                                            {isCopied ? 'Copied!' : 'Copy'}
+                                            {isCopied ? t('common.copied') : t('common.copy')}
                                         </Text>
                                     </TouchableOpacity>
 
@@ -239,7 +241,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                                                 color={colorTokens['text.inverted']}
                                             />
                                             <Text style={styles.actionButtonText}>
-                                                View
+                                                {t('common.view')}
                                             </Text>
                                         </TouchableOpacity>
                                     )}

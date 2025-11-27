@@ -12,10 +12,12 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 const STAY_VISIBLE_MAX_DELAY = 1000;
 
 export default function AccessVaultModal() {
+    const { t } = useTranslation();
     const { prompt, handlePassphraseSubmit, handlePassphraseReject } = useAccessVaultStore();
     const { biometricsProvider } = useAppDependenciesStore();
     const [inputPassphrase, setInputPassphrase] = useState("");
@@ -35,26 +37,26 @@ export default function AccessVaultModal() {
 
     const getTitle = (prompt: RequestAccessPrompt): string => {
         if (prompt.input.requestFor === "passphrase") {
-            return "Enable Biometrics";
+            return t('auth.enableBiometrics');
         } else if (prompt.input.requestFor === "keySources") {
             if (prompt.validateWith === "biometrics") {
-                return "Unlock Wallet";
+                return t('auth.unlockWallet');
             } else if (prompt.validateWith === "passphrase") {
-                return "Enter Passphrase";
+                return t('auth.enterPassphrase');
             }
         }
-        return "Authentication Required";
+        return t('auth.authenticationRequired');
     }
 
     const getDescription = (prompt: RequestAccessPrompt, biometryType: BiometryType | null): string => {
         if (prompt.input.requestFor === "passphrase") {
-            return "Enter your passphrase to enable biometric authentication for future access.";
+            return t('auth.passphrasePrompt.enableBiometrics');
         } else if (prompt.input.requestFor === "keySources") {
             if (prompt.validateWith === "biometrics") {
                 const biometryName = getBiometryName(biometryType);
-                return `Authenticate with ${biometryName} to access your private keys.`;
+                return t('auth.passphrasePrompt.authenticateWithBiometrics', { biometryName });
             } else if (prompt.validateWith === "passphrase") {
-                return "Enter your passphrase to access your private keys.";
+                return t('auth.passphrasePrompt.accessKeys');
             }
         }
         return "";
@@ -63,19 +65,19 @@ export default function AccessVaultModal() {
     const getBiometryName = (type: BiometryType | null): string => {
         switch (type) {
             case BiometryType.FACE_ID:
-                return "Face ID";
+                return t('auth.biometryTypes.faceId');
             case BiometryType.TOUCH_ID:
-                return "Touch ID";
+                return t('auth.biometryTypes.touchId');
             case BiometryType.OPTIC_ID:
-                return "Optic ID";
+                return t('auth.biometryTypes.opticId');
             case BiometryType.FINGERPRINT:
-                return "Fingerprint";
+                return t('auth.biometryTypes.fingerprint');
             case BiometryType.FACE:
-                return "Face Recognition";
+                return t('auth.biometryTypes.faceRecognition');
             case BiometryType.IRIS:
-                return "Iris Recognition";
+                return t('auth.biometryTypes.irisRecognition');
             default:
-                return "Biometrics";
+                return t('auth.biometryTypes.biometrics');
         }
     }
 
@@ -185,7 +187,7 @@ export default function AccessVaultModal() {
                             color={colorTokens['brand.accent']}
                         />
                         <Text style={styles.biometricsHint}>
-                            Waiting for authentication...
+                            {t('auth.waitingForAuth')}
                         </Text>
                     </View>
                 )}
@@ -205,7 +207,7 @@ export default function AccessVaultModal() {
                                 style={styles.input}
                                 value={inputPassphrase}
                                 onChangeText={setInputPassphrase}
-                                placeholder="Enter your passphrase"
+                                placeholder={t('auth.enterYourPassphrase')}
                                 placeholderTextColor={colorTokens['text.muted']}
                                 secureTextEntry={!isInputVisible}
                                 textContentType="password"
@@ -235,14 +237,14 @@ export default function AccessVaultModal() {
                         {/* Action Buttons */}
                         <View style={styles.buttonContainer}>
                             <SecondaryButton
-                                title="Cancel"
+                                title={t('common.cancel')}
                                 onPress={onRequestClose}
                                 disabled={isSubmitting}
                                 style={styles.cancelButton}
                             />
 
                             <PrimaryButton
-                                title="Unlock"
+                                title={t('auth.unlock')}
                                 onPress={() => onPassphraseSubmit(inputPassphrase)}
                                 disabled={inputPassphrase.length === 0}
                                 loading={isSubmitting}

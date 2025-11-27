@@ -4,6 +4,7 @@ import { AccountAddress } from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 type AccountAddressInputProps = {
     label?: string;
@@ -14,14 +15,18 @@ type AccountAddressInputProps = {
 };
 
 export function AccountAddressInput({
-    label = "Account Address",
-    placeholder = "Enter account address...",
+    label,
+    placeholder,
     disabled = false,
     from,
     onAddressChange,
 }: AccountAddressInputProps) {
+    const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
+    
+    const finalLabel = label || t('forms.accountAddress.label');
+    const finalPlaceholder = placeholder || t('forms.accountAddress.placeholder');
     
     const [addressText, setAddressText] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
@@ -40,7 +45,7 @@ export function AccountAddressInput({
 
         if (parsedAddress) { 
             if (parsedAddress === from) {
-                setError("You cannot send tokens to yourself");
+                setError(t('forms.accountAddress.cannotSendToSelf'));
                 setIsValid(false);
                 onAddressChange(null);
                 return;
@@ -49,11 +54,11 @@ export function AccountAddressInput({
             setIsValid(true);
             onAddressChange(parsedAddress);
         } else {
-            setError("Invalid account address format");
+            setError(t('forms.accountAddress.invalidFormat'));
             setIsValid(false);
             onAddressChange(null);
         }
-    }, [addressText, onAddressChange]);
+    }, [addressText, onAddressChange, from, t]);
 
     const handleChangeText = (text: string) => {
         setAddressText(text);
@@ -61,7 +66,7 @@ export function AccountAddressInput({
 
     return (
         <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
+            {finalLabel && <Text style={styles.label}>{finalLabel}</Text>}
             <View style={[
                 styles.inputContainer,
                 error && styles.inputContainerError,
@@ -72,7 +77,7 @@ export function AccountAddressInput({
                     style={[styles.input, disabled && styles.inputDisabled]}
                     value={addressText}
                     onChangeText={handleChangeText}
-                    placeholder={placeholder}
+                    placeholder={finalPlaceholder}
                     placeholderTextColor={colorTokens['text.muted']}
                     editable={!disabled}
                     autoCapitalize="none"
