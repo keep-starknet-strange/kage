@@ -147,7 +147,7 @@ export const SeedPhraseInput = ({
                 }}
                 onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
                 onSubmitEditing={() => handleSubmitEditing(index)}
-                placeholder={t('forms.seedPhrase.wordPlaceholder', { number: index + 1 })}
+                placeholder={t('forms.seedPhrase.wordPlaceholder', { index: index + 1 })}
                 placeholderTextColor={colorTokens['text.muted']}
                 autoCapitalize="none"
                 autoCorrect={false}
