@@ -121,7 +121,6 @@ export default function AccessVaultModal() {
         } else {
             const now = Date.now();
             const delay = Math.max(0, STAY_VISIBLE_MAX_DELAY - (now - onCreateRef.current));
-            console.log("delay", delay);
             setTimeout(() => {
                 setViewDetails(null);
             }, delay);

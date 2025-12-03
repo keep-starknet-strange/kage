@@ -10,25 +10,42 @@ import { useOnChainStore } from '@/stores/onChainStore';
 import { useProfileStore } from '@/stores/profileStore';
 import { useRpcStore } from '@/stores/useRpcStore';
 import { LOG } from '@/utils/logs';
+import { loadAsync } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef } from "react";
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import 'react-native-reanimated';
 import AccessVaultModal from './access-vault-modal';
 
 SplashScreen.preventAutoHideAsync();
 
+function loadFontsOnWeb(): Promise<void> {
+    if (Platform.OS === 'web') {
+        return loadAsync({
+            'UbuntuMono_400Regular': require('res/fonts/ubuntu-mono/UbuntuMono_400Regular.ttf'),
+            'UbuntuMono_400Regular_Italic': require('res/fonts/ubuntu-mono/UbuntuMono_400Regular_Italic.ttf'),
+            'UbuntuMono_700Bold': require('res/fonts/ubuntu-mono/UbuntuMono_700Bold.ttf'),
+            'UbuntuMono_700Bold_Italic': require('res/fonts/ubuntu-mono/UbuntuMono_700Bold_Italic.ttf'),
+        })
+    } else {
+        // Fonts on mobile are loaded automatically as configured by the app.json file
+        return Promise.resolve();
+    }
+}
+
 export default function RootLayout() {
     const appState = useRef(AppState.currentState);
-    
+
     useEffect(() => {
         const { initialize, profileState: profileStateOnMount } = useProfileStore.getState();
 
         if (!ProfileState.isInitialized(profileStateOnMount)) {
             LOG.info("Initializing profile");
-            initialize()
+
+            loadFontsOnWeb()
+                .then(() => initialize())
                 .then(() => SplashScreen.hideAsync())
                 .catch(error => {
                     showToastError(error);
@@ -37,16 +54,16 @@ export default function RootLayout() {
 
         const appStateSubscription = AppState.addEventListener('change', (state) => {
             if (appState.current === 'background' && state === 'active') {
-                const {profileState} = useProfileStore.getState();
-                const {subscribeToBalanceUpdates} = useBalanceStore.getState();
+                const { profileState } = useProfileStore.getState();
+                const { subscribeToBalanceUpdates } = useBalanceStore.getState();
                 if (ProfileState.isProfile(profileState)) {
                     subscribeToBalanceUpdates(profileState.accountsOnCurrentNetwork as Account[]);
                 }
             }
 
             if (appState.current === 'active' && state === 'background') {
-                const {profileState} = useProfileStore.getState();
-                const {unsubscribeFromBalanceUpdates} = useBalanceStore.getState();
+                const { profileState } = useProfileStore.getState();
+                const { unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
 
                 if (ProfileState.isProfile(profileState)) {
                     console.log("IN APP STATE");
