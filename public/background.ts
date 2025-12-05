@@ -2,7 +2,6 @@ console.log('KAGE Extension background service worker initialized');
 
 // Storage API bridge for the popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('Background received message:', message.type);
 
     // Handle storage operations
     if (message.type === 'STORAGE_GET') {

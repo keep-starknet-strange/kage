@@ -66,7 +66,6 @@ export default function RootLayout() {
                 const { unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
 
                 if (ProfileState.isProfile(profileState)) {
-                    console.log("IN APP STATE");
                     unsubscribeFromBalanceUpdates();
                 }
             }
