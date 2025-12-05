@@ -1,18 +1,6 @@
 import { LOG } from "@/utils/logs";
 import EncryptedStorage, { AuthPrompt } from "./EncryptedStorage";
 
-/**
- * ChromeEncryptedStorage implements EncryptedStorage using Chrome's extension storage API.
- * 
- * Benefits over localStorage:
- * - More secure (extension-only access)
- * - Persists across browser restarts
- * - Can sync across devices (if using chrome.storage.sync)
- * - Larger storage quota (~5MB for local, ~100KB for sync)
- * 
- * Note: Currently uses chrome.storage.local (not encrypted by Chrome itself).
- * For true encryption, consider encrypting values before storing.
- */
 export default class ChromeEncryptedStorage implements EncryptedStorage {
 
     constructor(
