@@ -4,16 +4,12 @@
   "version": "0.0.1",
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "postinstall": "patch-package",
-    "extension:build": "./scripts/build-extension.sh",
-    "extension:build:firefox": "./scripts/build-extension.sh --firefox",
-    "extension:dev": "./scripts/build-extension.sh --dev",
-    "extension:dev:firefox": "./scripts/build-extension.sh --dev --firefox"
+    "extension": "./scripts/build-extension.sh",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

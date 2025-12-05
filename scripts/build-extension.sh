@@ -56,7 +56,13 @@ echo ""
 # Build Expo web bundle
 echo -e "${BLUE}[2/6]${NC} Building Expo web bundle..."
 cd "$PROJECT_ROOT"
-npx expo export --platform web --output-dir "$OUTPUT_DIR_UNPACKED"
+EXPO_EXPORT_CMD="npx expo export --platform web --output-dir \"$OUTPUT_DIR_UNPACKED\""
+if [[ "$BUILD_MODE" != "production" ]]; then
+  EXPO_EXPORT_CMD="$EXPO_EXPORT_CMD --dev --no-minify"
+else 
+  EXPO_EXPORT_CMD="$EXPO_EXPORT_CMD --clear"
+fi
+eval $EXPO_EXPORT_CMD
 echo -e "${GREEN}  ✓ Expo web bundle built${NC}"
 echo ""
 
