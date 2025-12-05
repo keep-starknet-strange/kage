@@ -1,8 +1,7 @@
-export default defineBackground(() => {
-  console.log('KAGE Extension background service worker initialized');
+console.log('KAGE Extension background service worker initialized');
 
-  // Storage API bridge for the popup
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+// Storage API bridge for the popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('Background received message:', message.type);
 
     // Handle storage operations
@@ -87,19 +86,17 @@ export default defineBackground(() => {
     console.log('KAGE Extension installed/updated:', details.reason);
     
     if (details.reason === 'install') {
-      console.log('First time installation');
-      // Could open onboarding page here
+      console.log('First time installation');      
     } else if (details.reason === 'update') {
       console.log('Extension updated to version:', chrome.runtime.getManifest().version);
     }
   });
 
-  // Monitor storage changes (useful for debugging)
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local') {
-      console.log('Storage changed:', Object.keys(changes));
-    }
-  });
+// Monitor storage changes (useful for debugging)
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local') {
+    console.log('Storage changed:', Object.keys(changes));
+  }
 });
 
 

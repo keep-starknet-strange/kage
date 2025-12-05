@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# KAGE Extension Build Script
-# This script builds the complete browser extension including the Expo web bundle
+# KAGE Extension Build Script (Without WXT)
+# Builds the extension using only Expo web export and basic TypeScript compilation
 
 set -e  # Exit on error
 
@@ -14,31 +14,22 @@ NC='\033[0m' # No Color
 
 # Configuration
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EXTENSION_DIR="$PROJECT_ROOT/extension"
-EXPO_OUTPUT_DIR="$EXTENSION_DIR/public"
+PUBLIC_DIR="$PROJECT_ROOT/public"
+OUTPUT_DIR="$PROJECT_ROOT/extension"
 
-echo -e "${BLUE}╔═════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   KAGE Extension Build Script   ║${NC}"
-echo -e "${BLUE}╚═════════════════════════════════╝${NC}"
+echo -e "${BLUE}╔══════════════════════════╗${NC}"
+echo -e "${BLUE}║   KAGE Extension Build   ║${NC}"
+echo -e "${BLUE}╚══════════════════════════╝${NC}"
 echo ""
 
 # Parse arguments
 BUILD_MODE="production"
 TARGET_BROWSER="chrome"
-SKIP_EXPO=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --dev)
       BUILD_MODE="development"
-      shift
-      ;;
-    --firefox)
-      TARGET_BROWSER="firefox"
-      shift
-      ;;
-    --skip-expo)
-      SKIP_EXPO=true
       shift
       ;;
     *)
@@ -51,140 +42,151 @@ done
 echo -e "${YELLOW}Configuration:${NC}"
 echo -e "  Build Mode: ${GREEN}$BUILD_MODE${NC}"
 echo -e "  Target Browser: ${GREEN}$TARGET_BROWSER${NC}"
-echo -e "  Project Root: ${GREEN}$PROJECT_ROOT${NC}"
+echo -e "  Output Directory: ${GREEN}$OUTPUT_DIR${NC}"
 echo ""
 
-# Check if extension directory exists
-if [ ! -d "$EXTENSION_DIR" ]; then
-  echo -e "${RED}✗ Extension directory not found: $EXTENSION_DIR${NC}"
-  exit 1
-fi
-
-# Install extension dependencies if needed
-echo -e "${BLUE}[1/5]${NC} Checking extension dependencies..."
-if [ ! -d "$EXTENSION_DIR/node_modules" ]; then
-  echo -e "${YELLOW}  Installing extension dependencies...${NC}"
-  cd "$EXTENSION_DIR"
-  npm install
-  cd "$PROJECT_ROOT"
-else
-  echo -e "${BLUE} ✓ Dependencies already installed ${NC}"
-fi
-echo -e "${BLUE}[1/5]${NC} ----"
+# Clean output directory
+echo -e "${BLUE}[1/6]${NC} Cleaning output directory..."
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+echo -e "${GREEN}  ✓ Output directory cleaned${NC}"
 echo ""
 
 # Build Expo web bundle
-if [ "$SKIP_EXPO" = false ]; then
-  echo -e "${BLUE}[2/5]${NC} Building Expo web bundle..."
-  
-  # Clean previous build
-  if [ -d "$EXPO_OUTPUT_DIR/_expo" ]; then
-    echo -e "${YELLOW}  Cleaning previous build...${NC}"
-    rm -rf "$EXPO_OUTPUT_DIR/_expo"
-    rm -rf "$EXPO_OUTPUT_DIR/assets"
-    rm -f "$EXPO_OUTPUT_DIR/metadata.json"
-  fi
-  
-  # Build Expo
-  cd "$PROJECT_ROOT"
-  if [ "$BUILD_MODE" = "production" ]; then
-    echo -e "${YELLOW}  Running: npx expo export --platform web --output-dir $EXPO_OUTPUT_DIR"
-    npx expo export --platform web --output-dir "$EXPO_OUTPUT_DIR"
-  else
-    echo -e "${YELLOW}  Running: npx expo export --platform web --output-dir $EXPO_OUTPUT_DIR${NC}"
-    npx expo export --platform web --output-dir "$EXPO_OUTPUT_DIR"
-  fi
-  
-  echo -e "${GREEN} ✓ Expo web bundle built${NC}"
-else
-  echo -e "${BLUE} Skipping Expo build (--skip-expo flag) ${NC}"
-fi
-echo -e "${BLUE}[2/5]${NC} ----"
+echo -e "${BLUE}[2/6]${NC} Building Expo web bundle..."
+cd "$PROJECT_ROOT"
+npx expo export --platform web --output-dir "$OUTPUT_DIR"
+echo -e "${GREEN}  ✓ Expo web bundle built${NC}"
 echo ""
 
-# Copy icons from resources/logo/web to extension output
-echo -e "${BLUE}[3/5]${NC} Copying extension icons..."
+# Rename _expo to expo (Chrome doesn't like leading underscores)
+echo -e "${BLUE}[3/6]${NC} Renaming _expo directory..."
+if [ -d "$OUTPUT_DIR/_expo" ]; then
+  mv "$OUTPUT_DIR/_expo" "$OUTPUT_DIR/expo"
+  echo -e "${GREEN}  ✓ Renamed _expo to expo${NC}"
+  
+  # Update references in index.html
+  if [ -f "$OUTPUT_DIR/index.html" ]; then
+    sed -i.bak 's|/_expo/|/expo/|g' "$OUTPUT_DIR/index.html"
+    rm "$OUTPUT_DIR/index.html.bak"
+    echo -e "${GREEN}  ✓ Updated index.html references${NC}"
+  fi
+else
+  echo -e "${RED}  ✗ _expo directory not found${NC}"
+  exit 1
+fi
+echo ""
+
+# Copy extension icons
+echo -e "${BLUE}[4/6]${NC} Copying extension icons..."
 for size in 16 32 48 128; do
   SRC_ICON="$PROJECT_ROOT/resources/logo/web/favicon-${size}x${size}.png"
-  DEST_ICON="$EXPO_OUTPUT_DIR/icon-$size.png"
+  DEST_ICON="$OUTPUT_DIR/icon-$size.png"
   if [ -f "$SRC_ICON" ]; then
     cp "$SRC_ICON" "$DEST_ICON"
-    echo -e "${GREEN}  ✓ Copied favicon-${size}x${size}.png to icon-$size.png${NC}"
+    echo -e "${GREEN}  ✓ Copied icon-$size.png${NC}"
   else
     echo -e "${YELLOW}  ⚠ Source icon missing: $SRC_ICON${NC}"
   fi
 done
-echo -e "${BLUE}[3/5]${NC} ----"
 echo ""
 
-# Remove _ from expo directory and replace its usage
-echo -e "${BLUE}[4/5]${NC} Replace _ from expo output..."
-if [ -d "$EXPO_OUTPUT_DIR/_expo" ]; then
-  mv "$EXPO_OUTPUT_DIR/_expo" "$EXPO_OUTPUT_DIR/expo"
-  echo -e "${GREEN}  ✓ Renamed _expo directory to expo${NC}"
-else
-  echo -e "${RED}✗ Expo export directory not found: $EXPO_OUTPUT_DIR/expo${NC}"
-  exit 1
-fi
-INDEX_HTML="$EXPO_OUTPUT_DIR/index.html"
-if [ -f "$INDEX_HTML" ]; then
-  if grep -q "/_expo/" "$INDEX_HTML"; then
-    echo -e "${BLUE}[*]${NC} Updating index.html: replacing /_expo/ with /expo/"
-    # Use sed to do an in-place replacement
-    sed -i.bak 's|/_expo/|/expo/|g' "$INDEX_HTML"
-    rm "$INDEX_HTML.bak"
-    echo -e "${GREEN}  ✓ Updated index.html to use /expo/${NC}"
+# Compile background script if it exists
+echo -e "${BLUE}[5/6]${NC} Compiling background script..."
+if [ -f "$PUBLIC_DIR/background.ts" ]; then
+  # Check if TypeScript is available
+  if command -v npx &> /dev/null; then
+    echo -e "${YELLOW}  Compiling background.ts...${NC}"
+    npx tsc "$PUBLIC_DIR/background.ts" \
+      --outDir "$OUTPUT_DIR" \
+      --target ES2020 \
+      --module ES2020 \
+      --moduleResolution node \
+      --skipLibCheck \
+      --esModuleInterop \
+      --allowSyntheticDefaultImports
+    
+    # Move background.js to root if it was compiled to a subdirectory
+    if [ -f "$OUTPUT_DIR/entrypoints/background.js" ]; then
+      mv "$OUTPUT_DIR/entrypoints/background.js" "$OUTPUT_DIR/background.js"
+      rm -rf "$OUTPUT_DIR/entrypoints"
+    fi
+    
+    echo -e "${GREEN}  ✓ Background script compiled${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ TypeScript not found, skipping background script${NC}"
   fi
+else
+  echo -e "${YELLOW}  ⚠ No background script found${NC}"
 fi
-echo -e "${BLUE}[4/5]${NC} ----"
 echo ""
 
-# Building the extension
-echo -e "${BLUE}[5/5]${NC} Building extension..."
-cd "$EXTENSION_DIR"
-if [ "$TARGET_BROWSER" = "firefox" ]; then
-  if [ "$BUILD_MODE" = "development" ]; then
-    npm run dev:firefox &
-    echo -e "${GREEN}  ✓ Extension dev server started for Firefox${NC}"
-    echo -e "${YELLOW}  Press Ctrl+C to stop${NC}"
-    wait
-  else
-    npm run build:firefox
-    npm run zip:firefox
-    echo -e "${GREEN}  ✓ Firefox extension built and zipped${NC}"
-    echo -e "${GREEN}  Output: $EXTENSION_DIR/.output/firefox-mv3-*.zip${NC}"
-  fi
-else
-  if [ "$BUILD_MODE" = "development" ]; then
-    npm run dev &
-    echo -e "${GREEN}  ✓ Extension dev server started for Chrome${NC}"
-    echo -e "${YELLOW}  Press Ctrl+C to stop${NC}"
-    wait
-  else
-    npm run build
-    npm run zip
-    echo -e "${GREEN}  ✓ Chrome extension built and zipped${NC}"
-    echo -e "${GREEN}  Output: $EXTENSION_DIR/.output/chrome-mv3-*.zip${NC}"
-  fi
-fi
-echo -e "${BLUE}[5/5]${NC} ----"
+# Create manifest.json
+echo -e "${BLUE}[6/6]${NC} Creating manifest.json..."
+cat > "$OUTPUT_DIR/manifest.json" << 'MANIFEST_EOF'
+{
+  "manifest_version": 3,
+  "name": "KAGE Wallet",
+  "description": "Privacy is STARK Normal",
+  "version": "0.1.0",
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.starknet.io/*",
+    "https://*.avnu.fi/*",
+    "https://*.argent.xyz/*"
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "KAGE Wallet",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
+MANIFEST_EOF
+echo -e "${GREEN}  ✓ manifest.json created${NC}"
 echo ""
+
+# Create zip file for distribution
+if [ "$BUILD_MODE" = "production" ]; then
+  echo -e "${BLUE}Creating distribution zip...${NC}"
+  cd "$OUTPUT_DIR"
+  ZIP_NAME="kage-extension-${TARGET_BROWSER}-$(date +%Y%m%d-%H%M%S).zip"
+  zip -r "$ZIP_NAME" . -x "*.DS_Store" -x "__MACOSX/*"
+  echo -e "${GREEN}  ✓ Created: $OUTPUT_DIR/$ZIP_NAME${NC}"
+  echo ""
+fi
 
 echo -e "${GREEN}╔═════════════════════╗${NC}"
 echo -e "${GREEN}║   Build Complete!   ║${NC}"
 echo -e "${GREEN}╚═════════════════════╝${NC}"
 echo ""
 
-if [ "$BUILD_MODE" = "production" ]; then
-  echo -e "${YELLOW}Next steps:${NC}"
-  echo -e "  1. Test the extension by loading it in your browser"
-  echo -e "  2. Upload the zip file to the extension store"
-  echo ""
-  echo -e "${YELLOW}To load in Chrome:${NC}"
-  echo -e "  1. Go to chrome://extensions"
-  echo -e "  2. Enable 'Developer mode'"
-  echo -e "  3. Click 'Load unpacked'"
-  echo -e "  4. Select: $EXTENSION_DIR/.output/$TARGET_BROWSER-mv3"
-fi
-
-
+echo -e "${YELLOW}Extension built at:${NC} $OUTPUT_DIR"
+echo ""
+echo -e "${YELLOW}To load in Chrome:${NC}"
+echo -e "  1. Go to ${BLUE}chrome://extensions${NC}"
+echo -e "  2. Enable ${BLUE}'Developer mode'${NC}"
+echo -e "  3. Click ${BLUE}'Load unpacked'${NC}"
+echo -e "  4. Select: ${BLUE}$OUTPUT_DIR${NC}"
+echo ""

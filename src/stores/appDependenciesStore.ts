@@ -9,9 +9,11 @@ import { MarketRepository } from "@/market/MarketRepository";
 import EncryptedStorage from "@/storage/encrypted/EncryptedStorage";
 import MobileEncryptedStorage from "@/storage/encrypted/MobileEncryptedStorage";
 import WebEncryptedStorage from "@/storage/encrypted/WebEncryptedStorage";
+import ChromeEncryptedStorage from "@/storage/encrypted/ChromeEncryptedStorage";
 import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import MobileKeyValueStorage from "@/storage/kv/MobileKeyValueStorage";
 import WebKeyValueStorage from "@/storage/kv/WebKeyValueStorage";
+import ChromeKeyValueStorage from "@/storage/kv/ChromeKeyValueStorage";
 import MobileProfileStorage from "@/storage/profile/MobileProfileStorage";
 import ProfileStorage from "@/storage/profile/ProfileStorage";
 import WebProfileStorage from "@/storage/profile/WebProfileStorage";
@@ -57,20 +59,38 @@ function getApplicationId(): string {
 
 export const useAppDependenciesStore = create<AppDependencies>(() => {
     const applicationId = getApplicationId();
+    
+    // Use Chrome extension storage when running as an extension
     const encryptedStorage = platform<EncryptedStorage>(
         () => new MobileEncryptedStorage(applicationId),
-        () => new WebEncryptedStorage(applicationId)
+        () => new WebEncryptedStorage(applicationId),
+        () => new ChromeEncryptedStorage(applicationId)
     );
+    
+    const keyValueStorage = platform<KeyValueStorage>(
+        () => new MobileKeyValueStorage(),
+        () => new WebKeyValueStorage(),
+        () => new ChromeKeyValueStorage()
+    );
+    
     const cryptoProvider = new EMIP3CryptoProvider(
-        platform(() => new MobilePKDFPerformer(), () => new WebPKDFPerformer())
+        platform(
+            () => new MobilePKDFPerformer(), 
+            () => new WebPKDFPerformer(),
+            () => new WebPKDFPerformer()
+        )
     );
 
     return {
         encryptedStorage: encryptedStorage,
-        keyValueStorage: platform(() => new MobileKeyValueStorage(), () => new WebKeyValueStorage()),
+        keyValueStorage: keyValueStorage,
         cryptoProvider: cryptoProvider,
         biometricsProvider: new BiometricsProviderImpl(),
-        profileStorage: platform<ProfileStorage>(() => new MobileProfileStorage(), () => new WebProfileStorage()),
+        profileStorage: platform<ProfileStorage>(
+            () => new MobileProfileStorage(), 
+            () => new WebProfileStorage(),
+            () => new WebProfileStorage()
+        ),
         seedPhraseVault: new SeedPhraseVault(encryptedStorage, cryptoProvider),
         publicBalanceRepository: new PublicBalanceRepository(),
         privateBalanceRepository: new PrivateBalanceRepository(),
