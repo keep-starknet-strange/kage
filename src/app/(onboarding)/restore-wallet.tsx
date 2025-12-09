@@ -28,7 +28,7 @@ function getRpcProvider(networkDefinition: NetworkDefinition): RpcProvider {
 }
 
 function isNetworkEligibleForRestore(networkDefinition: NetworkDefinition): boolean {
-    return networkDefinition.chainId === "SN_SEPOLIA" || networkDefinition.chainId === "SN_MAIN";
+    return networkDefinition.chainId === "SN_SEPOLIA";
 }
 
 export default function RestoreWalletScreen() {

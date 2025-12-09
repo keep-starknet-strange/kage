@@ -135,12 +135,11 @@ export default class NetworkDefinition {
     }
 
     static default(): NetworkDefinition {
-        return NetworkDefinition.mainnet();
+        return NetworkDefinition.sepolia();
     }
 
     static wellKnown(): NetworkDefinition[] {
         return [
-            NetworkDefinition.mainnet(),
             NetworkDefinition.sepolia(),
         ];
     }
