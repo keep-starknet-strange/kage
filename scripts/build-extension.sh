@@ -84,8 +84,52 @@ else
 fi
 echo ""
 
+# Patch Expo Router for chrome-extension:// URLs
+echo -e "${BLUE}[4/7]${NC} Patching Expo Router for chrome-extension support..."
+BUNDLE_JS=$(find "$OUTPUT_DIR_UNPACKED/expo/static/js/web" -name "index-*.js" -type f | head -n 1)
+if [ -f "$BUNDLE_JS" ]; then
+  echo -e "${YELLOW}  Found bundle: $(basename "$BUNDLE_JS")${NC}"
+  
+  # Create a backup
+  cp "$BUNDLE_JS" "$BUNDLE_JS.backup"
+  
+  # Apply patches to fix chrome-extension:// URL handling
+  echo -e "${YELLOW}  Applying chrome-extension URL patches...${NC}"
+  
+   # Apply appropriate patch based on build mode
+   if [[ "$BUILD_MODE" == "production" ]]; then
+     perl -i -pe 's/([a-z])=[^?]*\?\`\$\{([a-z])\.location\.pathname\}\$\{\2\.location\.search\}\`/$1="\/"/g' "$BUNDLE_JS"
+     
+     if ! grep -qE '[a-z]=[^?]*\?\`\$\{[a-z]\.location\.pathname\}\$\{[a-z]\.location\.search\}\`:void 0' "$BUNDLE_JS"; then
+       echo -e "${GREEN}  ✓ Location patch applied (development mode)${NC}"
+       rm "$BUNDLE_JS.backup"
+     else
+       cp "$BUNDLE_JS.backup" "$BUNDLE_JS"
+       rm "$BUNDLE_JS.backup"
+       echo -e "${RED}  ⚠ Failed to apply location patch${NC}"
+       exit 1
+     fi
+   else 
+     perl -i -pe 's/const serverUrl = \w+\.location \? .+? : undefined;/const serverUrl = "\/";/g' "$BUNDLE_JS"
+ 
+     if grep -q 'const serverUrl = "/";' "$BUNDLE_JS"; then
+       echo -e "${GREEN}  ✓ serverUrl patch applied (production mode)${NC}"
+       rm "$BUNDLE_JS.backup"
+     else
+       cp "$BUNDLE_JS.backup" "$BUNDLE_JS"
+       rm "$BUNDLE_JS.backup"
+       echo -e "${RED}  ⚠ Failed to apply serverUrl patch${NC}"
+       exit 1
+     fi
+   fi
+else
+  echo -e "${RED}  ✗ Bundle JavaScript file not found${NC}"
+  exit 1
+fi
+echo ""
+
 # Copy extension icons
-echo -e "${BLUE}[4/6]${NC} Copying extension icons..."
+echo -e "${BLUE}[5/7]${NC} Copying extension icons..."
 for size in 16 32 48 128; do
   SRC_ICON="$PROJECT_ROOT/resources/logo/web/favicon-${size}x${size}.png"
   DEST_ICON="$OUTPUT_DIR_UNPACKED/icon-$size.png"
@@ -183,7 +227,8 @@ cat > "$OUTPUT_DIR_UNPACKED/manifest.json" << MANIFEST_EOF
   },
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "start_url": "."
 }
 MANIFEST_EOF
 echo -e "${GREEN}  ✓ manifest.json created${NC}"

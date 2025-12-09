@@ -1,11 +1,3 @@
-const isInDebugMode = () => {
-  return eval('__DEV__');
-}
-
-if (isInDebugMode()) {
-  console.log('KAGE Extension background service worker initialized');
-}
-
 // Storage API bridge for the popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Handle storage operations
@@ -83,23 +75,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     error: `Unknown message type: ${message.type}`
   });
   return false;
-});
-
-// Listen for extension installation/update
-chrome.runtime.onInstalled.addListener((details) => {
-  if (isInDebugMode()) {
-    console.log('KAGE Extension installed/updated:', details.reason);
-  }
-  
-  if (details.reason === 'install') {
-    if (isInDebugMode()) {  
-      console.log('First time installation');
-    }
-  } else if (details.reason === 'update') {
-    if (isInDebugMode()) {
-      console.log('Extension updated to version:', chrome.runtime.getManifest().version);
-    }
-  }
 });
 
 
