@@ -253,6 +253,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     ...fontStyles.ubuntuMono.regular,
     color: colorTokens['text.primary'],
     paddingVertical: spaceTokens[3],
+    outlineStyle: 'none'
   },
   wordInputFocused: {
     color: colorTokens['brand.accent'],

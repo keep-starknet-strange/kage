@@ -168,6 +168,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         fontSize: 16,
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
+        outlineStyle: 'none'
     },
     helperText: {
         fontSize: 13,

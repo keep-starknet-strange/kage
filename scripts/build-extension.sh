@@ -205,7 +205,9 @@ cat > "$OUTPUT_DIR_UNPACKED/manifest.json" << MANIFEST_EOF
     "storage",
     "activeTab",
     "tabs",
-    "scripting"
+    "scripting",
+    "clipboardRead",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "https://*.starknet.io/*",
@@ -216,7 +218,7 @@ cat > "$OUTPUT_DIR_UNPACKED/manifest.json" << MANIFEST_EOF
     "default_popup": "index.html",
     "default_title": "$APP_NAME",
     "default_icon": {
-      "16": "icon-16.png",
+      "16": "icon-16.png",rea
       "32": "icon-32.png",
       "48": "icon-48.png",
       "128": "icon-128.png"

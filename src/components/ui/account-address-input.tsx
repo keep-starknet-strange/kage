@@ -157,6 +157,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         fontSize: 14,
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.primary'],
+        outlineStyle: 'none'
     },
     inputDisabled: {
         color: colorTokens['text.muted'],

@@ -331,6 +331,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['text.primary'],
         paddingVertical: spaceTokens[3],
         minHeight: 48,
+        outlineStyle: 'none'
     },
     toggleButton: {
         padding: spaceTokens[2],

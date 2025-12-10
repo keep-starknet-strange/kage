@@ -57,7 +57,11 @@ export default function RootLayout() {
                 const { profileState } = useProfileStore.getState();
                 const { subscribeToBalanceUpdates } = useBalanceStore.getState();
                 if (ProfileState.isProfile(profileState)) {
-                    subscribeToBalanceUpdates(profileState.accountsOnCurrentNetwork as Account[]);
+                    try {
+                        subscribeToBalanceUpdates(profileState.accountsOnCurrentNetwork as Account[]);
+                    } catch (error) {
+                        LOG.error(error)
+                    }
                 }
             }
 
@@ -66,7 +70,11 @@ export default function RootLayout() {
                 const { unsubscribeFromBalanceUpdates } = useBalanceStore.getState();
 
                 if (ProfileState.isProfile(profileState)) {
-                    unsubscribeFromBalanceUpdates();
+                    try {
+                        unsubscribeFromBalanceUpdates();
+                    } catch (error) {
+                        LOG.error(error)
+                    }
                 }
             }
 
