@@ -98,9 +98,9 @@ if [ -f "$BUNDLE_JS" ]; then
   
    # Apply appropriate patch based on build mode
    if [[ "$BUILD_MODE" == "production" ]]; then
-     perl -i -pe 's/([a-z])=[^?]*\?\`\$\{([a-z])\.location\.pathname\}\$\{\2\.location\.search\}\`/$1="\/"/g' "$BUNDLE_JS"
+     perl -i -pe 's/([a-z])=[a-z]\.location\?\`\$\{[a-z]\.location\.pathname\}\$\{[a-z]\.location\.search\}\`:void 0,/$1="\/",/g' "$BUNDLE_JS"
      
-     if ! grep -qE '[a-z]=[^?]*\?\`\$\{[a-z]\.location\.pathname\}\$\{[a-z]\.location\.search\}\`:void 0' "$BUNDLE_JS"; then
+     if grep -qE '[a-z]="\/",' "$BUNDLE_JS"; then
        echo -e "${GREEN}  ✓ Location patch applied (development mode)${NC}"
        rm "$BUNDLE_JS.backup"
      else
