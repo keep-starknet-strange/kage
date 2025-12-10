@@ -6,6 +6,8 @@ import EncryptedStorage, { AuthPrompt } from "@/storage/encrypted/EncryptedStora
 import { AppError } from "@/types/appError";
 import SeedPhraseWords from "@/types/seedPhraseWords";
 import i18n from "@/utils/i18n";
+import ChromeEncryptedStorage from "./encrypted/ChromeEncryptedStorage";
+import WebEncryptedStorage from "./encrypted/WebEncryptedStorage";
 
 const SALT_KEY = "salt";
 const ENCRYPTED_SEED_PHRASE_ENCRYPTION_KEY = "encrypted_seed_phrase_encryption_key";
@@ -147,6 +149,12 @@ export default class SeedPhraseVault {
         await this.encryptedStorage.removeItem(KEYCHAIN_SEED_PHRASE_ENCRYPTION_KEY);
         for (const keySourceId of keySourceIds) {
             await this.encryptedStorage.removeItem(this.encryptedSeedPhraseIdentifier(keySourceId));
+        }
+
+        if (this.encryptedStorage instanceof ChromeEncryptedStorage) {
+            await this.encryptedStorage.deleteEncryptionKey();
+        } else if (this.encryptedStorage instanceof WebEncryptedStorage) {
+            await this.encryptedStorage.deleteEncryptionKey();
         }
     }
 

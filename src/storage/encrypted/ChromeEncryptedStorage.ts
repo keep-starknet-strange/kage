@@ -1,23 +1,53 @@
 import { LOG } from "@/utils/logs";
+import { WebCryptoKeyManager } from "@/crypto/web/WebCryptoKeyManager";
 import EncryptedStorage, { AuthPrompt } from "./EncryptedStorage";
+import { stringToBytes } from "@/crypto/utils/encoding";
 
+/**
+ * Chrome Extension Encrypted Storage using non-extractable CryptoKey.
+ * 
+ * Values are encrypted with AES-256-GCM using a key stored in IndexedDB.
+ * The key is marked as non-extractable, so raw key bytes are never exposed to JavaScript.
+ * Storage keys are hashed with SHA-256 for deterministic lookup.
+ */
 export default class ChromeEncryptedStorage implements EncryptedStorage {
+    private keyManager: WebCryptoKeyManager;
+    private initialized: boolean = false;
 
     constructor(
         private readonly applicationId: string,
-    ) {}
+    ) {
+        this.keyManager = new WebCryptoKeyManager(applicationId);
+    }
+
+    private async ensureInitialized(): Promise<boolean> {
+        if (this.initialized) {
+            return true;
+        }
+
+        const success = await this.keyManager.initialize();
+        if (success) {
+            this.initialized = true;
+        }
+        return success;
+    }
 
     async getItem(
         key: string, 
         auth?: AuthPrompt
     ): Promise<string | null> {
         try {
-            const storageKey = this.getService(key);
+            if (!await this.ensureInitialized()) {
+                LOG.error(`Failed to initialize encryption for getItem ${key}`);
+                return null;
+            }
+
+            const serviceKey = this.getService(key);
+            const hashedKey = await this.keyManager.hashKey(serviceKey);
             
-            // Use the background script bridge to access chrome.storage
             const response = await this.sendMessage({
                 type: 'STORAGE_GET',
-                keys: [storageKey]
+                keys: [hashedKey]
             });
 
             if (!response.success) {
@@ -25,14 +55,22 @@ export default class ChromeEncryptedStorage implements EncryptedStorage {
                 return null;
             }
 
-            const value = response.data[storageKey];
+            const encryptedValue = response.data[hashedKey];
             
-            if (!value) {
+            if (!encryptedValue) {
                 LOG.debug(`No value found for key ${key} in Chrome storage`);
                 return null;
             }
 
-            return value;
+            const encryptedBytes = this.base64ToBytes(encryptedValue);
+            const decryptedBytes = await this.keyManager.decrypt(encryptedBytes);
+            
+            if (!decryptedBytes) {
+                LOG.error(`Failed to decrypt value for key ${key}`);
+                return null;
+            }
+
+            return new TextDecoder().decode(decryptedBytes);
         } catch (e) {
             LOG.error(`ChromeEncryptedStorage.getItem error for key ${key}:`, e);
             return null;
@@ -45,12 +83,27 @@ export default class ChromeEncryptedStorage implements EncryptedStorage {
         auth?: AuthPrompt
     ): Promise<boolean> {
         try {
-            const storageKey = this.getService(key);
+            if (!await this.ensureInitialized()) {
+                LOG.error(`Failed to initialize encryption for setItem ${key}`);
+                return false;
+            }
+
+            const serviceKey = this.getService(key);
+            const hashedKey = await this.keyManager.hashKey(serviceKey);
             
-            // Use the background script bridge to access chrome.storage
+            const valueBytes = stringToBytes(value);
+            const encryptedBytes = await this.keyManager.encrypt(valueBytes);
+            
+            if (!encryptedBytes) {
+                LOG.error(`Failed to encrypt value for key ${key}`);
+                return false;
+            }
+
+            const encryptedValue = this.bytesToBase64(encryptedBytes);
+            
             const response = await this.sendMessage({
                 type: 'STORAGE_SET',
-                data: { [storageKey]: value }
+                data: { [hashedKey]: encryptedValue }
             });
 
             if (!response.success) {
@@ -67,12 +120,17 @@ export default class ChromeEncryptedStorage implements EncryptedStorage {
 
     async removeItem(key: string): Promise<void> {
         try {
-            const storageKey = this.getService(key);
+            if (!await this.ensureInitialized()) {
+                LOG.error(`Failed to initialize encryption for removeItem ${key}`);
+                return;
+            }
+
+            const serviceKey = this.getService(key);
+            const hashedKey = await this.keyManager.hashKey(serviceKey);
             
-            // Use the background script bridge to access chrome.storage
             const response = await this.sendMessage({
                 type: 'STORAGE_REMOVE',
-                keys: [storageKey]
+                keys: [hashedKey]
             });
 
             if (!response.success) {
@@ -83,14 +141,28 @@ export default class ChromeEncryptedStorage implements EncryptedStorage {
         }
     }
 
+    async deleteEncryptionKey(): Promise<void> {
+        await this.keyManager.deleteKey();
+        this.initialized = false;
+    }
+
     private getService(key: string): string {
         return `${this.applicationId}.${key}`;
     }
 
-    /**
-     * Sends a message to the background service worker and waits for a response.
-     * This is a wrapper around chrome.runtime.sendMessage with Promise support.
-     */
+    private bytesToBase64(bytes: Uint8Array): string {
+        return btoa(String.fromCharCode(...bytes));
+    }
+
+    private base64ToBytes(base64: string): Uint8Array {
+        const binaryString = atob(base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
+
     private sendMessage(message: any): Promise<any> {
         return new Promise((resolve, reject) => {
             if (typeof chrome === 'undefined' || !chrome.runtime) {
