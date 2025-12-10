@@ -58,8 +58,6 @@ Make sure to [set up your environment first](https://docs.expo.dev/get-started/s
 
 3. First, create an `.env` file in the root of the project with the following content:
 ```
-EXPO_PUBLIC_RPC_SN_MAIN="https://..."
-EXPO_PUBLIC_WS_SN_MAIN="wss://..."
 EXPO_PUBLIC_RPC_SN_SEPOLIA="https://..."
 EXPO_PUBLIC_WS_SN_SEPOLIA="wss://..."
 ```
@@ -76,6 +74,13 @@ npx expo run:ios
 # Or Android with
 npx expo run:android
 ```
+
+> [!WARNING]  
+> **Disclaimer:** KAGE was built as an exploration **mobile-first** wallet. There is also the ability to generate a Chrome extension out of it by running:
+> ```bash
+> npm run extension
+> ```
+> As mentioned above it is **not production-ready**, has not undergone security audits, and **should not be used to manage real funds**.
 
 ## Tongo Cash
 
