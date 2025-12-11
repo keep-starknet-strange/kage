@@ -9,36 +9,39 @@ import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { ModalPicker } from "./modal-picker";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
+import { TokenContract } from "@/types/token";
+import { SwapToken } from "@/utils/swap";
 
-type AmountType<T extends TokenBalance> =
-    T extends PrivateTokenBalance ? PrivateAmount :
-    T extends PublicTokenBalance ? PublicAmount :
+type AmountType<T extends TokenContract, B extends TokenBalance<T>> =
+    B extends PrivateTokenBalance ? PrivateAmount :
+    B extends PublicTokenBalance ? PublicAmount :
+    B extends TokenBalance<SwapToken> ? PublicAmount :
     Amount;
 
-type TokenAmountInputProps<T extends TokenBalance> = {
+type TokenAmountInputProps<T extends TokenContract, B extends TokenBalance<T>> = {
     label?: string;
-    onAmountChange: (amount: AmountType<T> | null) => void;
+    onAmountChange: (amount: AmountType<T, B> | null) => void;
     placeholder?: string;
     disabled?: boolean;
-    balances: T[];
+    balances: B[];
 };
 
-export function TokenAmountInput<T extends TokenBalance>({
+export function TokenAmountInput<T extends TokenContract, B extends TokenBalance<T>>({
     label,
     onAmountChange,
     placeholder,
     disabled = false,
     balances
-}: TokenAmountInputProps<T>) {
+}: TokenAmountInputProps<T, B>) {
     const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
-    const [selectedBalance, setSelectedBalance] = useState<T | null>(null);
+    const [selectedBalance, setSelectedBalance] = useState<B | null>(null);
     const [amountText, setAmountText] = useState<string>("");
     const [amountDecimal, setAmountDecimal] = useState<bigint | null>(null);
     const [hintMessage, setHintMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    
+
     const finalLabel = label || t('forms.amount.label');
     const finalPlaceholder = placeholder || t('forms.amount.placeholder');
 
@@ -61,10 +64,10 @@ export function TokenAmountInput<T extends TokenBalance>({
 
         if (selectedBalance instanceof PublicTokenBalance) {
             const amount = PublicAmount.fromTokenBalance(selectedBalance, amountDecimal);
-            onAmountChange(amount as AmountType<T>);
+            onAmountChange(amount as AmountType<T, B>);
         } else if (selectedBalance instanceof PrivateTokenBalance) {
             const amount = PrivateAmount.fromTokenBalance(selectedBalance, amountDecimal);
-            onAmountChange(amount as AmountType<T>);
+            onAmountChange(amount as AmountType<T, B>);
         }
     }, [amountDecimal, selectedBalance, onAmountChange]);
 
@@ -86,9 +89,9 @@ export function TokenAmountInput<T extends TokenBalance>({
             setError(t('forms.amount.exceedsBalance'))
             return;
         } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {
-            setError(t('forms.amount.minPrivateAmount', { 
-                symbol: selectedBalance.token.symbol, 
-                minAmount: tokenAmountToFormatted(false, minRange, selectedBalance.token) 
+            setError(t('forms.amount.minPrivateAmount', {
+                symbol: selectedBalance.token.symbol,
+                minAmount: tokenAmountToFormatted(false, minRange, selectedBalance.token)
             }))
             return;
         } else if (amountDecimal < minRange) {
@@ -116,7 +119,7 @@ export function TokenAmountInput<T extends TokenBalance>({
         }
     };
 
-    const renderItem = (balance: T) => {
+    const renderItem = (balance: B) => {
         return (
             <Text style={styles.tokenText}>
                 {balance.token.symbol}
@@ -124,7 +127,7 @@ export function TokenAmountInput<T extends TokenBalance>({
         );
     };
 
-    const renderModalItem = (balance: T) => {
+    const renderModalItem = (balance: B) => {
         const token = balance.token;
         const hasLogo = token.logo !== null;
 

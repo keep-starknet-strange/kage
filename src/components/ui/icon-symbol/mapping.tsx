@@ -116,6 +116,10 @@ const MAPPING = {
         ios: 'paperplane',
         android: { source: 'material-community', name: 'send' }
     },
+    'swap': {
+        ios: 'arrow.left.arrow.right.circle.fill',
+        android: { source: 'material', name: 'swap-horizontal-circle' }
+    },
     'face-id': {
         ios: 'faceid',
         android: { source: 'material-community', name: 'face-recognition' }

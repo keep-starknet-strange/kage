@@ -26,6 +26,8 @@ import { Platform } from "react-native";
 import { create } from "zustand";
 import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
+import { SwapRepository } from "@/swap/SwapRepository";
+import { NearSwapRepository } from "@/swap/NearSwapRepository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -37,6 +39,7 @@ export interface AppDependencies {
     publicBalanceRepository: PublicBalanceRepository;
     privateBalanceRepository: PrivateBalanceRepository;
     marketRepository: MarketRepository;
+    swapRepository: SwapRepository;
 }
 
 function getApplicationId(): string {
@@ -96,6 +99,7 @@ export const useAppDependenciesStore = create<AppDependencies>(() => {
         privateBalanceRepository: new PrivateBalanceRepository(),
         marketRepository: new AVNUMarketRepository(),
         kmsProvider: new StarKMSProvider(),
+        swapRepository: new NearSwapRepository(),
     }
 });
 

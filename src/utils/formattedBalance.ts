@@ -1,4 +1,4 @@
-import Token from "@/types/token";
+import Token, { TokenContract } from "@/types/token";
 import { LOG } from "./logs";
 
 export function fiatBalanceToFormatted(
@@ -15,10 +15,10 @@ export function fiatBalanceToFormatted(
 
 // TODO: Current implementation loses precision when converting to float
 // Better approach is to use Intl.NumberFormat.formatToParts but this currently seems to not be polyfilled for React Native
-export function tokenAmountToFormatted(
+export function tokenAmountToFormatted<T extends TokenContract>(
     compressed: boolean = false, 
     balance: bigint, 
-    token: Token,
+    token: T,
 ): string {
     const divisor = BigInt(10) ** BigInt(token.decimals);
     const integerPart = (balance / divisor).toString();

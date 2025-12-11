@@ -244,6 +244,13 @@
       "recipientPlaceholder": "Enter recipient's private address...",
       "transferButton": "Transfer"
     },
+    "swap": {
+      "description": "Swap tokens with Near Intents",
+      "sellLabel": "You Sell",
+      "sellPlaceholder": "0.0",
+      "buyLabel": "You Buy",
+      "buyPlaceholder": "0.0"
+    },
     "withdraw": {
       "description": "Withdraw tokens from your private balance to your public wallet.",
       "withdrawButton": "Withdraw"
@@ -305,6 +312,7 @@
       "label": "Public Balance",
       "fundButton": "Fund",
       "sendButton": "Send",
+      "swapButton": "Swap",
       "fundModal": {
         "title": "Fund Account",
         "fromFaucet": "From Faucet",

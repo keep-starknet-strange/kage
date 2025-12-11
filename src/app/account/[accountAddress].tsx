@@ -103,6 +103,9 @@ export default function AccountDetailScreen() {
                     onTransferPress={() => {
                         router.push(`/tx/publicTransfer/${accountAddress}`);
                     }}
+                    onSwapPress={() => {
+                        router.push(`/tx/swap/${accountAddress}`);
+                    }}
                     style={styles.balanceCard}
                 />
             )}

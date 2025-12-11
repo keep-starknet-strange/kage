@@ -5,7 +5,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol/icon-symbol';
 import { IconSymbolName } from './icon-symbol/mapping';
 
 export interface ActionButtonProps {
-    icon: IconSymbolName;
+    icon: IconSymbolName | React.ReactNode;
     label: string;
     onPress: () => void;
     disabled?: boolean;
@@ -21,7 +21,7 @@ export interface ActionButtonsRowProps {
 const ActionButton = ({ icon, label, onPress, disabled = false }: ActionButtonProps) => {
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
-    
+
     return (
         <Pressable
             style={({ pressed }) => [
@@ -36,11 +36,13 @@ const ActionButton = ({ icon, label, onPress, disabled = false }: ActionButtonPr
                 styles.iconCircle,
                 disabled && styles.iconCircleDisabled,
             ]}>
-                <IconSymbol
-                    name={icon}
-                    size={24}
-                    color={colorTokens['brand.accent']}
-                />
+                {typeof icon === 'string' ? (
+                    <IconSymbol
+                        name={icon as IconSymbolName}
+                        size={24}
+                        color={colorTokens['brand.accent']}
+                    />
+                ) : icon}
             </View>
             <Text style={[
                 styles.label,

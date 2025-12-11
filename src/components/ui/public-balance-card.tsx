@@ -13,11 +13,13 @@ import ActionButton from "./action-buttons";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { Image } from "expo-image";
 
 export interface PublicBalanceCardProps {
     account: Account;
     style?: StyleProp<ViewStyle>;
     onTransferPress: () => void;
+    onSwapPress: () => void;
 }
 
 const FundModal = (
@@ -96,6 +98,7 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
     const { publicBalances } = useBalanceStore()
     const [fiatBalance, setFiatBalance] = useState<string | null>(null);
     const [isFundModalVisible, setIsFundModalVisible] = useState(false);
+    const { colors: colorTokens } = useTheme();
     const styles = useThemedStyle(themedStyleSheet);
 
     useEffect(() => {
@@ -103,6 +106,35 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
         const formatted = fiatBalanceToFormatted(aggregated)
         setFiatBalance(formatted);
     }, [account, publicBalances, setFiatBalance]);
+
+    const swapIcon = <View>
+        <IconSymbol name="swap" size={24} color={colorTokens['brand.accent']} />
+        <View style={{
+            width: 16,
+            height: 16,
+            position: 'absolute',
+            alignItems: 'center',
+            justifyContent: 'center',
+            right: -4,
+            bottom: -4,
+            backgroundColor: colorTokens['brand.accent'],
+            borderRadius: radiusTokens.pill,
+            borderWidth: 1,
+            padding: 1,
+            borderColor: colorTokens['border.strong'],
+        }}>
+            <Image
+                source={require('res/logo/near/near.svg')}
+                tintColor={colorTokens['text.inverted']}
+                style={{
+                    width: 12,
+                    height: 12,
+                    opacity: 0.5,
+                }}
+            />
+        </View>
+
+    </View>;
 
     return (
         <View style={[styles.container, style]}>
@@ -127,6 +159,14 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
                     label={t('balance.public.sendButton')}
                     onPress={() => {
                         props.onTransferPress();
+                    }}
+                    disabled={false}
+                />
+                <ActionButton
+                    icon={swapIcon}
+                    label={t('balance.public.swapButton')}
+                    onPress={() => {
+                        props.onSwapPress();
                     }}
                     disabled={false}
                 />

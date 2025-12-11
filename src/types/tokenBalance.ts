@@ -1,5 +1,5 @@
 import Identifiable from "@/types/Identifiable";
-import Token from "@/types/token";
+import Token, { TokenContract } from "@/types/token";
 import { AccountState as TongoBalanceState } from "@fatsolutions/tongo-sdk";
 import { fiatBalanceToFormatted, tokenAmountToFormatted } from "@/utils/formattedBalance";
 import { PrivateTokenAddress } from "./privateRecipient";
@@ -19,12 +19,12 @@ export function getAggregatedFiatBalance<B extends TokenBalance>(
     }, 0);
 }
 
-export abstract class TokenBalance implements Identifiable {
-    readonly token: Token;
+export abstract class TokenBalance<T extends TokenContract> implements Identifiable {
+    readonly token: T;
     readonly spendableBalance: bigint;
     readonly fiatPrice: number | null;
 
-    constructor(token: Token, balance: bigint) {
+    constructor(token: T, balance: bigint) {
         this.token = token;
         this.spendableBalance = balance;
 
@@ -56,7 +56,7 @@ export abstract class TokenBalance implements Identifiable {
     }
 }
 
-export class PublicTokenBalance extends TokenBalance {
+export class PublicTokenBalance extends TokenBalance<Token> {
     constructor(token: Token, balance: bigint) {
         super(token, balance);
     }
@@ -66,7 +66,7 @@ export class PublicTokenBalance extends TokenBalance {
     }
 }
 
-export class PrivateTokenBalance extends TokenBalance {
+export class PrivateTokenBalance extends TokenBalance<Token> {
     readonly isUnlocked: boolean;
 
     /**
