@@ -104,7 +104,6 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const tongoAccount = new TongoAccount(tokenKeyPair.keyPair.privateKey, amount.token.tongoAddress, provider);
             const sdkRate = await tongoAccount.rate();
             const privateAmount = amount.intoPrivateAmount(sdkRate);
-            console.log("privateAmount", privateAmount.toSdkAmount());
             const signerAccount = new StarknetAccount({
                 provider: provider,
                 address: signer.address,

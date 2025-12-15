@@ -1,4 +1,4 @@
-import { SwapToken } from "@/utils/swap"
+import { SwapAmount, SwapToken } from "@/utils/swap"
 import { create } from "zustand"
 import { useProfileStore } from "./profileStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
@@ -9,6 +9,8 @@ import tokensConfig from "res/config/tokens.json";
 import { NetworkId } from "@/profile/misc";
 import Token from "@/types/token";
 import { TokenAddress } from "@/types/tokenAddress";
+import { Quote } from "@/types/swap";
+import { AccountAddress } from "@/profile/account";
 
 type PresetNetworkId = keyof typeof tokensConfig;
 
@@ -18,6 +20,14 @@ export interface SwapStore {
     readonly buyTokens: SwapToken[];
 
     fetchTokens: () => Promise<void>;
+
+    requestQuote: (
+        action: "sell" | "buy", 
+        starknetAddress: AccountAddress,
+        recipientAddress: string,
+        amount: SwapAmount, 
+        resultToken: SwapToken
+    ) => Promise<Quote>;
 }
 
 export const useSwapStore = create<SwapStore>((set) => {
@@ -54,6 +64,25 @@ export const useSwapStore = create<SwapStore>((set) => {
             const buyTokens = await swapRepository.getAvailableTokens({ type: "buy" });
 
             set({ operatingTokens, sellTokens, buyTokens });
+        },
+
+        requestQuote: async (
+            action: "sell" | "buy", 
+            starknetAddress: AccountAddress,
+            recipientAddress: string,
+            amount: SwapAmount, 
+            resultToken: SwapToken
+        ) => {
+            const { swapRepository } = useAppDependenciesStore.getState();
+            return await swapRepository.requestQuote({
+                dry: true,
+                starknetAddress: starknetAddress,
+                recipientAddress: recipientAddress,
+                action: action,
+                amount: amount,
+                destinationToken: resultToken,
+                slippage: 1,
+            });
         }
     }
 })

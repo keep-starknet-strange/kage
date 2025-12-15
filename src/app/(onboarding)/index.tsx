@@ -24,7 +24,10 @@ export default function WelcomeScreen() {
                     <View style={styles.logoWrapper}>
                         <Image
                             source={require("res/logo/kage-outline.png")}
-                            style={styles.logo}
+                            style={{
+                                width: 160,
+                                height: 160,
+                            }}
                             contentFit="contain"
                         />
                     </View>
@@ -35,7 +38,10 @@ export default function WelcomeScreen() {
                             <Text style={styles.tagline}>{t('onboarding.welcome.tagline.privacyIs')}</Text>
                             <Image
                                 source={require("res/logo/starknet.png")}
-                                style={styles.starknetLogo}
+                                style={{
+                                    width: 20,
+                                    height: 20,
+                                }}
                                 contentFit="contain"
                             />
                             <Text style={styles.tagline}>{t('onboarding.welcome.tagline.normal')}</Text>
@@ -93,14 +99,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     logoWrapper: {
         alignItems: "center",
         justifyContent: "center",
-    },
-    logo: {
-        width: 160,
-        height: 160,
-    },
-    starknetLogo: {
-        width: 20,
-        height: 20,
     },
     textContainer: {
         alignItems: "center",

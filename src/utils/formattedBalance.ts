@@ -1,4 +1,4 @@
-import Token, { TokenContract } from "@/types/token";
+import { TokenContract } from "@/types/token";
 import { LOG } from "./logs";
 
 export function fiatBalanceToFormatted(

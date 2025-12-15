@@ -1,18 +1,19 @@
+import Amount from "@/types/amount";
 import Identifiable from "@/types/Identifiable";
 import { TokenContract } from "@/types/token";
-import { TokenAddress } from "@/types/tokenAddress";
+import { TokenBalance } from "@/types/tokenBalance";
 import { TokenResponse } from "@defuse-protocol/one-click-sdk-typescript";
 
 export class SwapToken implements TokenContract, Identifiable {
     constructor(
         public readonly assetId: string,
         public readonly decimals: number,
-        public readonlyblockchain: SwapTokenChain,
+        public readonly blockchain: SwapTokenChain,
         public readonly logo: URL | null,
         public readonly symbol: string,
         public readonly price: number,
         public readonly priceUpdatedAt: string,
-        public readonly contractAddress: TokenAddress,
+        public readonly contractAddress: string,
         public readonly name: string | null,
     ) {}
 
@@ -26,8 +27,10 @@ export class SwapToken implements TokenContract, Identifiable {
     }
     
     // TODO: Add name to token
-    static fromTokenResponse(token: TokenResponse, image: string | null): SwapToken {
-        const contractAddress = TokenAddress.create(token.contractAddress ?? "");
+    static fromTokenResponse(token: TokenResponse, image: string | null): SwapToken | null {
+        if (!token.contractAddress) {
+            return null;
+        }
 
         return new SwapToken(
             token.assetId,
@@ -37,10 +40,14 @@ export class SwapToken implements TokenContract, Identifiable {
             token.symbol,
             token.price,
             token.priceUpdatedAt,
-            contractAddress,
+            token.contractAddress,
             token.symbol,
         );
     }
 }
 
 export type SwapTokenChain = keyof typeof TokenResponse.blockchain;
+
+export class SwapTokenBalance extends TokenBalance<SwapToken> {}
+
+export class SwapAmount extends Amount<SwapToken> {}

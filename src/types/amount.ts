@@ -1,13 +1,13 @@
-import Token from "@/types/token";
+import Token, { TokenContract } from "@/types/token";
 import { PrivateTokenBalance, PublicTokenBalance } from "@/types/tokenBalance";
-import { max, min } from "@/utils/bigint";
+import { min } from "@/utils/bigint";
 import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 
-export default abstract class Amount {
+export default abstract class Amount<T extends TokenContract> {
     readonly amount: bigint;
-    readonly token: Token;
+    readonly token: T;
 
-    constructor(amount: bigint, token: Token) {
+    constructor(amount: bigint, token: T) {
         this.amount = amount;
         this.token = token;
     }
@@ -17,7 +17,7 @@ export default abstract class Amount {
     }
 }
 
-export class PublicAmount extends Amount {
+export class PublicAmount extends Amount<Token> {
     constructor(amount: bigint, token: Token) {
         super(amount, token);
     }
@@ -31,7 +31,7 @@ export class PublicAmount extends Amount {
     }
 }
 
-export class PrivateAmount extends Amount {
+export class PrivateAmount extends Amount<Token> {
     private readonly rate: bigint;
     readonly amountFromPendingBalance: bigint;
 

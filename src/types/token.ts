@@ -2,8 +2,8 @@ import Identifiable from "@/types/Identifiable";
 import formattedAddress from "@/utils/formattedAddress";
 import { TokenAddress } from "./tokenAddress";
 
-export interface TokenContract {
-    readonly contractAddress: TokenAddress;
+export interface TokenContract extends Identifiable {
+    readonly contractAddress: string;
     readonly symbol: string;
     readonly decimals: number;
     readonly priceInUsd: number | null;
@@ -11,7 +11,7 @@ export interface TokenContract {
     readonly name: string | null;
 }
 
-export default class Token implements TokenContract, Identifiable {
+export default class Token implements TokenContract  {
 
     readonly contractAddress: TokenAddress;
     readonly tongoAddress: string;

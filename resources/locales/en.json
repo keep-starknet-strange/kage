@@ -249,7 +249,15 @@
       "sellLabel": "You Sell",
       "sellPlaceholder": "0.0",
       "buyLabel": "You Buy",
-      "buyPlaceholder": "0.0"
+      "buyPlaceholder": "0.0",
+      "recipientLabel": "Recipient Address ({{chain}})",
+      "recipientPlaceholder": "{{token}} address in {{chain}} chain.",
+      "recipientError": "Invalid recipient address",
+      "recipientWarning": "Make sure to enter a valid {{chain}} address. Sending to an incorrect address may result in permanent loss of funds.",
+      "detail": {
+        "notFound": "Balances not found for this account",
+        "goBackButton": "Go Back"
+      }
     },
     "withdraw": {
       "description": "Withdraw tokens from your private balance to your public wallet.",

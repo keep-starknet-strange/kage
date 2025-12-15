@@ -1,7 +1,7 @@
 import { PrivateBalancesLocked } from "@/components/private-balances-locked";
+import { BalanceInput } from "@/components/ui/balance-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { fontStyles, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
@@ -12,8 +12,8 @@ import { PrivateTokenBalance } from "@/types/tokenBalance";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
 
 type WithdrawTabProps = {
     account: Account;
@@ -87,7 +87,7 @@ export function WithdrawTab({ account }: WithdrawTabProps) {
                         {t('transactions.withdraw.description')}
                     </Text>
 
-                    <TokenAmountInput
+                    <BalanceInput
                         label={t('forms.amount.label')}
                         placeholder={t('forms.amount.placeholder')}
                         balances={privateBalances ?? []}

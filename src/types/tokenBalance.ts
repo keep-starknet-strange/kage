@@ -5,7 +5,7 @@ import { fiatBalanceToFormatted, tokenAmountToFormatted } from "@/utils/formatte
 import { PrivateTokenAddress } from "./privateRecipient";
 import Account, { AccountAddress } from "@/profile/account";
 
-export function getAggregatedFiatBalance<B extends TokenBalance>(
+export function getAggregatedFiatBalance<T extends TokenContract, B extends TokenBalance<T>>(
     accounts: Account[],
     balances: ReadonlyMap<AccountAddress, B[]>
 ): number {

@@ -1,134 +1,68 @@
+import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
-import Amount, { PrivateAmount, PublicAmount } from "@/types/amount";
-import { PrivateTokenBalance, PublicTokenBalance, TokenBalance } from "@/types/tokenBalance";
-import { stringToBigint, tokenAmountToFormatted } from "@/utils/formattedBalance";
-import { useEffect, useState } from "react";
-import { Text, TextInput, View } from "react-native";
-import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
-import { ModalPicker } from "./modal-picker";
-import { Image } from "expo-image";
-import { useTranslation } from "react-i18next";
+import Identifiable from "@/types/Identifiable";
 import { TokenContract } from "@/types/token";
-import { SwapToken } from "@/utils/swap";
+import { stringToBigint } from "@/utils/formattedBalance";
+import { Image } from "expo-image";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Text, TextInput, View, FocusEvent } from "react-native";
+import { ModalPicker } from "./modal-picker";
+import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
+import { LinearGradient } from 'expo-linear-gradient';
 
-type AmountType<T extends TokenContract, B extends TokenBalance<T>> =
-    B extends PrivateTokenBalance ? PrivateAmount :
-    B extends PublicTokenBalance ? PublicAmount :
-    B extends TokenBalance<SwapToken> ? PublicAmount :
-    Amount;
-
-type TokenAmountInputProps<T extends TokenContract, B extends TokenBalance<T>> = {
+type TokenAmountInputProps<T extends TokenContract & Identifiable> = {
     label?: string;
-    onAmountChange: (amount: AmountType<T, B> | null) => void;
+    amount: string;
+    setAmount: (text: string) => void;
+    selectedToken: T | null;
+    setSelectedToken: (token: T | null) => void;
     placeholder?: string;
     disabled?: boolean;
-    balances: B[];
+    hintText?: string | { startHint: string, endHint: string };
+    errorText?: string;
+    tokens: T[];
+    loading?: boolean;
+    renderSelectedItem?: (token: T) => React.ReactNode;
+    renderModalItem?: (token: T) => React.ReactNode;
+    renderHint?: (hint: string) => React.ReactNode;
+    onFocus?: (e: FocusEvent) => void;
 };
 
-export function TokenAmountInput<T extends TokenContract, B extends TokenBalance<T>>({
+export function TokenAmountInput<T extends TokenContract & Identifiable>({
     label,
-    onAmountChange,
+    amount,
+    setAmount,
+    selectedToken,
+    setSelectedToken,
     placeholder,
     disabled = false,
-    balances
-}: TokenAmountInputProps<T, B>) {
+    hintText,
+    errorText,
+    tokens,
+    loading,
+    renderSelectedItem,
+    renderModalItem,
+    renderHint,
+    onFocus,
+}: TokenAmountInputProps<T>) {
     const { t } = useTranslation();
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
-    const [selectedBalance, setSelectedBalance] = useState<B | null>(null);
-    const [amountText, setAmountText] = useState<string>("");
-    const [amountDecimal, setAmountDecimal] = useState<bigint | null>(null);
-    const [hintMessage, setHintMessage] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
     const finalLabel = label || t('forms.amount.label');
     const finalPlaceholder = placeholder || t('forms.amount.placeholder');
 
-    useEffect(() => {
-        if (selectedBalance) {
-            if (selectedBalance instanceof PrivateTokenBalance) {
-                setHintMessage(`Private Balance: ${selectedBalance.formattedBalance()}`);
-            } else {
-                setHintMessage(`Balance: ${selectedBalance.formattedBalance()}`);
-            }
-
-        }
-    }, [selectedBalance]);
-
-    useEffect(() => {
-        if (!amountDecimal || !selectedBalance) {
-            onAmountChange(null);
-            return;
-        }
-
-        if (selectedBalance instanceof PublicTokenBalance) {
-            const amount = PublicAmount.fromTokenBalance(selectedBalance, amountDecimal);
-            onAmountChange(amount as AmountType<T, B>);
-        } else if (selectedBalance instanceof PrivateTokenBalance) {
-            const amount = PrivateAmount.fromTokenBalance(selectedBalance, amountDecimal);
-            onAmountChange(amount as AmountType<T, B>);
-        }
-    }, [amountDecimal, selectedBalance, onAmountChange]);
-
-    useEffect(() => {
-        if (!selectedBalance) {
-            setError(null);
-            return;
-        }
-
-        if (!amountDecimal) {
-            setError(null);
-            return;
-        }
-
-        const minRange = selectedBalance instanceof PrivateTokenBalance ? selectedBalance.minAcceptedBalance : 0n;
-        const maxRange = selectedBalance.spendableBalance;
-
-        if (amountDecimal > maxRange) {
-            setError(t('forms.amount.exceedsBalance'))
-            return;
-        } else if (selectedBalance instanceof PrivateTokenBalance && amountDecimal < minRange) {
-            setError(t('forms.amount.minPrivateAmount', {
-                symbol: selectedBalance.token.symbol,
-                minAmount: tokenAmountToFormatted(false, minRange, selectedBalance.token)
-            }))
-            return;
-        } else if (amountDecimal < minRange) {
-            setError(t('forms.amount.negativeNotAllowed'))
-            return;
-        }
-
-        setError(null);
-    }, [amountDecimal, selectedBalance, t]);
-
-    const handleChangeText = (text: string) => {
-        if (!selectedBalance) {
-            return;
-        }
-
-        if (text.trim() === '') {
-            setAmountDecimal(null);
-            setAmountText('');
-            return;
-        }
-
-        if (!isNaN(Number(text))) {
-            setAmountText(text);
-            setAmountDecimal(stringToBigint(text, selectedBalance.token.decimals, '.'));
-        }
-    };
-
-    const renderItem = (balance: B) => {
+    const renderItem = renderSelectedItem ?? ((token: T) => {
         return (
             <Text style={styles.tokenText}>
-                {balance.token.symbol}
+                {token.symbol}
             </Text>
         );
-    };
+    });
 
-    const renderModalItem = (balance: B) => {
-        const token = balance.token;
+    const modalItem = renderModalItem ?? ((token: T) => {
         const hasLogo = token.logo !== null;
 
         return (
@@ -137,7 +71,11 @@ export function TokenAmountInput<T extends TokenContract, B extends TokenBalance
                     {hasLogo ? (
                         <Image
                             source={{ uri: token.logo!.toString() }}
-                            style={styles.tokenLogo}
+                            style={{
+                                width: spaceTokens[5],
+                                height: spaceTokens[5],
+                                borderRadius: 12,
+                            }}
                         />
                     ) : (
                         <IconSymbol name="currency" size={spaceTokens[5]} color={colorTokens['text.primary']} />
@@ -151,39 +89,70 @@ export function TokenAmountInput<T extends TokenContract, B extends TokenBalance
                 </Text>
             </View>
         );
-    };
+    });
+
+    const ShimerringPlaceholder = createShimmerPlaceholder(LinearGradient);
+    const placeholderVisible = loading ?? false;
+
+    const renderHintView = (hintText: string | { startHint: string, endHint: string }) => {
+        let startHint: string = ""
+        let endHint: string | null = null;
+        if (typeof hintText === "string") {
+            startHint = hintText;
+            endHint = null;
+        } else {
+            startHint = hintText.startHint;
+            endHint = hintText.endHint;
+        }
+
+        return <View style={styles.hintContainer}>
+            <Text style={styles.hintText}>{startHint}</Text>
+            <Text style={styles.hintText}>{endHint}</Text>
+        </View>
+    }
 
     return (
         <View style={styles.container}>
             {finalLabel && <Text style={styles.label}>{finalLabel}</Text>}
             <View style={[
                 styles.inputContainer,
-                error && styles.inputContainerError,
+                errorText && styles.inputContainerError,
                 disabled && styles.inputContainerDisabled
             ]}>
-                <TextInput
-                    style={[styles.input, disabled && styles.inputDisabled]}
-                    value={amountText}
-                    onChangeText={handleChangeText}
-                    placeholder={finalPlaceholder}
-                    keyboardType="numeric"
-                    placeholderTextColor={colorTokens['text.muted']}
-                    editable={!disabled}
-                />
+
+                <View style={{ flex: 1, justifyContent: 'center' }}>
+                    {placeholderVisible && <ShimerringPlaceholder
+                        shimmerStyle={styles.shimerring}
+                        shimmerColors={[colorTokens['brand.glow'], colorTokens['brand.accentSoft'], colorTokens['brand.glow']]}
+                        visible={false}
+                    />}
+
+                    <TextInput
+                        style={[styles.input, disabled && styles.inputDisabled, { opacity: placeholderVisible ? 0 : 1 }]}
+                        value={amount}
+                        onChangeText={setAmount}
+                        placeholder={finalPlaceholder}
+                        keyboardType="numeric"
+                        placeholderTextColor={colorTokens['text.muted']}
+                        editable={!disabled}
+                        onFocus={onFocus}
+                    />
+                </View>
+
 
                 <ModalPicker
-                    items={balances}
-                    selectedItem={selectedBalance}
-                    onSelectItem={setSelectedBalance}
+                    items={tokens}
+                    selectedItem={selectedToken}
+                    onSelectItem={setSelectedToken}
                     placeholder={t('forms.token.placeholder')}
                     disabled={disabled}
                     renderItem={renderItem}
-                    renderModalItem={renderModalItem}
+                    renderModalItem={modalItem}
                     pickerButtonStyle={styles.tokenPickerButton}
                 />
             </View>
-            {error && <Text style={styles.errorText}>{error}</Text>}
-            {!error && hintMessage && <Text style={styles.hintText}>{hintMessage}</Text>}
+            {errorText && <Text style={styles.errorText}>{errorText}</Text>}
+            {!errorText && hintText && renderHintView(hintText)}
         </View>
     );
 }
@@ -214,6 +183,13 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         backgroundColor: colorTokens['bg.sunken'],
         opacity: 0.6,
     },
+    shimerring: {
+        flex: 1,
+        position: 'absolute',
+        height: '60%',
+        width: '100%',
+        borderRadius: radiusTokens.pill,
+    },
     input: {
         flex: 1,
         paddingVertical: spaceTokens[3],
@@ -240,11 +216,17 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['status.error'],
         marginStart: spaceTokens[0],
     },
+    hintContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spaceTokens[1],
+        marginHorizontal: spaceTokens[0],
+        justifyContent: 'space-between',
+    },
     hintText: {
         fontSize: 12,
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
-        marginStart: spaceTokens[0],
     },
     tokenPickerButton: {
         flex: 1,
@@ -264,11 +246,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         alignItems: 'center',
         gap: spaceTokens[2],
         flex: 1,
-    },
-    tokenLogo: {
-        width: spaceTokens[5],
-        height: spaceTokens[5],
-        borderRadius: 12,
     },
     tokenLogoPlaceholder: {
         width: 24,

@@ -1,7 +1,7 @@
 import { AccountPicker } from "@/components/ui/account-picker";
+import { BalanceInput } from "@/components/ui/balance-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { fontStyles, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ProfileState } from "@/profile/profileState";
@@ -13,8 +13,8 @@ import { PublicAmount } from "@/types/amount";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
 
 type FundTabProps = {
     account: Account;
@@ -96,7 +96,7 @@ export function FundTab({
                 placeholder={t('transactions.fund.selectAccountPlaceholder')}
             />
 
-            <TokenAmountInput
+            <BalanceInput
                 label={t('transactions.fund.publicAmountLabel')}
                 onAmountChange={setAmount}
                 balances={selectedAccountBalances ?? []}
