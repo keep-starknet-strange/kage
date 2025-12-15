@@ -12,6 +12,7 @@ OpenAPI.TOKEN = process.env.EXPO_PUBLIC_NEAR_INTENTS_JWT;
 const SELL_ON_BLOCKCHAIN = TokenResponse.blockchain.STARKNET;
 
 const DRY_DEADLINE_MS = 5 * 60 * 1000; // 5 minutes
+const DEADLINE_MS = 60 * 60 * 1000; // 1 hour
 
 export class NearSwapRepository implements SwapRepository {
 
@@ -86,7 +87,7 @@ export class NearSwapRepository implements SwapRepository {
             refundType: NearQuoteRequest.refundType.ORIGIN_CHAIN,
             recipient: request.recipientAddress,
             recipientType: NearQuoteRequest.recipientType.DESTINATION_CHAIN,
-            deadline: new Date(Date.now() + DRY_DEADLINE_MS).toISOString(),
+            deadline: new Date(Date.now() + (request.dry ? DRY_DEADLINE_MS : DEADLINE_MS)).toISOString(),
             quoteWaitingTimeMs: 0,
         });
 

@@ -1,5 +1,6 @@
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { SecondaryButton } from "@/components/ui/secondary-button";
+import { showToastError } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { fontStyles, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
@@ -8,6 +9,7 @@ import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useSwapStore } from "@/stores/swapStore";
 import { Quote } from "@/types/swap";
 import { PublicTokenBalance } from "@/types/tokenBalance";
+import { validateAddress } from "@/utils/addressValidation";
 import { fiatBalanceToFormatted, stringToBigint } from "@/utils/formattedBalance";
 import { SwapAmount, SwapToken } from "@/utils/swap";
 import { Image } from "expo-image";
@@ -42,7 +44,6 @@ export function SwapTab({
     const [buyToken, setBuyToken] = useState<SwapToken | null>(null);
     const [buyAmountText, setBuyAmountText] = useState<string>("");
     const [buyHint, setBuyHint] = useState<string | undefined>(undefined);
-    const [buyError, setBuyError] = useState<string | undefined>(undefined);
     const [buyLoading, setBuyLoading] = useState(false);
 
     const [recipientAddress, setRecipientAddress] = useState<string>("");
@@ -67,10 +68,10 @@ export function SwapTab({
 
     // Request quote with 500ms debounce
     useEffect(() => {
-        // Clear any existing timeout
-        if (quoteDebounceRef.current) {
-            clearTimeout(quoteDebounceRef.current);
-            quoteDebounceRef.current = null;
+        if (recipientError || recipientAddress.trim() === '') {
+            setBuyLoading(false);
+            setSellLoading(false);
+            return;
         }
 
         // Determine if we should request a quote
@@ -79,6 +80,12 @@ export function SwapTab({
 
         if (!shouldRequestSellQuote && !shouldRequestBuyQuote) {
             return;
+        }
+
+        // Clear any existing timeout
+        if (quoteDebounceRef.current) {
+            clearTimeout(quoteDebounceRef.current);
+            quoteDebounceRef.current = null;
         }
 
         // Set loading state immediately
@@ -95,7 +102,7 @@ export function SwapTab({
                     const quote = await requestQuote(
                         'sell',
                         account.address,
-                        "0x015b8988b8e93ca4afa0fcb54751b8a3466a9352ce5f360117dbd5ce276d6a08", // TODO
+                        recipientAddress,
                         sellAmount,
                         buyToken
                     );
@@ -114,7 +121,7 @@ export function SwapTab({
                     const quote = await requestQuote(
                         'buy',
                         account.address,
-                        "0x015b8988b8e93ca4afa0fcb54751b8a3466a9352ce5f360117dbd5ce276d6a08",
+                        recipientAddress,
                         buyAmount,
                         sellToken
                     );
@@ -131,7 +138,8 @@ export function SwapTab({
                     setBuyHint(fiatBalanceToFormatted(parseFloat(quote.amountInUsd)));
                 }
             } catch (error) {
-                console.error('Failed to request quote:', error);
+                showToastError(error);
+                currentQuoteRef.current = null;
             } finally {
                 setBuyLoading(false);
                 setSellLoading(false);
@@ -145,7 +153,7 @@ export function SwapTab({
                 quoteDebounceRef.current = null;
             }
         };
-    }, [focusedField, sellAmount, buyAmount, sellToken, buyToken, requestQuote]);
+    }, [focusedField, sellAmount, buyAmount, sellToken, buyToken, requestQuote, recipientAddress, recipientError]);
 
     // Check buy available balance
     useEffect(() => {
@@ -228,6 +236,18 @@ export function SwapTab({
         }
     }, [sellAmountText, sellToken, setSellAmount]);
 
+    useEffect(() => {
+        if (!recipientAddress || !buyToken?.blockchain) {
+            return;
+        }
+
+        if (validateAddress(recipientAddress, buyToken.blockchain)) {
+            setRecipientError(undefined);
+        } else {
+            setRecipientError(t('swap.recipientError', { chain: buyToken.blockchain }));
+        }
+    }, [recipientAddress, buyToken?.blockchain])
+
     // If account not found, show error
     if (!publicBalances) {
         return (
@@ -275,7 +295,6 @@ export function SwapTab({
                 tokens={buyTokens}
                 loading={buyLoading}
                 hintText={buyHint}
-                errorText={buyError}
                 onFocus={(e) => setFocusedField("buy")}
             />
 
@@ -292,7 +311,7 @@ export function SwapTab({
                         autoCorrect={false}
                     />
                     {recipientError && (
-                        <Text style={styles.recipientError}>{t('transactions.swap.recipientError')}</Text>
+                        <Text style={styles.recipientError}>{t('transactions.swap.recipientError', { chain: buyToken.blockchain })}</Text>
                     )}
 
                     <View style={styles.recipientWarning}>

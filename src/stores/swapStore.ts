@@ -71,7 +71,8 @@ export const useSwapStore = create<SwapStore>((set) => {
             starknetAddress: AccountAddress,
             recipientAddress: string,
             amount: SwapAmount, 
-            resultToken: SwapToken
+            resultToken: SwapToken,
+            slippage: number
         ) => {
             const { swapRepository } = useAppDependenciesStore.getState();
             return await swapRepository.requestQuote({
@@ -81,7 +82,7 @@ export const useSwapStore = create<SwapStore>((set) => {
                 action: action,
                 amount: amount,
                 destinationToken: resultToken,
-                slippage: 1,
+                slippage: slippage,
             });
         }
     }
