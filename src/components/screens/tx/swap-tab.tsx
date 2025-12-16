@@ -1,46 +1,64 @@
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
+import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
-import { showToastError } from "@/components/ui/toast";
+import { DEFAULT_SLIPPAGE, SlippageModal } from "@/components/ui/slippage-modal";
+import { showToastError, showToastTransaction } from "@/components/ui/toast";
 import { TokenAmountInput } from "@/components/ui/token-amount-input";
-import { fontStyles, spaceTokens } from "@/design/tokens";
+import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import { useBalanceStore } from "@/stores/balance/balanceStore";
 import { useSwapStore } from "@/stores/swapStore";
-import { Quote } from "@/types/swap";
+import { AppError } from "@/types/appError";
+import { Quote, SwapStatus } from "@/types/swap";
 import { PublicTokenBalance } from "@/types/tokenBalance";
 import { validateAddress } from "@/utils/addressValidation";
 import { fiatBalanceToFormatted, stringToBigint } from "@/utils/formattedBalance";
+import i18n from "@/utils/i18n";
 import { SwapAmount, SwapToken } from "@/utils/swap";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 
 type SwapTabProps = {
     account: Account;
 };
+
+type QuoteRequest = {
+    type: "sell" | "buy";
+    amount: bigint;
+    originToken: SwapToken;
+    destinationToken: SwapToken;
+    slippage: number;
+}
 
 export function SwapTab({
     account,
 }: SwapTabProps) {
     const router = useRouter();
     const { t } = useTranslation();
-    const { sellTokens, buyTokens, fetchTokens, requestQuote } = useSwapStore();
+    const { sellTokens, buyTokens, fetchTokens, requestQuote, performSwap } = useSwapStore();
+    
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
     const [focusedField, setFocusedField] = useState<"sell" | "buy" | null>(null);
+    const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
+    const [sellBalance, setSellBalance] = useState<PublicTokenBalance | null>(null);
+    const quoteDebounceRef = useRef<NodeJS.Timeout | null>(null);
+    const [currentQuote, setCurrentQuote] = useState<{ type: "sell" | "buy", quote: Quote } | null>(null);
 
-    const [sellAmount, setSellAmount] = useState<SwapAmount | null>(null);
+    const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE);
+    const [slippageModalVisible, setSlippageModalVisible] = useState(false);
+
     const [sellToken, setSellToken] = useState<SwapToken | null>(null);
     const [sellAmountText, setSellAmountText] = useState<string>("");
     const [sellHint, setSellHint] = useState<{ startHint: string, endHint: string } | undefined>(undefined);
     const [sellError, setSellError] = useState<string | undefined>(undefined);
     const [sellLoading, setSellLoading] = useState(false);
-
-    const [buyAmount, setBuyAmount] = useState<SwapAmount | null>(null);
+    
     const [buyToken, setBuyToken] = useState<SwapToken | null>(null);
     const [buyAmountText, setBuyAmountText] = useState<string>("");
     const [buyHint, setBuyHint] = useState<string | undefined>(undefined);
@@ -49,8 +67,7 @@ export function SwapTab({
     const [recipientAddress, setRecipientAddress] = useState<string>("");
     const [recipientError, setRecipientError] = useState<string | undefined>(undefined);
 
-    const quoteDebounceRef = useRef<NodeJS.Timeout | null>(null);
-    const currentQuoteRef = useRef<{ type: "sell" | "buy", quote: Quote } | null>(null);
+    const [swapInProgress, setSwapInProgress] = useState(false);
 
     const publicBalances: PublicTokenBalance[] | null = useBalanceStore(state => {
         const balances = state.publicBalances.get(account.address) ?? null;
@@ -61,89 +78,178 @@ export function SwapTab({
         return balances;
     });
 
+    const handleSellAmountChange = (amount: string) => {
+        console.log("handleSellAmountChange", amount);
+        if (!sellToken) {
+            return;
+        }
+
+        setSellAmountText(amount);
+
+        if (!buyToken) {
+            return;
+        }
+
+        if (isNaN(Number(amount))) {
+            return;
+        }
+
+        if (amount.trim() === '') {
+            setSellError(undefined);
+            return;
+        }
+
+        const decimalAmount: bigint = stringToBigint(amount, sellToken.decimals, '.');
+
+        if (focusedField === "sell") {
+            setQuoteRequest({ type: "sell", amount: decimalAmount, originToken: sellToken, destinationToken: buyToken, slippage });
+        }
+    }
+
+    const handleBuyAmountChange = (amount: string) => {
+        if (!buyToken) {
+            return;
+        }
+
+        setBuyAmountText(amount);
+
+        if (!sellToken) {
+            return;
+        }
+
+        if (isNaN(Number(amount))) {
+            return;
+        }
+
+        if (focusedField === "buy") {
+            const decimalAmount: bigint = stringToBigint(amount, buyToken.decimals, '.');
+            setQuoteRequest({ type: "buy", amount: decimalAmount, originToken: buyToken, destinationToken: sellToken, slippage });
+        }
+    }
+
+    const runQuoteRequest = useCallback(async (quoteRequest: QuoteRequest) => {
+        setBuyLoading(quoteRequest.type == "sell");
+        setSellLoading(quoteRequest.type == "buy");
+
+        try {
+            const amount = new SwapAmount(quoteRequest.amount, quoteRequest.originToken);
+
+            const quote = await requestQuote(
+                quoteRequest.type,
+                account.address,
+                amount,
+                quoteRequest.destinationToken,
+                quoteRequest.slippage
+            );
+
+            setCurrentQuote({ type: quoteRequest.type, quote: quote });
+        } catch (error) {
+            showToastError(error);
+            setCurrentQuote(null);
+        } finally {
+            setBuyLoading(false);
+            setSellLoading(false);
+        }
+    }, [account])
+
+    const triggerSwap = useCallback(async () => {
+        if (!quoteRequest) {
+            return;
+        }
+        if (recipientAddress.trim() === '') {
+            return;
+        }
+
+        setSwapInProgress(true);
+        try {
+            const swapAmount = new SwapAmount(quoteRequest.amount, quoteRequest.originToken);
+            await performSwap(
+                quoteRequest.type, 
+                account, 
+                recipientAddress, 
+                swapAmount, 
+                quoteRequest.destinationToken, 
+                quoteRequest.slippage
+            );
+
+            // TODO close screen
+        } catch (error) {
+            showToastError(error);
+        } finally {
+            setSwapInProgress(false);
+        }
+    }, [account, recipientAddress, quoteRequest, showToastError, setSwapInProgress, performSwap]);
+
     // Fetch available tokens
     useEffect(() => {
         fetchTokens();
     }, []);
 
-    // Request quote with 500ms debounce
+    // Check sell available balance
     useEffect(() => {
-        if (recipientError || recipientAddress.trim() === '') {
-            setBuyLoading(false);
-            setSellLoading(false);
+        if (!sellToken || !publicBalances) {
             return;
         }
 
-        // Determine if we should request a quote
-        const shouldRequestSellQuote = focusedField === 'sell' && sellAmount && buyToken;
-        const shouldRequestBuyQuote = focusedField === 'buy' && buyAmount && sellToken;
+        const balance = publicBalances.find(balance => balance.token.contractAddress === sellToken.contractAddress);
 
-        if (!shouldRequestSellQuote && !shouldRequestBuyQuote) {
+        setSellBalance(balance ?? null);
+    }, [sellToken, publicBalances, setSellBalance])
+
+    // Update sell hint based on available balance
+    useEffect(() => {
+        if (!sellBalance) {
+            setSellHint(undefined);
             return;
         }
 
+        setSellHint((state) => {
+            return {
+                startHint: state?.startHint ?? "",
+                endHint: `Balance: ${sellBalance.formattedBalance()}`,
+            };
+        });
+    }, [sellBalance, setSellHint])
+
+    // Validate sell amount
+    useEffect(() => {
+        if (!sellBalance || !sellToken) {
+            setSellError(undefined);
+            return;
+        }
+
+        if (sellAmountText.trim() === '') {
+            setSellError(undefined);
+            return;
+        }
+
+        if (isNaN(Number(sellAmountText))) {
+            setSellError(undefined);
+            return;
+        }
+
+        const decimalAmount = stringToBigint(sellAmountText, sellToken.decimals, '.');
+        if (decimalAmount > sellBalance.spendableBalance) {
+            setSellError(t('errors.insufficientBalance'));
+        } else {
+            setSellError(undefined);
+        }
+    }, [sellAmountText, sellToken, sellBalance, setSellError])
+
+    // Request quotes with 500ms debounce
+    useEffect(() => {
+        if (!quoteRequest) {
+            return;
+        }
+        
         // Clear any existing timeout
         if (quoteDebounceRef.current) {
             clearTimeout(quoteDebounceRef.current);
             quoteDebounceRef.current = null;
         }
 
-        // Set loading state immediately
-        if (shouldRequestSellQuote) {
-            setBuyLoading(true);
-        } else if (shouldRequestBuyQuote) {
-            setSellLoading(true);
-        }
-
-        // Debounce the quote request
         quoteDebounceRef.current = setTimeout(async () => {
-            try {
-                if (shouldRequestSellQuote) {
-                    const quote = await requestQuote(
-                        'sell',
-                        account.address,
-                        recipientAddress,
-                        sellAmount,
-                        buyToken
-                    );
-                    currentQuoteRef.current = { type: "sell", quote: quote };
-                    console.log("Sell quote", quote);
-
-                    setBuyAmountText(quote.amountOutFormatted);
-                    setBuyHint(fiatBalanceToFormatted(parseFloat(quote.amountOutUsd)));
-                    setSellHint((state) => {
-                        return {
-                            startHint: fiatBalanceToFormatted(parseFloat(quote.amountInUsd)),
-                            endHint: state?.endHint ?? "",
-                        };
-                    });
-                } else if (shouldRequestBuyQuote) {
-                    const quote = await requestQuote(
-                        'buy',
-                        account.address,
-                        recipientAddress,
-                        buyAmount,
-                        sellToken
-                    );
-                    currentQuoteRef.current = { type: "buy", quote: quote };
-                    console.log("Buy quote", quote);
-
-                    setSellAmountText(quote.amountOutFormatted);
-                    setSellHint((state) => {
-                        return {
-                            startHint: fiatBalanceToFormatted(parseFloat(quote.amountOutUsd)),
-                            endHint: state?.endHint ?? "",
-                        };
-                    });
-                    setBuyHint(fiatBalanceToFormatted(parseFloat(quote.amountInUsd)));
-                }
-            } catch (error) {
-                showToastError(error);
-                currentQuoteRef.current = null;
-            } finally {
-                setBuyLoading(false);
-                setSellLoading(false);
-            }
+            await runQuoteRequest(quoteRequest);
         }, 500);
 
         // Cleanup on unmount or when dependencies change
@@ -153,100 +259,85 @@ export function SwapTab({
                 quoteDebounceRef.current = null;
             }
         };
-    }, [focusedField, sellAmount, buyAmount, sellToken, buyToken, requestQuote, recipientAddress, recipientError]);
+    }, [quoteRequest, runQuoteRequest])
 
-    // Check buy available balance
+    // Handle quotes
     useEffect(() => {
-        if (!sellToken || !publicBalances) {
+        if (!currentQuote) {
             return;
         }
 
-        const balance = publicBalances.find(balance => balance.token.contractAddress === sellToken.contractAddress);
-
-        if (!balance) {
-            return;
-        }
-
-        setSellHint((state) => {
-            return {
-                startHint: state?.startHint ?? "",
-                endHint: `Balance: ${balance.formattedBalance()}`,
-            };
-        });
-
-        if (!sellAmount) {
-            setSellError(undefined);
-            return;
-        }
-
-        if (sellAmount.amount > balance.spendableBalance) {
-            setSellError(t('errors.insufficientBalance'));
-        }
-    }, [sellAmount, sellToken, publicBalances, setSellHint])
-
-    // Handle buy amount change
-    useEffect(() => {
-        if (!buyToken) {
-            setBuyAmountText("");
-            return;
-        }
-
-        if (buyAmountText.trim() === '') {
-            setBuyAmount(null);
-            return;
-        }
-
-        if (!isNaN(Number(buyAmountText))) {
-            const decimalAmount: bigint = stringToBigint(buyAmountText, buyToken.decimals, '.');
-
-            if (currentQuoteRef.current?.type === "sell" && BigInt(currentQuoteRef.current.quote.amountOut) === decimalAmount) {
-                console.log("Quote is up to date");
-                return;
-            }
-
-            setBuyAmount(new SwapAmount(decimalAmount, buyToken));
+        if (currentQuote.type === "sell") {
+            setBuyAmountText(currentQuote.quote.amountOutFormatted);
+            setBuyHint(fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountOutUsd)));
+            setSellHint((state) => {
+                return {
+                    startHint: fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountInUsd)),
+                    endHint: state?.endHint ?? "",
+                };
+            });
         } else {
-            setBuyAmount(null);
+            setSellAmountText(currentQuote.quote.amountOutFormatted);
+            setSellHint((state) => {
+                return {
+                    startHint: fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountOutUsd)),
+                    endHint: state?.endHint ?? "",
+                };
+            });
+            setBuyHint(fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountInUsd)));
         }
-    }, [buyAmountText, buyToken, setBuyAmount]);
+    }, [currentQuote, setBuyAmountText, setSellAmountText, setBuyHint, setSellHint])
 
-    // Handle sell amount change
+    // Validate recipient address
     useEffect(() => {
-        if (!sellToken) {
-            setSellAmountText("");
+        if (!buyToken?.blockchain) {
             return;
         }
 
-        if (sellAmountText.trim() === '') {
-            setSellAmount(null);
-            return;
-        }
-
-        if (!isNaN(Number(sellAmountText))) {
-            const decimalAmount: bigint = stringToBigint(sellAmountText, sellToken.decimals, '.');
-
-            if (currentQuoteRef.current?.type === "buy" && BigInt(currentQuoteRef.current.quote.amountOut) === decimalAmount) {
-                console.log("Quote is up to date");
-                return;
-            }
-
-            setSellAmount(new SwapAmount(decimalAmount, sellToken));
-        } else {
-            setSellAmount(null);
-        }
-    }, [sellAmountText, sellToken, setSellAmount]);
-
-    useEffect(() => {
-        if (!recipientAddress || !buyToken?.blockchain) {
+        if (recipientAddress.trim() === '') {
+            setRecipientError(undefined);
             return;
         }
 
         if (validateAddress(recipientAddress, buyToken.blockchain)) {
             setRecipientError(undefined);
         } else {
-            setRecipientError(t('swap.recipientError', { chain: buyToken.blockchain }));
+            setRecipientError(t('transactions.swap.recipientError', { chain: buyToken.blockchain }));
         }
-    }, [recipientAddress, buyToken?.blockchain])
+    }, [recipientAddress, buyToken?.blockchain, setRecipientError])
+
+    const isSwapPossible = useMemo(() => {
+        if (swapInProgress) {
+            return false;
+        }
+
+        if (!buyToken || !sellToken) {
+            return false;
+        }
+
+        if (buyLoading || sellLoading) {
+            return false;
+        }
+
+        if (sellError || recipientError) {
+            return false;
+        }
+
+        if (recipientAddress.trim() === '') {
+            return false;
+        }
+
+        if (sellAmountText.trim() === '' || buyAmountText.trim() === '') {
+            return false;
+        }
+
+        if (isNaN(Number(sellAmountText)) || isNaN(Number(buyAmountText))) {
+            return false;
+        }
+        
+        return true;
+    }, [sellToken, buyToken, sellError, recipientAddress, recipientError, sellAmountText, buyAmountText, buyLoading, sellLoading, swapInProgress]);
+
 
     // If account not found, show error
     if (!publicBalances) {
@@ -264,65 +355,94 @@ export function SwapTab({
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.description}>
-                {t('transactions.swap.description')}
-            </Text>
+        <>
+            <View style={styles.container}>
+                <Text style={styles.description}>
+                    {t('transactions.swap.description')}
+                </Text>
 
-            <TokenAmountInput
-                label={t('transactions.swap.sellLabel')}
-                placeholder={t('transactions.swap.sellPlaceholder')}
-                amount={sellAmountText}
-                setAmount={setSellAmountText}
-                selectedToken={sellToken}
-                setSelectedToken={setSellToken}
-                tokens={sellTokens}
-                hintText={sellHint}
-                errorText={sellError}
-                loading={sellLoading}
-                onFocus={(e) => setFocusedField("sell")}
-            />
+                <TokenAmountInput
+                    label={t('transactions.swap.sellLabel')}
+                    placeholder={t('transactions.swap.sellPlaceholder')}
+                    amount={sellAmountText}
+                    setAmount={handleSellAmountChange}
+                    selectedToken={sellToken}
+                    setSelectedToken={setSellToken}
+                    tokens={sellTokens}
+                    hintText={sellHint}
+                    errorText={sellError}
+                    loading={sellLoading}
+                    onFocus={(e) => setFocusedField("sell")}
+                />
 
-            <TokenAmountInput
-                label={t('transactions.swap.buyLabel')}
-                placeholder={t('transactions.swap.buyPlaceholder')}
-                amount={buyAmountText}
-                setAmount={setBuyAmountText}
-                selectedToken={buyToken}
-                setSelectedToken={setBuyToken}
-                renderSelectedItem={(token) => <BuyTokenSelectedItem token={token} />}
-                renderModalItem={(token) => <BuyTokenModalItem token={token} />}
-                tokens={buyTokens}
-                loading={buyLoading}
-                hintText={buyHint}
-                onFocus={(e) => setFocusedField("buy")}
-            />
+                <TokenAmountInput
+                    label={t('transactions.swap.buyLabel')}
+                    placeholder={t('transactions.swap.buyPlaceholder')}
+                    amount={buyAmountText}
+                    setAmount={handleBuyAmountChange}
+                    selectedToken={buyToken}
+                    setSelectedToken={setBuyToken}
+                    renderSelectedItem={(token) => <BuyTokenSelectedItem token={token} />}
+                    renderModalItem={(token) => <BuyTokenModalItem token={token} />}
+                    tokens={buyTokens}
+                    loading={buyLoading}
+                    hintText={buyHint}
+                    onFocus={(e) => setFocusedField("buy")}
+                />
 
-            {buyToken && (
-                <View style={styles.recipientContainer}>
-                    <Text style={styles.recipientLabel}>{t('transactions.swap.recipientLabel', { chain: buyToken.blockchain })}</Text>
-                    <TextInput
-                        style={styles.recipientInput}
-                        placeholder={t('transactions.swap.recipientPlaceholder', { token: buyToken.symbol, chain: buyToken.blockchain })}
-                        placeholderTextColor={colorTokens['text.muted']}
-                        value={recipientAddress}
-                        onChangeText={setRecipientAddress}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                    />
-                    {recipientError && (
-                        <Text style={styles.recipientError}>{t('transactions.swap.recipientError', { chain: buyToken.blockchain })}</Text>
-                    )}
+                <Pressable
+                    style={styles.slippageButton}
+                    onPress={() => setSlippageModalVisible(true)}
+                >
+                    <IconSymbol name="settings" size={16} color={colorTokens['text.secondary']} />
+                    <Text style={styles.slippageButtonText}>
+                        {t('transactions.swap.slippageLabel', { slippage: (slippage / 100).toFixed(slippage % 100 === 0 ? 0 : 2) })}
+                    </Text>
+                    <IconSymbol name="chevron-right" size={16} color={colorTokens['text.muted']} />
+                </Pressable>
 
-                    <View style={styles.recipientWarning}>
-                        <IconSymbol name="alert-circle" size={16} color={colorTokens['status.warning']} />
-                        <Text style={styles.recipientWarningText}>
-                            {t('transactions.swap.recipientWarning', { chain: buyToken.blockchain })}
-                        </Text>
+                {buyToken && (
+                    <View style={styles.recipientContainer}>
+                        <Text style={styles.recipientLabel}>{t('transactions.swap.recipientLabel', { chain: buyToken.blockchain })}</Text>
+                        <TextInput
+                            style={styles.recipientInput}
+                            placeholder={t('transactions.swap.recipientPlaceholder', { token: buyToken.symbol, chain: buyToken.blockchain })}
+                            placeholderTextColor={colorTokens['text.muted']}
+                            value={recipientAddress}
+                            onChangeText={setRecipientAddress}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                        />
+                        {recipientError && (
+                            <Text style={styles.recipientError}>{t('transactions.swap.recipientError', { chain: buyToken.blockchain })}</Text>
+                        )}
+
+                        <View style={styles.recipientWarning}>
+                            <IconSymbol name="alert-circle" size={16} color={colorTokens['status.warning']} />
+                            <Text style={styles.recipientWarningText}>
+                                {t('transactions.swap.recipientWarning', { chain: buyToken.blockchain })}
+                            </Text>
+                        </View>
                     </View>
-                </View>
-            )}
-        </View>
+                )}
+
+                <PrimaryButton
+                    title="Swap"
+                    disabled={!isSwapPossible}
+                    loading={swapInProgress}
+                    onPress={triggerSwap}
+                />
+            </View>
+
+            <SlippageModal
+                visible={slippageModalVisible}
+                initialSlippage={slippage}
+                onSlippageConfirm={(value) => {
+                    setSlippage(value)
+                    setSlippageModalVisible(false);
+                }}
+            />
+        </>
     );
 }
 
@@ -375,6 +495,8 @@ const BuyTokenSelectedItem = ({ token }: { token: SwapToken }) => {
 
 const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     container: {
+        flex: 1,
+        flexDirection: 'column',
         gap: spaceTokens[3],
         paddingHorizontal: spaceTokens[3],
     },
@@ -433,6 +555,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['text.muted'],
     },
     recipientContainer: {
+        marginTop: spaceTokens[5],
         gap: spaceTokens[1],
     },
     recipientLabel: {
@@ -470,6 +593,24 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['status.warning'],
         lineHeight: 16,
+    },
+    slippageButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-end',
+        backgroundColor: colorTokens['bg.elevated'],
+        borderRadius: radiusTokens.sm,
+        borderWidth: 1,
+        borderColor: colorTokens['border.subtle'],
+        paddingHorizontal: spaceTokens[3],
+        paddingVertical: spaceTokens[2],
+        marginTop: spaceTokens[1],
+        gap: spaceTokens[2],
+    },
+    slippageButtonText: {
+        fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
+        color: colorTokens['text.secondary'],
     },
 }));
 

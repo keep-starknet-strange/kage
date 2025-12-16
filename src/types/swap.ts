@@ -1,4 +1,5 @@
 import { AccountAddress } from "@/profile/account";
+import i18n from "@/utils/i18n";
 import { SwapAmount, SwapToken } from "@/utils/swap";
 
 export type QuoteRequest = {
@@ -21,5 +22,28 @@ export type Quote = {
     amountOutFormatted: string,
     amountOutUsd: string,
     minAmountOut: string,
-    timeEstimate: number
+    timeEstimate: number,
+    depositAddress?: string,
+}
+
+export enum SwapStatus {
+    PENDING,
+    SUCCESS,
+    FAILED,
+    REFUNDED,
+}
+
+export namespace SwapStatus {
+    export function toString(status: SwapStatus): string {
+        switch (status) {
+            case SwapStatus.PENDING:
+                return i18n.t('transactions.status.swapPending');
+            case SwapStatus.SUCCESS:
+                return i18n.t('transactions.status.swapSuccess');
+            case SwapStatus.FAILED:
+                return i18n.t('transactions.status.swapFailed');
+            case SwapStatus.REFUNDED:
+                return i18n.t('transactions.status.swapRefunded');
+        }
+    }
 }

@@ -210,7 +210,9 @@
       "transfer": "Private Transfer",
       "withdraw": "Withdrawal",
       "publicTransfer": "Public Transfer",
-      "deployAccount": "Deploy Transaction"
+      "deployAccount": "Deploy Transaction",
+      "swapDeposit": "Deposit Transaction (Near)",
+      "swap": "Swap Transaction (Near)"
     },
     "status": {
       "funding": "Funding {{amount}}",
@@ -222,14 +224,23 @@
       "sending": "Sending {{amount}}",
       "sent": "Sent {{amount}}",
       "deploying": "Account \"{{accountName}}\" deploying on Starknet",
-      "deployed": "Account \"{{accountName}}\" deployed on Starknet"
+      "deployed": "Account \"{{accountName}}\" deployed on Starknet",
+      "swapDepositing": "Depositing {{amount}} to initiate the swap",
+      "swapDeposited": "Desposited {{amount}}. Swap in progress...",
+      "swapping": "Swapping {{originAmount}} for {{destinationAmount}}...",
+      "swapped": "Swapped {{originAmount}} for {{destinationAmount}}",
+      "swapPending": "Pending",
+      "swapSuccess": "Success",
+      "swapFailed": "Failed",
+      "swapRefunded": "Refunded"
     },
     "details": {
       "from": "From",
       "to": "To",
       "amount": "Amount",
       "signer": "Signer",
-      "txHash": "Transaction Hash:"
+      "txHash": "Transaction Hash:",
+      "swapDepositAddress": "NEAR Address"
     },
     "fund": {
       "description": "Add private funds to your account.",
@@ -254,6 +265,7 @@
       "recipientPlaceholder": "{{token}} address in {{chain}} chain.",
       "recipientError": "Invalid recipient address for {{chain}} chain",
       "recipientWarning": "Make sure to enter a valid {{chain}} address. Sending to an incorrect address may result in permanent loss of funds.",
+      "slippageLabel": "Max slippage: {{slippage}}%",
       "detail": {
         "notFound": "Balances not found for this account",
         "goBackButton": "Go Back"
@@ -381,7 +393,8 @@
     "rpcUrlNotSetNetwork": "RPC URL is not set for this network",
     "websocketUrlNotSetMainnet": "WebSocket URL is not set for mainnet in environment variables",
     "websocketUrlNotSetSepolia": "WebSocket URL is not set for sepolia in environment variables",
-    "websocketUrlNotSetNetwork": "WebSocket URL is not set for this network"
+    "websocketUrlNotSetNetwork": "WebSocket URL is not set for this network",
+    "swapDepositAddressNotAvailable": "Swap deposit address not available"
   },
   "biometricPrompts": {
     "signingTransaction": {

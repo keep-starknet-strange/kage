@@ -2,10 +2,10 @@ import { AppError } from "@/types/appError";
 import Token from "@/types/token";
 import { TokenAddress } from "@/types/tokenAddress";
 import { SwapToken } from "@/utils/swap";
-import { QuoteRequest as NearQuoteRequest, OneClickService, OpenAPI, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
+import { GetExecutionStatusResponse, QuoteRequest as NearQuoteRequest, OneClickService, OpenAPI, SubmitDepositTxResponse, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript';
 import nearTokens from "res/config/near.json";
 import { SwapRepository } from "./SwapRepository";
-import { QuoteRequest, Quote } from "@/types/swap";
+import { QuoteRequest, Quote, SwapStatus } from "@/types/swap";
 
 OpenAPI.BASE = 'https://1click.chaindefuser.com';
 OpenAPI.TOKEN = process.env.EXPO_PUBLIC_NEAR_INTENTS_JWT;
@@ -59,50 +59,133 @@ export class NearSwapRepository implements SwapRepository {
     }
 
     async requestQuote(request: QuoteRequest): Promise<Quote> {
-        // Use mock response for Starknet tokens until OneClick API supports them
-        // if (request.amount.token.blockchain === "STARKNET") {
-            return this.mockQuoteResponse(request);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return this.mockQuoteResponse(request);
+
+        // let swapType: NearQuoteRequest.swapType;
+        // const originAsset = request.amount.token.contractAddress;
+        // const destinationAsset = request.destinationToken.contractAddress;
+        // const swapAmount = request.amount.amount.toString();
+        // if (request.action === "sell") {
+        //     swapType = NearQuoteRequest.swapType.EXACT_INPUT;
+        // } else {
+        //     swapType = NearQuoteRequest.swapType.EXACT_OUTPUT;
         // }
 
-        let swapType: NearQuoteRequest.swapType;
-        const originAsset = request.amount.token.contractAddress;
-        const destinationAsset = request.destinationToken.contractAddress;
-        const swapAmount = request.amount.amount.toString();
-        if (request.action === "sell") {
-            swapType = NearQuoteRequest.swapType.EXACT_INPUT;
-        } else {
-            swapType = NearQuoteRequest.swapType.EXACT_OUTPUT;
+        // const response = await OneClickService.getQuote({
+        //     dry: request.dry,
+        //     depositMode: NearQuoteRequest.depositMode.SIMPLE,
+        //     swapType: swapType,
+        //     slippageTolerance: request.slippage,
+        //     originAsset: originAsset,
+        //     depositType: NearQuoteRequest.depositType.ORIGIN_CHAIN,
+        //     destinationAsset: destinationAsset,
+        //     amount: swapAmount,
+        //     refundTo: request.starknetAddress,
+        //     refundType: NearQuoteRequest.refundType.ORIGIN_CHAIN,
+        //     recipient: request.recipientAddress,
+        //     recipientType: NearQuoteRequest.recipientType.DESTINATION_CHAIN,
+        //     deadline: new Date(Date.now() + (request.dry ? DRY_DEADLINE_MS : DEADLINE_MS)).toISOString(),
+        //     quoteWaitingTimeMs: 0,
+        // });
+
+        // return {
+        //     id: response.correlationId,
+        //     amountIn: response.quote.amountIn,
+        //     amountInFormatted: response.quote.amountInFormatted,
+        //     amountInUsd: response.quote.amountInUsd,
+        //     minAmountIn: response.quote.minAmountIn,
+        //     amountOut: response.quote.amountOut,
+        //     amountOutFormatted: response.quote.amountOutFormatted,
+        //     amountOutUsd: response.quote.amountOutUsd,
+        //     minAmountOut: response.quote.minAmountOut,
+        //     timeEstimate: response.quote.timeEstimate,
+        //     depositAddress: response.quote.depositAddress,
+        //     depositMemo: response.quote.depositMemo,
+        // }
+    }
+
+    async depositSubmit(txHash: string, depositAddress: string): Promise<SwapStatus> {
+        const response = await this.mockSubmitDepositTx(txHash, depositAddress);
+        // const response = await OneClickService.submitDepositTx({
+        //     txHash: txHash,
+        //     depositAddress: depositAddress,
+        // });
+
+        return this.toSwapStatus(response.status);
+    }
+
+    async checkSwapStatus(depositAddress: string): Promise<SwapStatus> {
+        while (true) {
+            const response = await this.mockGetExecutionStatus(depositAddress);
+            // const response = await OneClickService.getExecutionStatus(depositAddress);
+            const status = this.toSwapStatus(response.status);
+
+            return status;
         }
+    }
 
-        const response = await OneClickService.getQuote({
-            dry: request.dry,
-            depositMode: NearQuoteRequest.depositMode.SIMPLE,
-            swapType: swapType,
-            slippageTolerance: request.slippage,
-            originAsset: originAsset,
-            depositType: NearQuoteRequest.depositType.ORIGIN_CHAIN,
-            destinationAsset: destinationAsset,
-            amount: swapAmount,
-            refundTo: request.starknetAddress,
-            refundType: NearQuoteRequest.refundType.ORIGIN_CHAIN,
-            recipient: request.recipientAddress,
-            recipientType: NearQuoteRequest.recipientType.DESTINATION_CHAIN,
-            deadline: new Date(Date.now() + (request.dry ? DRY_DEADLINE_MS : DEADLINE_MS)).toISOString(),
-            quoteWaitingTimeMs: 0,
-        });
+    private toSwapStatus(status: SubmitDepositTxResponse.status | GetExecutionStatusResponse.status): SwapStatus {
+        switch (status) {
+            case SubmitDepositTxResponse.status.FAILED:
+            case GetExecutionStatusResponse.status.FAILED:
+                return SwapStatus.FAILED;
+            case SubmitDepositTxResponse.status.REFUNDED:
+            case GetExecutionStatusResponse.status.REFUNDED:
+                return SwapStatus.REFUNDED;
+            case SubmitDepositTxResponse.status.SUCCESS:
+            case GetExecutionStatusResponse.status.SUCCESS:
+                return SwapStatus.SUCCESS;
+            case SubmitDepositTxResponse.status.PENDING_DEPOSIT:
+            case SubmitDepositTxResponse.status.INCOMPLETE_DEPOSIT:
+            case SubmitDepositTxResponse.status.PROCESSING:
+            case SubmitDepositTxResponse.status.KNOWN_DEPOSIT_TX:
+            case GetExecutionStatusResponse.status.PENDING_DEPOSIT:
+            case GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT:
+            case GetExecutionStatusResponse.status.PROCESSING:
+            case GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX:
+            default:
+                return SwapStatus.PENDING;
+        }
+    }
 
+    // Track poll count per deposit address for mock simulation
+    private pollCounts = new Map<string, number>();
+
+    private async mockSubmitDepositTx(_txHash: string, depositAddress: string): Promise<{ status: SubmitDepositTxResponse.status }> {
+        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+        
+        // Reset poll count for this deposit address
+        this.pollCounts.set(depositAddress, 0);
+        
+        // Always return PENDING initially to trigger polling
         return {
-            id: response.correlationId,
-            amountIn: response.quote.amountIn,
-            amountInFormatted: response.quote.amountInFormatted,
-            amountInUsd: response.quote.amountInUsd,
-            minAmountIn: response.quote.minAmountIn,
-            amountOut: response.quote.amountOut,
-            amountOutFormatted: response.quote.amountOutFormatted,
-            amountOutUsd: response.quote.amountOutUsd,
-            minAmountOut: response.quote.minAmountOut,
-            timeEstimate: response.quote.timeEstimate,
+            status: SubmitDepositTxResponse.status.KNOWN_DEPOSIT_TX,
+        };
+    }
+
+    private async mockGetExecutionStatus(depositAddress: string): Promise<{ status: GetExecutionStatusResponse.status }> {
+        await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+        
+        const currentCount = this.pollCounts.get(depositAddress) ?? 0;
+        this.pollCounts.set(depositAddress, currentCount + 1);
+
+        // Simulate processing: return PENDING for first 3 polls, then SUCCESS
+        if (currentCount < 3) {
+            const pendingStatuses = [
+                GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX,
+                GetExecutionStatusResponse.status.PENDING_DEPOSIT,
+                GetExecutionStatusResponse.status.PROCESSING,
+            ];
+            return {
+                status: pendingStatuses[currentCount],
+            };
         }
+
+        // After 3 polls, return SUCCESS
+        return {
+            status: GetExecutionStatusResponse.status.SUCCESS,
+        };
     }
 
     private mockQuoteResponse(request: QuoteRequest): Quote {
@@ -152,6 +235,7 @@ export class NearSwapRepository implements SwapRepository {
             amountOutUsd: outputUsdValue.toFixed(2),
             minAmountOut: minOutputAmount.toString(),
             timeEstimate: 30, // Mock: 30 seconds estimated swap time
+            depositAddress: request.dry ? undefined : `0x${id.replace(/-/g, '')}`,
         };
     }
 }

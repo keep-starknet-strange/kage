@@ -1,6 +1,8 @@
 import Account, { AccountAddress } from "@/profile/account";
 import { PrivateAmount, PublicAmount } from "./amount";
 import { PrivateTokenRecipient } from "./privateRecipient";
+import { SwapAmount, SwapToken } from "@/utils/swap";
+import { SwapStatus } from "./swap";
 
 export type Transaction = {
     type: "fund",
@@ -30,6 +32,20 @@ export type Transaction = {
     from: Account,
     amount: PublicAmount,
     recipient: AccountAddress,
+    txHash: string,
+} | {
+    type: "swapDeposit",
+    from: Account,
+    depositAddress: string,
+    originAmountFormatted: string,
+    txHash: string,
+} | {
+    type: "swap",
+    from: Account,
+    recipientAddress: string,
+    originAmountFormatted: string,
+    destinationAmountFormatted: string,
+    status: SwapStatus,
     txHash: string,
 }
 
@@ -61,6 +77,20 @@ export type SerializableTransaction = {
     from: Account,
     amountFormatted: string,
     recipient: AccountAddress,
+    txHash: string,
+} | {
+    type: "swapDeposit",
+    from: Account,
+    depositAddress: string,
+    originAmountFormatted: string,
+    txHash: string,
+} | {
+    type: "swap",
+    from: Account,
+    recipientAddress: string,
+    originAmountFormatted: string,
+    destinationAmountFormatted: string,
+    status: SwapStatus,
     txHash: string,
 }
 
@@ -104,6 +134,24 @@ export namespace Transaction {
                     from: transaction.from,
                     amountFormatted: transaction.amount.formatted(),
                     recipient: transaction.recipient,
+                    txHash: transaction.txHash,
+                };
+            case "swapDeposit":
+                return {
+                    type: "swapDeposit",
+                    from: transaction.from,
+                    depositAddress: transaction.depositAddress,
+                    originAmountFormatted: transaction.originAmountFormatted,
+                    txHash: transaction.txHash,
+                };
+            case "swap":
+                return {
+                    type: "swap",
+                    from: transaction.from,
+                    recipientAddress: transaction.recipientAddress,
+                    originAmountFormatted: transaction.originAmountFormatted,
+                    destinationAmountFormatted: transaction.destinationAmountFormatted,
+                    status: transaction.status,
                     txHash: transaction.txHash,
                 };
         }

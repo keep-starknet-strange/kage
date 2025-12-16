@@ -17,6 +17,10 @@ import { useAccessVaultStore } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";
 import { useRpcStore } from "./useRpcStore";
+import { Quote } from "@/types/swap";
+import { tokenAmountToFormatted } from "@/utils/formattedBalance";
+import Token from "@/types/token";
+import { SwapAmount, SwapToken } from "@/utils/swap";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
 
@@ -37,6 +41,12 @@ export interface OnChainState {
     checkAccountAddressesDeployed: (accountAddress: AccountAddress[], provider: RpcProvider) => Promise<Map<AccountAddress, DeployedStatus>>;
 
     deployAccount: (account: Account) => Promise<void>;
+
+    depositForSwap: (
+        quote: Quote,
+        from: Account,
+        fromToken: SwapToken,
+    ) => Promise<string>;
 
     appendPendingTransaction: (transaction: Transaction) => void;
 
@@ -114,7 +124,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount(), sender: from.address });
             await fundOp.populateApprove();
             LOG.info("[TX]: 🚀 Funding account execute...");
-            
+
             const starknetTx = await signerAccount.execute([
                 fundOp.approve!,
                 fundOp.toCalldata()
@@ -220,7 +230,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
             }
 
-            LOG.info("[TX]: 🗝 Proving Transfer..."); 
+            LOG.info("[TX]: 🗝 Proving Transfer...");
             const transferOp = await tongoAccount.transfer({
                 to: recipient.privateTokenAddress.pubKey,
                 amount: amount.toSdkAmount(),
@@ -410,6 +420,64 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 account: account,
                 txHash: deployTx.transaction_hash,
             });
+        },
+
+        depositForSwap: async (
+            quote: Quote,
+            from: Account,
+            fromToken: SwapToken,
+        ) => {
+            const { appendPendingTransaction } = get();
+            const { requestAccess } = useAccessVaultStore.getState();
+
+            if (!quote.depositAddress) {
+                throw new AppError(i18n.t('errors.swapDepositAddressNotAvailable'));
+            }
+            
+            const provider = useRpcStore.getState().getProvider();
+            const amount = BigInt(quote.amountIn);
+            const swapAmount = new SwapAmount(amount, fromToken);
+
+            const result = await requestAccess({
+                requestFor: "privateKeys",
+                signing: [from],
+                tokens: new Map()
+            }, {
+                title: i18n.t('biometricPrompts.publicTransfer.title'),
+                subtitleAndroid: `Authorize to transfer ${swapAmount.formatted()} to initiate the swap`,
+                descriptionAndroid: "KAGE needs your authentication to securely transfer your public tokens.",
+                cancelAndroid: i18n.t('biometricPrompts.publicTransfer.cancelAndroid'),
+            });
+
+            const signerKeyPair = result.signing.get(from);
+            if (!signerKeyPair) {
+                throw new AppError(i18n.t('errors.signingKeyNotFound'), from.address);
+            }
+
+            const fromAccount = new StarknetAccount({
+                provider: provider,
+                address: from.address,
+                signer: signerKeyPair.privateKey,
+            });
+
+            const contract = new Contract({
+                abi: transferAbi,
+                address: fromToken.contractAddress,
+                providerOrAccount: fromAccount,
+            });
+
+            const tx = await contract.transfer(quote.depositAddress, cairo.uint256(swapAmount.amount));
+            const origin = tokenAmountToFormatted(false, BigInt(quote.amountIn), fromToken);
+
+            appendPendingTransaction({
+                type: "swapDeposit",
+                from: from,
+                depositAddress: quote.depositAddress,
+                originAmountFormatted: origin,
+                txHash: tx.transaction_hash,
+            });
+
+            return tx.transaction_hash;
         },
 
         appendPendingTransaction: (transaction: Transaction) => {

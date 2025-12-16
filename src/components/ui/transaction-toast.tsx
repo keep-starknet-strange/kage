@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { useTranslation } from "react-i18next";
+import { SwapStatus } from "@/types/swap";
 
 export interface TransactionToastProps {
     id: string;
@@ -27,6 +28,29 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
     const { colors: colorTokens } = useTheme();
     // Progress bar animation
     const progressAnim = useRef(new Animated.Value(0)).current;
+
+    const [isPending, setIsPending] = useState(pending);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [isFailed, setIsFailed] = useState(false);
+
+    useEffect(() => {
+        if (transaction.type === "swap") {
+            setIsPending(transaction.status === SwapStatus.PENDING);
+            setIsSuccess(transaction.status === SwapStatus.SUCCESS);
+            setIsFailed(transaction.status === SwapStatus.FAILED || transaction.status === SwapStatus.REFUNDED);
+            return;
+        }
+
+        if (pending) {
+            setIsPending(true);
+            setIsSuccess(false);
+            setIsFailed(false);
+        } else {
+            setIsPending(false);
+            setIsSuccess(true);
+            setIsFailed(false);
+        }
+    }, [transaction, pending]);
 
     useEffect(() => {
         setIsExpanded(false);
@@ -85,6 +109,10 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                 return t('transactions.types.publicTransfer');
             case "deployAccount":
                 return t('transactions.types.deployAccount');
+            case "swapDeposit":
+                return t('transactions.types.swapDeposit');
+            case "swap":
+                return t('transactions.types.swap');
         }
     };
 
@@ -94,6 +122,10 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                 return pending ? t('transactions.status.funding', { amount: transaction.amountFormatted }) : t('transactions.status.funded', { amount: transaction.amountFormatted });
             case "transfer":
                 return pending ? t('transactions.status.transferringPrivate', { amount: transaction.amountFormatted }) : t('transactions.status.transferredPrivate', { amount: transaction.amountFormatted });
+            case "swapDeposit":
+                return pending ? t('transactions.status.swapDepositing', { amount: transaction.originAmountFormatted }) : t('transactions.status.swapDeposited', { amount: transaction.originAmountFormatted });
+            case "swap":
+                return pending ? t('transactions.status.swapping', { originAmount: transaction.originAmountFormatted, destinationAmount: transaction.destinationAmountFormatted }) : t('transactions.status.swapped', { originAmount: transaction.originAmountFormatted, destinationAmount: transaction.destinationAmountFormatted });
             case "withdraw":
                 return pending ? t('transactions.status.withdrawing', { amount: transaction.amountFormatted }) : t('transactions.status.withdrew', { amount: transaction.amountFormatted });
             case "publicTransfer":
@@ -120,6 +152,22 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                     { label: t('transactions.details.to'), value: formattedAddress(transaction.recipient, 'compact') },
                     { label: t('transactions.details.amount'), value: transaction.amountFormatted },
                     { label: t('transactions.details.signer'), value: transaction.signer.name }
+                );
+                break;
+            case "swapDeposit":
+                details.push(
+                    { label: t('transactions.details.from'), value: transaction.from.name },
+                    { label: t('transactions.details.swapDepositAddress'), value: transaction.depositAddress },
+                    { label: t('transactions.details.amount'), value: transaction.originAmountFormatted }
+                );
+                break;
+            case "swap":
+                details.push(
+                    { label: t('transactions.details.from'), value: transaction.from.name },
+                    { label: t('transactions.details.recipientAddress'), value: transaction.recipientAddress },
+                    { label: t('transactions.details.originAmount'), value: transaction.originAmountFormatted },
+                    { label: t('transactions.details.destinationAmount'), value: transaction.destinationAmountFormatted },
+                    { label: t('transactions.details.status'), value: SwapStatus.toString(transaction.status) }
                 );
                 break;
             case "withdraw":
