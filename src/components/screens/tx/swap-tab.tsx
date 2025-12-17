@@ -33,6 +33,8 @@ type QuoteRequest = {
     slippage: number;
 }
 
+const TOKEN_FETCH_INTERVAL = 30000;
+
 export function SwapTab({
     account,
 }: SwapTabProps) {
@@ -68,6 +70,7 @@ export function SwapTab({
     const [recipientAddress, setRecipientAddress] = useState<string>("");
     const [recipientError, setRecipientError] = useState<string | undefined>(undefined);
 
+    const [rateText, setRateText] = useState<string | undefined>(undefined);
     const [swapInProgress, setSwapInProgress] = useState(false);
 
     const publicBalances: PublicTokenBalance[] | null = useBalanceStore(state => {
@@ -211,10 +214,17 @@ export function SwapTab({
     }, []);
 
 
-    // Fetch available tokens
+    // Fetch available tokens on mount and every 30s
     useEffect(() => {
         fetchTokens();
-    }, []);
+
+        const interval = setInterval(() => {
+            console.log("fetching tokens");
+            fetchTokens();
+        }, TOKEN_FETCH_INTERVAL);
+
+        return () => clearInterval(interval);
+    }, [fetchTokens]);
 
     // Check sell available balance
     useEffect(() => {
@@ -358,6 +368,33 @@ export function SwapTab({
         }
     }, [recipientAddress, buyToken?.blockchain, setRecipientError])
 
+    useEffect(() => {
+        if (!buyToken?.price || !sellToken?.price || buyToken.price === 0) {
+            setRateText(undefined);
+            return;
+        }
+
+        const rate = sellToken.price / buyToken.price;
+
+        setRateText(`1 ${sellToken.symbol} = ${rate} ${buyToken.symbol}`);
+    }, [buyToken, sellToken])
+
+    useEffect(() => {
+        if (buyToken) {
+            const updated = buyTokens.find(token => token.assetId === buyToken.id);
+            if (updated) {
+                setBuyToken(updated);
+            }
+        }
+
+        if (sellToken) {
+            const updated = sellTokens.find(token => token.assetId === sellToken.id);
+            if (updated) {
+                setSellToken(updated);
+            }
+        }
+    }, [sellTokens, buyTokens, buyToken, sellToken])
+
     const isSwapPossible = useMemo(() => {
         if (swapInProgress) {
             return false;
@@ -443,16 +480,20 @@ export function SwapTab({
                     onFocus={(e) => setFocusedField("buy")}
                 />
 
-                <Pressable
-                    style={styles.slippageButton}
-                    onPress={() => setSlippageModalVisible(true)}
-                >
-                    <IconSymbol name="settings" size={16} color={colorTokens['text.secondary']} />
-                    <Text style={styles.slippageButtonText}>
-                        {t('transactions.swap.slippageLabel', { slippage: (slippage / 100).toFixed(slippage % 100 === 0 ? 0 : 2) })}
-                    </Text>
-                    <IconSymbol name="chevron-right" size={16} color={colorTokens['text.muted']} />
-                </Pressable>
+                <View style={styles.detailsContainer}>
+                    <Text style={styles.rateText}>{rateText}</Text>
+
+                    <Pressable
+                        style={styles.slippageButton}
+                        onPress={() => setSlippageModalVisible(true)}
+                    >
+                        <IconSymbol name="settings" size={16} color={colorTokens['text.secondary']} />
+                        <Text style={styles.slippageButtonText}>
+                            {t('transactions.swap.slippageLabel', { slippage: (slippage / 100).toFixed(slippage % 100 === 0 ? 0 : 2) })}
+                        </Text>
+                        <IconSymbol name="chevron-right" size={16} color={colorTokens['text.muted']} />
+                    </Pressable>
+                </View>
 
                 {buyToken && (
                     <View style={styles.recipientContainer}>
@@ -646,8 +687,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     slippageButton: {
         flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-end',
         backgroundColor: colorTokens['bg.elevated'],
         borderRadius: radiusTokens.sm,
         borderWidth: 1,
@@ -662,5 +701,17 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         ...fontStyles.ubuntuMono.regular,
         color: colorTokens['text.secondary'],
     },
+    detailsContainer: {
+        flexDirection: 'column',
+        flex: 1,
+        alignItems: 'flex-start',
+        gap: spaceTokens[1],
+        marginTop: spaceTokens[5],
+    },
+    rateText: {
+        fontSize: 14,
+        ...fontStyles.ubuntuMono.regular,
+        color: colorTokens['text.secondary']
+    }
 }));
 
