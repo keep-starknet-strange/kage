@@ -43,7 +43,7 @@ export function SwapTab({
     const { sellTokens, buyTokens, fetchTokens, requestQuote, performSwap } = useSwapStore();
     const isFocused = useIsFocused();
     const isFocusedRef = useRef(isFocused);
-    
+
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
 
@@ -61,7 +61,7 @@ export function SwapTab({
     const [sellHint, setSellHint] = useState<{ startHint: string, endHint: string } | undefined>(undefined);
     const [sellError, setSellError] = useState<string | undefined>(undefined);
     const [sellLoading, setSellLoading] = useState(false);
-    
+
     const [buyToken, setBuyToken] = useState<SwapToken | null>(null);
     const [buyAmountText, setBuyAmountText] = useState<string>("");
     const [buyHint, setBuyHint] = useState<string | undefined>(undefined);
@@ -167,11 +167,11 @@ export function SwapTab({
         try {
             const swapAmount = new SwapAmount(quoteRequest.amount, quoteRequest.originToken);
             await performSwap(
-                quoteRequest.type, 
-                account, 
-                recipientAddress, 
-                swapAmount, 
-                quoteRequest.destinationToken, 
+                quoteRequest.type,
+                account,
+                recipientAddress,
+                swapAmount,
+                quoteRequest.destinationToken,
                 quoteRequest.slippage
             );
 
@@ -184,6 +184,24 @@ export function SwapTab({
             setSwapInProgress(false);
         }
     }, [account, recipientAddress, quoteRequest, router, showToastError, setSwapInProgress, performSwap]);
+
+    const matchesSearch = useCallback((token: SwapToken, searchQuery: string) => {
+        const name = token.name?.toLowerCase() ?? null;
+        const queryLower = searchQuery.toLowerCase();
+
+        const nameMatches = name?.includes(queryLower);
+        if (nameMatches) {
+            return true;
+        }
+
+        const symbolMatches = token.symbol.toLowerCase().includes(queryLower);
+        if (symbolMatches) {
+            return true;
+        }
+
+        return token.blockchain.toLowerCase().includes(queryLower);
+    }, []);
+
 
     // Fetch available tokens
     useEffect(() => {
@@ -246,7 +264,7 @@ export function SwapTab({
         if (!quoteRequest) {
             return;
         }
-        
+
         // Clear any existing timeout
         if (quoteDebounceRef.current) {
             clearTimeout(quoteDebounceRef.current);
@@ -339,7 +357,7 @@ export function SwapTab({
         if (isNaN(Number(sellAmountText)) || isNaN(Number(buyAmountText))) {
             return false;
         }
-        
+
         return true;
     }, [sellToken, buyToken, sellError, recipientAddress, recipientError, sellAmountText, buyAmountText, buyLoading, sellLoading, swapInProgress]);
 
@@ -392,6 +410,7 @@ export function SwapTab({
                     tokens={buyTokens}
                     loading={buyLoading}
                     hintText={buyHint}
+                    matchesSearch={matchesSearch}
                     onFocus={(e) => setFocusedField("buy")}
                 />
 

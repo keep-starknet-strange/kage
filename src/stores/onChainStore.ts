@@ -48,7 +48,7 @@ export interface OnChainState {
         fromToken: SwapToken,
     ) => Promise<string>;
 
-    appendPendingTransaction: (transaction: Transaction) => void;
+    appendPendingTransaction: (transaction: Transaction) => Promise<void>;
 
     removePendingTransaction: (transactionHash: string) => void;
 
@@ -136,6 +136,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 amount: privateAmount,
                 signer: signer,
                 txHash: starknetTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -180,6 +182,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 amount: amount,
                 recipient: recipient,
                 txHash: tx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -247,6 +251,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signer: signer,
                 recipient: recipient,
                 txHash: starknetTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -314,6 +320,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 amount: amount,
                 signer: signer,
                 txHash: starknetTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -419,6 +427,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 type: "deployAccount",
                 account: account,
                 txHash: deployTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -466,10 +476,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 providerOrAccount: fromAccount,
             });
 
+            console.log("Transferring");
             const tx = await contract.transfer(quote.depositAddress, cairo.uint256(swapAmount.amount));
             const origin = tokenAmountToFormatted(false, BigInt(quote.amountIn), fromToken);
 
-            appendPendingTransaction({
+            await appendPendingTransaction({
                 type: "swapDeposit",
                 from: from,
                 depositAddress: quote.depositAddress,
@@ -480,7 +491,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             return tx.transaction_hash;
         },
 
-        appendPendingTransaction: (transaction: Transaction) => {
+        appendPendingTransaction: async (transaction: Transaction) => {
             const { removePendingTransaction } = get();
             const provider = useRpcStore.getState().getProvider();
 
@@ -494,7 +505,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 pendingTransactionsStack: [transaction, ...state.pendingTransactionsStack],
             }));
 
-            provider.waitForTransaction(transaction.txHash)
+            await provider.waitForTransaction(transaction.txHash)
                 .then((receipt) => {
                     showToastTransaction(transaction);
                     removePendingTransaction(transaction.txHash);
@@ -506,11 +517,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                     LOG.debug("---- 🧾 Receipt: ", receipt, "for", transaction.txHash);
                 }).catch((error) => {
                     removePendingTransaction(transaction.txHash);
-                    showToastError(error);
-
                     if (transaction.type === "deployAccount") {
                         set({ deployStatus: updateStatus(get().deployStatus, transaction.account, "not-deployed") });
                     }
+
+                    throw error;
                 });
         },
 

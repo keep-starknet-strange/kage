@@ -26,6 +26,7 @@ type TokenAmountInputProps<T extends TokenContract & Identifiable> = {
     loading?: boolean;
     renderSelectedItem?: (token: T) => React.ReactNode;
     renderModalItem?: (token: T) => React.ReactNode;
+    matchesSearch?: (item: T, searchQuery: string) => boolean;
     renderHint?: (hint: string) => React.ReactNode;
     onFocus?: (e: FocusEvent) => void;
 };
@@ -44,6 +45,7 @@ export function TokenAmountInput<T extends TokenContract & Identifiable>({
     loading,
     renderSelectedItem,
     renderModalItem,
+    matchesSearch,
     renderHint,
     onFocus,
 }: TokenAmountInputProps<T>) {
@@ -149,6 +151,7 @@ export function TokenAmountInput<T extends TokenContract & Identifiable>({
                     renderItem={renderItem}
                     renderModalItem={modalItem}
                     pickerButtonStyle={styles.tokenPickerButton}
+                    matchesSearch={matchesSearch}
                 />
             </View>
             {errorText && <Text style={styles.errorText}>{errorText}</Text>}

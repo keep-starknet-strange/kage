@@ -122,6 +122,7 @@ export const useSwapStore = create<SwapStore>((set) => {
                 throw new AppError(i18n.t('errors.swapDepositAddressNotAvailable'));
             }
 
+            console.log("depositForSwap", quote, fromAccount, amount.token);
             const txHash = await depositForSwap(
                 quote,
                 fromAccount,

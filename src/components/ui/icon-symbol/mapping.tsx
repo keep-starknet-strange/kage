@@ -212,6 +212,10 @@ const MAPPING = {
         ios: 'arrow.up.right.square',
         android: { source: 'material-community', name: 'open-in-new' }
     },
+    'search': {
+        ios: 'magnifyingglass',
+        android: { source: 'material-community', name: 'magnify' }
+    },
 } satisfies IconMapping;
 
 export function sfSymbol(name: IconSymbolName): IOSIconMapping {

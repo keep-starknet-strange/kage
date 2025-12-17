@@ -246,7 +246,11 @@
       "amount": "Amount",
       "signer": "Signer",
       "txHash": "Transaction Hash:",
-      "swapDepositAddress": "NEAR Address"
+      "swapDepositAddress": "NEAR Address",
+      "recipientAddress": "Recipient Address",
+      "originAmount": "Origin Amount",
+      "destinationAmount": "Destination Amount",
+      "status": "Status"
     },
     "fund": {
       "description": "Add private funds to your account.",
