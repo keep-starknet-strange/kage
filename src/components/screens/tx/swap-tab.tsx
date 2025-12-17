@@ -127,6 +127,17 @@ export function SwapTab({
         }
     }
 
+    const handleSlippageChange = (slippage: number) => {
+        setSlippage(slippage);
+        setSlippageModalVisible(false);
+
+        if (focusedField === "sell") {
+            handleSellAmountChange(sellAmountText);
+        } else if (focusedField === "buy") {
+            handleBuyAmountChange(buyAmountText);
+        }
+    }
+
     const runQuoteRequest = useCallback(async (quoteRequest: QuoteRequest) => {
         setBuyLoading(quoteRequest.type == "sell");
         setSellLoading(quoteRequest.type == "buy");
@@ -287,9 +298,20 @@ export function SwapTab({
             return;
         }
 
+        console.log("currentQuote", currentQuote);
         if (currentQuote.type === "sell") {
             setBuyAmountText(currentQuote.quote.amountOutFormatted);
-            setBuyHint(fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountOutUsd)));
+
+            let buyHint = fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountOutUsd))
+            if (buyToken) {
+                const amountOutMin = new SwapAmount(
+                    BigInt(currentQuote.quote.minAmountOut),
+                    buyToken
+                )
+                buyHint += " - Min: " + amountOutMin.formatted();
+            }
+            setBuyHint(buyHint);
+
             setSellHint((state) => {
                 return {
                     startHint: fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountInUsd)),
@@ -298,9 +320,19 @@ export function SwapTab({
             });
         } else {
             setSellAmountText(currentQuote.quote.amountOutFormatted);
+
+            let sellHint = fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountOutUsd))
+            if (sellToken) {
+                const amountOutMin = new SwapAmount(
+                    BigInt(currentQuote.quote.minAmountOut),
+                    sellToken
+                )
+                sellHint += " - Min: " + amountOutMin.formatted();
+            }
+
             setSellHint((state) => {
                 return {
-                    startHint: fiatBalanceToFormatted(parseFloat(currentQuote.quote.amountOutUsd)),
+                    startHint: sellHint,
                     endHint: state?.endHint ?? "",
                 };
             });
@@ -458,10 +490,7 @@ export function SwapTab({
             <SlippageModal
                 visible={slippageModalVisible}
                 initialSlippage={slippage}
-                onSlippageConfirm={(value) => {
-                    setSlippage(value)
-                    setSlippageModalVisible(false);
-                }}
+                onSlippageConfirm={handleSlippageChange}
             />
         </>
     );

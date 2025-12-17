@@ -1,7 +1,6 @@
 import { NetworkId } from "@/profile/misc";
 
 export function isPrivateTransferEnabled(): boolean {
-    console.log("isPrivateTransferEnabled", process.env.EXPO_PUBLIC_PRIVATE_TRANSFERS_ENABLED);
     return process.env.EXPO_PUBLIC_PRIVATE_TRANSFERS_ENABLED === 'true';
 }
 

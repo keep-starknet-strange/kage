@@ -8,6 +8,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, StyleProp, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { showToastError } from "./toast";
+import { isPrivateTransferEnabled } from "@/utils/featureFlags";
+import { t } from "i18next";
 
 export interface TotalBalanceCardProps {
     accounts: Account[];
@@ -27,6 +29,8 @@ export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
     const hasUnlockedPrivateBalances = useMemo(() => {
         return accounts.every(account => unlockedPrivateBalances.has(account.address));
     }, [accounts, unlockedPrivateBalances]);
+
+    const isPrivateTxAvailable = isPrivateTransferEnabled();
 
     useEffect(() => {
         // Calculate public balance
@@ -54,52 +58,56 @@ export const TotalBalanceCard = (props: TotalBalanceCardProps) => {
         <View style={[styles.container, style]}>
             {/* Public Balance Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionLabel}>Public Balance</Text>
+                <Text style={styles.sectionLabel}>{t('balance.public.label')}</Text>
                 <Text style={styles.sectionAmount}>{fiatPublicBalance ?? '$0.00'}</Text>
             </View>
 
-            <View style={styles.divider} />
+            {isPrivateTxAvailable && (
+                <>
+                    <View style={styles.divider} />
 
-            {/* Private Balance Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionLabel}>Private Balance</Text>
-                <View style={styles.amountRow}>
-                    <Text style={styles.sectionAmount}>
-                        {balanceText}
-                    </Text>
-                    
-                    <TouchableOpacity onPress={() => {
-                        const update = async (isUnlocked: boolean) => {
-                            setIsUpdatingLockState(true);
-                            try {
-                                if (isUnlocked) {
-                                    await lockPrivateBalances(accounts);
-                                } else {
-                                    await unlockPrivateBalances(accounts);
+                    {/* Private Balance Section */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionLabel}>{t('balance.private.label')}</Text>
+                        <View style={styles.amountRow}>
+                            <Text style={styles.sectionAmount}>
+                                {balanceText}
+                            </Text>
+
+                            <TouchableOpacity onPress={() => {
+                                const update = async (isUnlocked: boolean) => {
+                                    setIsUpdatingLockState(true);
+                                    try {
+                                        if (isUnlocked) {
+                                            await lockPrivateBalances(accounts);
+                                        } else {
+                                            await unlockPrivateBalances(accounts);
+                                        }
+                                    } catch (error) {
+                                        showToastError(error);
+                                    } finally {
+                                        setIsUpdatingLockState(false);
+                                    }
                                 }
-                            } catch (error) {
-                                showToastError(error);
-                            } finally {
-                                setIsUpdatingLockState(false);
-                            }
-                        }
 
-                        update(hasUnlockedPrivateBalances);
-                    }} style={styles.lockIcon}>
-                        {isUpdatingLockState && (
-                            <ActivityIndicator size="small" color={colorTokens['text.muted']} />
-                        )}
-                        {!isUpdatingLockState && (
-                            <IconSymbol
-                                name={hasUnlockedPrivateBalances ? "lock-open" : "lock"}
-                                size={24}
-                                color={colorTokens['text.muted']}
-                            />
-                        )}
-                    </TouchableOpacity>
-                </View>
+                                update(hasUnlockedPrivateBalances);
+                            }} style={styles.lockIcon}>
+                                {isUpdatingLockState && (
+                                    <ActivityIndicator size="small" color={colorTokens['text.muted']} />
+                                )}
+                                {!isUpdatingLockState && (
+                                    <IconSymbol
+                                        name={hasUnlockedPrivateBalances ? "lock-open" : "lock"}
+                                        size={24}
+                                        color={colorTokens['text.muted']}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        </View>
 
-            </View>
+                    </View>
+                </>
+            )}
         </View>
     );
 };
