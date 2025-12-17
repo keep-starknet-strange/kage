@@ -475,7 +475,6 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 providerOrAccount: fromAccount,
             });
 
-            console.log("Transferring");
             const tx = await contract.transfer(quote.depositAddress, cairo.uint256(swapAmount.amount));
             const origin = tokenAmountToFormatted(false, BigInt(quote.amountIn), fromToken);
 

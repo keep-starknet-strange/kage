@@ -14,6 +14,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
+import { isSwapEnabled } from "@/utils/featureFlags";
 
 export interface PublicBalanceCardProps {
     account: Account;
@@ -107,6 +108,8 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
         setFiatBalance(formatted);
     }, [account, publicBalances, setFiatBalance]);
 
+    const isSwapAvailable = isSwapEnabled();
+
     const swapIcon = <View>
         <IconSymbol name="swap" size={24} color={colorTokens['brand.accent']} />
         <View style={{
@@ -162,14 +165,17 @@ export const PublicBalanceCard = (props: PublicBalanceCardProps) => {
                     }}
                     disabled={false}
                 />
-                <ActionButton
-                    icon={swapIcon}
-                    label={t('balance.public.swapButton')}
-                    onPress={() => {
-                        props.onSwapPress();
-                    }}
-                    disabled={false}
-                />
+                {isSwapAvailable && (
+                    <ActionButton
+                        icon={swapIcon}
+                        label={t('balance.public.swapButton')}
+                        onPress={() => {
+                            props.onSwapPress();
+                        }}
+                        disabled={false}
+                    />
+                )}
+
             </View>
 
             <FundModal account={account} isVisible={isFundModalVisible} onRequestClose={() => setIsFundModalVisible(false)} />

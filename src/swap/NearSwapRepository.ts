@@ -55,7 +55,6 @@ export class NearSwapRepository implements SwapRepository {
                         return available.contractAddress === nearTokenAddress
                     });
 
-                    console.log("availableToken", nearToken.symbol, availableToken);
                     if (!availableToken) {
                         return null;
                     }

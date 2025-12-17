@@ -56,7 +56,7 @@ Make sure to [set up your environment first](https://docs.expo.dev/get-started/s
    npm ci
    ```
 
-3. First, create an `.env` file in the root of the project with the following content:
+3. First, create an `.env.local` (follow the `.env.local.example`) file in the root of the project with the following content:
 ```
 EXPO_PUBLIC_RPC_SN_SEPOLIA="https://..."
 EXPO_PUBLIC_WS_SN_SEPOLIA="wss://..."

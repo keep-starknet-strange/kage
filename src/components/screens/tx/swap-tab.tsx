@@ -80,7 +80,6 @@ export function SwapTab({
     });
 
     const handleSellAmountChange = (amount: string) => {
-        console.log("handleSellAmountChange", amount);
         if (!sellToken) {
             return;
         }

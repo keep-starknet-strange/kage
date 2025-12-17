@@ -112,13 +112,11 @@ export const useSwapStore = create<SwapStore>((set) => {
                 destinationToken: resultToken,
                 slippage: slippage,
             });
-            console.log("quote", quote);
 
             if (!quote.depositAddress) {
                 throw new AppError(i18n.t('errors.swapDepositAddressNotAvailable'));
             }
 
-            console.log("depositForSwap", quote, fromAccount, amount.token);
             const txHash = await depositForSwap(
                 quote,
                 fromAccount,
@@ -126,7 +124,7 @@ export const useSwapStore = create<SwapStore>((set) => {
             );
 
             const status = await swapRepository.depositSubmit(txHash, quote.depositAddress);
-            console.log("status", status);
+
             const resultAmount = new SwapAmount(BigInt(quote.amountOut), resultToken);
             showToastTransaction({
                 type: "swap",
@@ -150,7 +148,7 @@ export const useSwapStore = create<SwapStore>((set) => {
                     while (currentStatus === SwapStatus.PENDING) {
                         await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
                         currentStatus = await swapRepository.checkSwapStatus(depositAddress);
-                        console.log("status", currentStatus);
+
                         showToastTransaction({
                             type: "swap",
                             from: fromAccount,
