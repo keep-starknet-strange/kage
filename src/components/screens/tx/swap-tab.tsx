@@ -16,6 +16,7 @@ import { validateAddress } from "@/utils/addressValidation";
 import { fiatBalanceToFormatted, stringToBigint } from "@/utils/formattedBalance";
 import i18n from "@/utils/i18n";
 import { SwapAmount, SwapToken } from "@/utils/swap";
+import { useIsFocused } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +41,8 @@ export function SwapTab({
     const router = useRouter();
     const { t } = useTranslation();
     const { sellTokens, buyTokens, fetchTokens, requestQuote, performSwap } = useSwapStore();
+    const isFocused = useIsFocused();
+    const isFocusedRef = useRef(isFocused);
     
     const styles = useThemedStyle(themedStyleSheet);
     const { colors: colorTokens } = useTheme();
@@ -172,13 +175,15 @@ export function SwapTab({
                 quoteRequest.slippage
             );
 
-            // TODO close screen
+            if (isFocusedRef.current) {
+                router.back();
+            }
         } catch (error) {
             showToastError(error);
         } finally {
             setSwapInProgress(false);
         }
-    }, [account, recipientAddress, quoteRequest, showToastError, setSwapInProgress, performSwap]);
+    }, [account, recipientAddress, quoteRequest, router, showToastError, setSwapInProgress, performSwap]);
 
     // Fetch available tokens
     useEffect(() => {

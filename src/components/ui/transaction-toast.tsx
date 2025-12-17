@@ -50,14 +50,14 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
             setIsSuccess(true);
             setIsFailed(false);
         }
-    }, [transaction, pending]);
+    }, [transaction, pending, setIsPending, setIsSuccess, setIsFailed]);
 
     useEffect(() => {
         setIsExpanded(false);
     }, [id, setIsExpanded]);
 
     useEffect(() => {
-        if (pending) {
+        if (isPending) {
             // Animate progress bar from 0 to 1 repeatedly
             Animated.loop(
                 Animated.sequence([
@@ -76,7 +76,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
         } else {
             progressAnim.setValue(0);
         }
-    }, [pending, progressAnim]);
+    }, [isPending, progressAnim]);
 
     const handlePress = () => {
         setIsExpanded(!isExpanded);
@@ -117,21 +117,67 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
     };
 
     const getSubtitle = () => {
+        const getStatusText = (
+            pendingKey: string,
+            successKey: string,
+            errorKey: string,
+            params: Record<string, string>
+        ) => {
+            if (isPending) return t(pendingKey, params);
+            if (isFailed) return t(errorKey, params);
+            return t(successKey, params);
+        };
+
         switch (transaction.type) {
             case "fund":
-                return pending ? t('transactions.status.funding', { amount: transaction.amountFormatted }) : t('transactions.status.funded', { amount: transaction.amountFormatted });
+                return getStatusText(
+                    'transactions.status.funding',
+                    'transactions.status.funded',
+                    'transactions.status.fundFailed',
+                    { amount: transaction.amountFormatted }
+                );
             case "transfer":
-                return pending ? t('transactions.status.transferringPrivate', { amount: transaction.amountFormatted }) : t('transactions.status.transferredPrivate', { amount: transaction.amountFormatted });
+                return getStatusText(
+                    'transactions.status.transferringPrivate',
+                    'transactions.status.transferredPrivate',
+                    'transactions.status.transferPrivateFailed',
+                    { amount: transaction.amountFormatted }
+                );
             case "swapDeposit":
-                return pending ? t('transactions.status.swapDepositing', { amount: transaction.originAmountFormatted }) : t('transactions.status.swapDeposited', { amount: transaction.originAmountFormatted });
+                return getStatusText(
+                    'transactions.status.swapDepositing',
+                    'transactions.status.swapDeposited',
+                    'transactions.status.swapDepositFailed',
+                    { amount: transaction.originAmountFormatted }
+                );
             case "swap":
-                return pending ? t('transactions.status.swapping', { originAmount: transaction.originAmountFormatted, destinationAmount: transaction.destinationAmountFormatted }) : t('transactions.status.swapped', { originAmount: transaction.originAmountFormatted, destinationAmount: transaction.destinationAmountFormatted });
+                return getStatusText(
+                    'transactions.status.swapping',
+                    'transactions.status.swapped',
+                    'transactions.status.swapFailed',
+                    { originAmount: transaction.originAmountFormatted, destinationAmount: transaction.destinationAmountFormatted }
+                );
             case "withdraw":
-                return pending ? t('transactions.status.withdrawing', { amount: transaction.amountFormatted }) : t('transactions.status.withdrew', { amount: transaction.amountFormatted });
+                return getStatusText(
+                    'transactions.status.withdrawing',
+                    'transactions.status.withdrew',
+                    'transactions.status.withdrawFailed',
+                    { amount: transaction.amountFormatted }
+                );
             case "publicTransfer":
-                return pending ? t('transactions.status.sending', { amount: transaction.amountFormatted }) : t('transactions.status.sent', { amount: transaction.amountFormatted });
+                return getStatusText(
+                    'transactions.status.sending',
+                    'transactions.status.sent',
+                    'transactions.status.sendFailed',
+                    { amount: transaction.amountFormatted }
+                );
             case "deployAccount":
-                return pending ? t('transactions.status.deploying', { accountName: transaction.account.name }) : t('transactions.status.deployed', { accountName: transaction.account.name });
+                return getStatusText(
+                    'transactions.status.deploying',
+                    'transactions.status.deployed',
+                    'transactions.status.deployFailed',
+                    { accountName: transaction.account.name }
+                );
         }
     };
 
@@ -194,17 +240,27 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
         outputRange: ['0%', '100%'],
     });
 
+    const getIcon = () => {
+        if (isPending) {
+            return "send";
+        }
+        if (isSuccess) {
+            return "checkmark-circle";
+        }
+        return "alert-circle";
+    }
+
     return (
         <Pressable
             style={styles.container}
             onPress={handlePress}
         >
-            <View style={[styles.content, pending && styles.pendingContent]}>
+            <View style={[styles.content, isPending && styles.pendingContent, isFailed && styles.errorContent]}>
                 {/* Icon and Main Content */}
                 <View style={styles.mainRow}>
                     <View style={styles.iconContainer}>
                         <IconSymbol
-                            name={pending ? "send" : "checkmark-circle"}
+                            name={getIcon()}
                             size={24}
                             color={colorTokens['text.inverted']}
                         />
@@ -233,7 +289,7 @@ export const TransactionToast = ({ id, transaction, pending = false, onPress }: 
                 </View>
 
                 {/* Progress Bar */}
-                {pending && (
+                {isPending && (
                     <View style={styles.progressBarContainer}>
                         <Animated.View 
                             style={[
@@ -326,6 +382,9 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
     },
     pendingContent: {
         backgroundColor: colorTokens['status.info'],
+    },
+    errorContent: {
+        backgroundColor: colorTokens['status.error'],
     },
     progressBarContainer: {
         height: 3,
