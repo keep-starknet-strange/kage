@@ -5,22 +5,21 @@ import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import { PrivateAmount, PublicAmount } from "@/types/amount";
 import { AppError } from "@/types/appError";
 import { PrivateTokenRecipient } from "@/types/privateRecipient";
+import { Quote } from "@/types/swap";
 import { Transaction } from "@/types/transaction";
 import formattedAddress from "@/utils/formattedAddress";
+import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 import i18n from "@/utils/i18n";
 import { LOG } from "@/utils/logs";
+import { SwapAmount, SwapToken } from "@/utils/swap";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
-import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount, UniversalDetails } from "starknet";
+import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useProfileStore } from "./profileStore";
 import { useRpcStore } from "./useRpcStore";
-import { Quote } from "@/types/swap";
-import { tokenAmountToFormatted } from "@/utils/formattedBalance";
-import Token from "@/types/token";
-import { SwapAmount, SwapToken } from "@/utils/swap";
 
 export type DeployedStatus = "deployed" | "deploying" | "not-deployed" | "unknown";
 

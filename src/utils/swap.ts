@@ -27,7 +27,7 @@ export class SwapToken implements TokenContract, Identifiable {
     }
     
     // TODO: Add name to token
-    static fromTokenResponse(token: TokenResponse, image: string | null): SwapToken | null {
+    static fromTokenResponse(token: TokenResponse, image?: string, name?: string): SwapToken | null {
         if (!token.contractAddress) {
             return null;
         }
@@ -41,7 +41,7 @@ export class SwapToken implements TokenContract, Identifiable {
             token.price,
             token.priceUpdatedAt,
             token.contractAddress,
-            token.symbol,
+            name ?? token.symbol
         );
     }
 }

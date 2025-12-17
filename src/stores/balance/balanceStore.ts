@@ -25,6 +25,7 @@ const PRICE_REFRESH_INTERVAL_MS = 60000;
 export interface BalanceState {
     networkId: NetworkId | null;
     unlockedPrivateBalances: Set<AccountAddress>;
+    availableTokens: ReadonlyMap<TokenAddress, Token>;
 
     publicBalances: ReadonlyMap<AccountAddress, PublicTokenBalance[]>,
     privateBalances: ReadonlyMap<AccountAddress, PrivateTokenBalance[]>,
@@ -47,7 +48,6 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
     const privateBalanceRepository = new PrivateBalanceRepository();
     const publicBalanceRepository = new PublicBalanceRepository();
-    let networkTokens = new Map<TokenAddress, Token>();
 
     const publicTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
     const privateTokenSubscriptions = new Map<string, SubscriptionStarknetEventsEvent>();
@@ -90,6 +90,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         unlockedPrivateBalances: new Set(),
         publicBalances: new Map(),
         privateBalances: new Map(),
+        availableTokens: new Map(),
 
         setNetwork: async (networkId: NetworkId, rpcProvider: RpcProvider) => {
             const { networkId: currentNetworkId } = get();
@@ -120,13 +121,14 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             }
 
             const tokenMetadata = await marketRepository.getTokenMetadata(Array.from(tokens.values()).map(token => token.contractAddress), networkId);
-            networkTokens = new Map(Array.from(tokens.entries()).map(([address, token]) => {
+            const networkTokens = new Map(Array.from(tokens.entries()).map(([address, token]) => {
                 const metadata = tokenMetadata.get(address);
                 return [address, metadata ? token.withMetadata(metadata) : token];
             }));
 
             set({
                 networkId: networkId,
+                availableTokens: networkTokens,
                 unlockedPrivateBalances: new Set(),
                 publicBalances: new Map(),
                 privateBalances: new Map()
@@ -134,7 +136,8 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         requestRefresh: async (publicBalancesFor: Account[], privateBalancesFor: Account[]) => {
-            const tokensToFetch = Array.from(networkTokens.values());
+            const { availableTokens } = get();
+            const tokensToFetch = Array.from(availableTokens.values());
             const publicAccountTokens = new Map(publicBalancesFor.map((account) => [account, tokensToFetch]));
             const privateAccountTokens = new Map(privateBalancesFor.map((account) => [account, tokensToFetch]));
             await updateBalancesWithTokens(publicAccountTokens, privateAccountTokens);
@@ -142,9 +145,9 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
 
         unlockPrivateBalances: async (accounts: Account[]) => {
             const { requestAccess } = useAccessVaultStore.getState();
-            const { unlockedPrivateBalances, requestRefresh } = get()
+            const { unlockedPrivateBalances, requestRefresh, availableTokens } = get()
 
-            const allTokens = Array.from(networkTokens.values());
+            const allTokens = Array.from(availableTokens.values());
 
             await privateBalanceRepository.unlock(accounts, allTokens, requestAccess);
             const newUnlockedPrivateBalances = new Set([...unlockedPrivateBalances, ...accounts.map((account) => account.address)]);
@@ -152,20 +155,21 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             await requestRefresh([], accounts);
         },
         lockPrivateBalances: async (accounts: Account[]) => {
-            const { unlockedPrivateBalances, requestRefresh } = get();
-            await privateBalanceRepository.lock(accounts, Array.from(networkTokens.values()));
+            const { unlockedPrivateBalances, requestRefresh, availableTokens: tokens } = get();
+            await privateBalanceRepository.lock(accounts, Array.from(tokens.values()));
             const newUnlockedPrivateBalances = new Set([...unlockedPrivateBalances].filter((address) => !accounts.some((account) => account.address === address)));
             set({ unlockedPrivateBalances: newUnlockedPrivateBalances });
             await requestRefresh([], accounts);
         },
 
         subscribeToBalanceUpdates: async (accounts: Account[]) => {
+            const { availableTokens } = get();
             await Promise.all(Array.from(publicTokenSubscriptions.values()).map(s => s.unsubscribe()));
             await Promise.all(Array.from(privateTokenSubscriptions.values()).map(s => s.unsubscribe()));
             publicTokenSubscriptions.clear();
             privateTokenSubscriptions.clear();
 
-            const tokens = Array.from(networkTokens.values());
+            const tokens = Array.from(availableTokens.values());
             const { subscribeToWS } = useRpcStore.getState();
 
             const wsChannel = await subscribeToWS();
@@ -345,7 +349,7 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
         },
 
         startPriceRefresh: async () => {
-            const { networkId, stopPriceRefresh } = get();
+            const { networkId, stopPriceRefresh, availableTokens } = get();
             if (networkId === null) {
                 LOG.warn("No network set, skipping price refresh");
                 return;
@@ -355,11 +359,11 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             stopPriceRefresh();
             LOG.info("Starting price refresh");
             intervalId = setInterval(async () => {
-                const tokenAddresses = Array.from(networkTokens.keys());
+                const tokenAddresses = Array.from(availableTokens.keys());
                 try {
                     const prices = await marketRepository.getTokenPrices(tokenAddresses, networkId);
                     const updatedTokens = new Map<TokenAddress, Token>();
-                    for (const [address, token] of networkTokens.entries()) {
+                    for (const [address, token] of availableTokens.entries()) {
                         const price = prices.get(address);
                         if (price) {
                             updatedTokens.set(address, token.withUpdatedPrice(price));
@@ -368,22 +372,22 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
                         }
                     }
 
-                    networkTokens = updatedTokens;
                     const { publicBalances, privateBalances } = get();
                     const newPublicBalances = new Map(Array.from(publicBalances.entries()).map(([account, balances]) => {
                         return [account, balances.map((balance) => {
-                            const token = networkTokens.get(balance.token.contractAddress) ?? balance.token;
+                            const token = updatedTokens.get(balance.token.contractAddress) ?? balance.token;
                             return balance.withUpdatedToken(token);
                         })];
                     }));
                     const newPrivateBalances = new Map(Array.from(privateBalances.entries()).map(([account, balances]) => {
                         return [account, balances.map((balance) => {
-                            const token = networkTokens.get(balance.token.contractAddress) ?? balance.token;
+                            const token = updatedTokens.get(balance.token.contractAddress) ?? balance.token;
                             return balance.withUpdatedToken(token);
                         })];
                     }));
 
                     set({
+                        availableTokens: updatedTokens,
                         publicBalances: newPublicBalances,
                         privateBalances: newPrivateBalances
                     });
@@ -405,10 +409,10 @@ export const useBalanceStore = create<BalanceState>((set, get) => {
             const { unsubscribeFromBalanceUpdates, stopPriceRefresh } = get();
             await unsubscribeFromBalanceUpdates();
             stopPriceRefresh();
-            networkTokens = new Map<TokenAddress, Token>();
 
             set({
                 networkId: null,
+                availableTokens: new Map(),
                 unlockedPrivateBalances: new Set(),
             });
         }

@@ -22,9 +22,15 @@ export class NearSwapRepository implements SwapRepository {
         private readonly nearTokensCache: NearTokensCache = new NearTokensCache(),
     ) {
         for (const nearTokenConfig of nearTokens.tokens) {
-            const groupedTokens = nearTokenConfig.groupedTokens ?? [];
-            for (const groupedToken of groupedTokens) {
-                this.nearTokenIcons.set(groupedToken.defuseAssetId, groupedToken.icon);
+            if (nearTokenConfig.defuseAssetId && nearTokenConfig.icon) {
+                this.nearTokenIcons.set(nearTokenConfig.defuseAssetId, nearTokenConfig.icon);
+            }
+
+            const groupedTokens = nearTokenConfig.groupedTokens;
+            if (groupedTokens) {
+                for (const groupedToken of groupedTokens) {
+                    this.nearTokenIcons.set(groupedToken.defuseAssetId, groupedToken.icon);
+                }
             }
         }
     }
@@ -33,24 +39,28 @@ export class NearSwapRepository implements SwapRepository {
         const tokens = await this.nearTokensCache.getTokens(request.type);
 
         if (request.type === "buy") {
-            return tokens.map(token => SwapToken.fromTokenResponse(
-                token,
-                this.nearTokenIcons.get(token.assetId) ?? null)
-            ).filter(token => token !== null) as SwapToken[];
+            return tokens.map(token => {
+                return SwapToken.fromTokenResponse(token, this.nearTokenIcons.get(token.assetId))
+            }).filter(token => token !== null) as SwapToken[];
         } else if (request.type === "sell") {
             return tokens
                 .filter(token => token.blockchain === SELL_ON_BLOCKCHAIN)
-                .filter(token => {
-                    return request.availableTokens.some(available => {
-                        if (!token.contractAddress) {
-                            return false;
-                        }
-                        const onStarknetAddress = TokenAddress.createOrNull(token.contractAddress);
-                        return available.contractAddress.toString() === onStarknetAddress
+                .map(nearToken => {
+                    const nearTokenAddress = nearToken.contractAddress ? TokenAddress.createOrNull(nearToken.contractAddress) : null;
+                    if (!nearTokenAddress) {
+                        return null;
+                    }
+
+                    const availableToken = request.availableTokens.find(available => {
+                        return available.contractAddress === nearTokenAddress
                     });
-                })
-                .map(token => {
-                    return SwapToken.fromTokenResponse(token, this.nearTokenIcons.get(token.assetId) ?? null)
+
+                    console.log("availableToken", nearToken.symbol, availableToken);
+                    if (!availableToken) {
+                        return null;
+                    }
+
+                    return SwapToken.fromTokenResponse(nearToken, availableToken.logo?.toString(), availableToken.name ?? undefined);
                 })
                 .filter(token => token !== null) as SwapToken[];
         } else {
@@ -154,10 +164,10 @@ export class NearSwapRepository implements SwapRepository {
 
     private async mockSubmitDepositTx(_txHash: string, depositAddress: string): Promise<{ status: SubmitDepositTxResponse.status }> {
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-        
+
         // Reset poll count for this deposit address
         this.pollCounts.set(depositAddress, 0);
-        
+
         // Always return PENDING initially to trigger polling
         return {
             status: SubmitDepositTxResponse.status.KNOWN_DEPOSIT_TX,
@@ -166,7 +176,7 @@ export class NearSwapRepository implements SwapRepository {
 
     private async mockGetExecutionStatus(depositAddress: string): Promise<{ status: GetExecutionStatusResponse.status }> {
         await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
-        
+
         const currentCount = this.pollCounts.get(depositAddress) ?? 0;
         this.pollCounts.set(depositAddress, currentCount + 1);
 
