@@ -219,8 +219,7 @@ export function SwapTab({
         fetchTokens();
 
         const interval = setInterval(() => {
-            console.log("fetching tokens");
-            fetchTokens();
+            fetchTokens()
         }, TOKEN_FETCH_INTERVAL);
 
         return () => clearInterval(interval);
