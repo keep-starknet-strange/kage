@@ -380,7 +380,6 @@ export function SwapTab({
             return;
         }
 
-        console.log("currentQuote", currentQuote);
         if (currentQuote.type === "sell") {
             setBuyAmountText(currentQuote.quote.amountOutFormatted);
 

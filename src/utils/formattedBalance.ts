@@ -23,7 +23,8 @@ export function tokenAmountToFormatted<T extends TokenContract>(
     const divisor = BigInt(10) ** BigInt(token.decimals);
     const integerPart = (balance / divisor).toString();
     const fractionalPart = (balance % divisor).toString().padStart(token.decimals, '0');
-    const maxFractionDigits = compressed ? Math.min(4, token.decimals) : token.decimals;
+    const decimals = Math.min(20, token.decimals);
+    const maxFractionDigits = compressed ? Math.min(4, decimals) : decimals;
 
     const decimalString = `${integerPart}.${fractionalPart}`;
     const numberValue = parseFloat(decimalString);
