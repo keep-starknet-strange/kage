@@ -1,21 +1,15 @@
 import { showToastTransaction } from "@/components/ui/toast";
 import Account, { AccountAddress } from "@/profile/account";
-import { NetworkId } from "@/profile/misc";
 import { ProfileState } from "@/profile/profileState";
 import { AppError } from "@/types/appError";
 import { Quote, SwapStatus } from "@/types/swap";
-import Token from "@/types/token";
-import { TokenAddress } from "@/types/tokenAddress";
 import i18n from "@/utils/i18n";
 import { SwapAmount, SwapToken } from "@/utils/swap";
-import tokensConfig from "res/config/tokens.json";
 import { create } from "zustand";
 import { useAppDependenciesStore } from "./appDependenciesStore";
 import { useBalanceStore } from "./balance/balanceStore";
 import { useOnChainStore } from "./onChainStore";
 import { useProfileStore } from "./profileStore";
-
-type PresetNetworkId = keyof typeof tokensConfig;
 
 export interface SwapStore {
     readonly sellTokens: SwapToken[];
@@ -26,6 +20,7 @@ export interface SwapStore {
     requestQuote: (
         action: "sell" | "buy",
         starknetAddress: AccountAddress,
+        recipientAddress: string,
         amount: SwapAmount,
         resultToken: SwapToken,
         slippage: number
@@ -42,19 +37,6 @@ export interface SwapStore {
 }
 
 export const useSwapStore = create<SwapStore>((set) => {
-
-    const getOperatedTokens = (networkId: NetworkId): Map<TokenAddress, Token> => {
-        const presetExists = Object.prototype.hasOwnProperty.call(tokensConfig, networkId);
-        if (!presetExists) {
-            throw new AppError(i18n.t('errors.networkNotConfigured', { networkId }));
-        }
-        const preset = tokensConfig[networkId as PresetNetworkId];
-        return new Map(preset.tokens.map((token) => {
-            const address = TokenAddress.create(token.erc20);
-            return [address, new Token(address, token.tongo, token.symbol, token.decimals)]
-        }));
-    }
-
     return {
         sellTokens: [],
         buyTokens: [],
@@ -77,6 +59,7 @@ export const useSwapStore = create<SwapStore>((set) => {
         requestQuote: async (
             action: "sell" | "buy",
             starknetAddress: AccountAddress,
+            recipientAddress: string,
             amount: SwapAmount,
             resultToken: SwapToken,
             slippage: number
@@ -85,7 +68,7 @@ export const useSwapStore = create<SwapStore>((set) => {
             return await swapRepository.requestQuote({
                 dry: true,
                 starknetAddress: starknetAddress,
-                recipientAddress: "",
+                recipientAddress: recipientAddress,
                 action: action,
                 amount: amount,
                 destinationToken: resultToken,

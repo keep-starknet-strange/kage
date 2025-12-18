@@ -26,10 +26,11 @@ type SwapTabProps = {
 };
 
 type QuoteRequest = {
-    type: "sell" | "buy";
-    amount: bigint;
-    originToken: SwapToken;
-    destinationToken: SwapToken;
+    type?: "sell" | "buy";
+    amount?: bigint;
+    recipientAddress?: string;
+    buyToken?: SwapToken;
+    sellToken?: SwapToken;
     slippage: number;
 }
 
@@ -48,7 +49,7 @@ export function SwapTab({
     const { colors: colorTokens } = useTheme();
 
     const [focusedField, setFocusedField] = useState<"sell" | "buy" | null>(null);
-    const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
+    const [quoteRequest, setQuoteRequest] = useState<QuoteRequest>({ slippage: DEFAULT_SLIPPAGE });
     const [sellBalance, setSellBalance] = useState<PublicTokenBalance | null>(null);
     const quoteDebounceRef = useRef<NodeJS.Timeout | null>(null);
     const [currentQuote, setCurrentQuote] = useState<{ type: "sell" | "buy", quote: Quote } | null>(null);
@@ -82,6 +83,35 @@ export function SwapTab({
         return balances;
     });
 
+    const handleBuyTokenChange = (token: SwapToken | null) => {
+        const updated = buyTokens.find(t => t.assetId === token?.id) ?? null;
+
+        setBuyToken((previous) => {
+            if (previous?.blockchain !== updated?.blockchain) {
+                setRecipientError(undefined);
+                setRecipientAddress("");
+
+                setQuoteRequest((r) => {
+                    return { ...r, buyToken: updated ?? undefined, recipientAddress: undefined };
+                });
+            } else {
+                setQuoteRequest((r) => {
+                    return { ...r, buyToken: updated ?? undefined };
+                });
+            }
+
+            return updated
+        });
+    }
+
+    const handleSellTokenChange = (token: SwapToken | null) => {
+        const updated = sellTokens.find(t => t.assetId === token?.id) ?? null;
+        setSellToken(updated);
+        setQuoteRequest((r) => {
+            return { ...r, sellToken: updated ?? undefined };
+        });
+    }
+
     const handleSellAmountChange = (amount: string) => {
         if (!sellToken) {
             return;
@@ -101,11 +131,12 @@ export function SwapTab({
             setSellError(undefined);
             return;
         }
-
-        const decimalAmount: bigint = stringToBigint(amount, sellToken.decimals, '.');
-
+        
         if (focusedField === "sell") {
-            setQuoteRequest({ type: "sell", amount: decimalAmount, originToken: sellToken, destinationToken: buyToken, slippage });
+            const decimalAmount: bigint = stringToBigint(amount, sellToken.decimals, '.');
+            setQuoteRequest((r) => {
+                return { ...r, type: "sell", amount: decimalAmount };
+            });
         }
     }
 
@@ -124,40 +155,77 @@ export function SwapTab({
             return;
         }
 
-        if (focusedField === "buy") {
+        if (focusedField === "buy" && recipientAddress && !recipientError) {
             const decimalAmount: bigint = stringToBigint(amount, buyToken.decimals, '.');
-            setQuoteRequest({ type: "buy", amount: decimalAmount, originToken: buyToken, destinationToken: sellToken, slippage });
+            setQuoteRequest((r) => {
+                return { ...r, type: "buy", amount: decimalAmount };
+            });
         }
+    }
+
+    const handleRecipientAddressChange = (address: string) => {
+        if (!buyToken?.blockchain) {
+            return;
+        }
+
+        setRecipientAddress(address);
+
+        let addressForRequest = undefined;
+        if (address.trim() === '') {
+            setRecipientError(undefined);
+        } else if (validateAddress(address, buyToken.blockchain)) {
+            addressForRequest = address;
+            setRecipientError(undefined);
+        } else {
+            setRecipientError(t('transactions.swap.recipientError', { chain: buyToken.blockchain }));
+        }
+
+        setQuoteRequest((r) => {
+            return { ...r, recipientAddress: addressForRequest };
+        });
     }
 
     const handleSlippageChange = (slippage: number) => {
         setSlippage(slippage);
         setSlippageModalVisible(false);
 
-        if (focusedField === "sell") {
-            handleSellAmountChange(sellAmountText);
-        } else if (focusedField === "buy") {
-            handleBuyAmountChange(buyAmountText);
-        }
+        setQuoteRequest((r) => {
+            return { ...r, slippage: slippage };
+        });
     }
 
     const runQuoteRequest = useCallback(async (quoteRequest: QuoteRequest) => {
+        if (!quoteRequest.type || !quoteRequest.amount || !quoteRequest.buyToken || !quoteRequest.sellToken || !quoteRequest.recipientAddress) {
+            return;
+        }
+
         setBuyLoading(quoteRequest.type == "sell");
         setSellLoading(quoteRequest.type == "buy");
 
+
         try {
-            const amount = new SwapAmount(quoteRequest.amount, quoteRequest.originToken);
+            let amount: SwapAmount;
+            let resultToken: SwapToken;
+            if (quoteRequest.type === "sell") {
+                amount = new SwapAmount(quoteRequest.amount, quoteRequest.sellToken);
+                resultToken = quoteRequest.buyToken;
+            } else {
+                amount = new SwapAmount(quoteRequest.amount, quoteRequest.buyToken);
+                resultToken = quoteRequest.sellToken;
+            }
 
             const quote = await requestQuote(
                 quoteRequest.type,
                 account.address,
+                quoteRequest.recipientAddress,
                 amount,
-                quoteRequest.destinationToken,
+                resultToken,
                 quoteRequest.slippage
             );
 
             setCurrentQuote({ type: quoteRequest.type, quote: quote });
         } catch (error) {
+            console.error("error", error);
             showToastError(error);
             setCurrentQuote(null);
         } finally {
@@ -167,22 +235,28 @@ export function SwapTab({
     }, [account])
 
     const triggerSwap = useCallback(async () => {
-        if (!quoteRequest) {
-            return;
-        }
-        if (recipientAddress.trim() === '') {
+        if (!quoteRequest.type || !quoteRequest.amount || !quoteRequest.buyToken || !quoteRequest.sellToken || !quoteRequest.recipientAddress) {
             return;
         }
 
         setSwapInProgress(true);
         try {
-            const swapAmount = new SwapAmount(quoteRequest.amount, quoteRequest.originToken);
+            let amount: SwapAmount;
+            let resultToken: SwapToken;
+            if (quoteRequest.type === "sell") {
+                amount = new SwapAmount(quoteRequest.amount, quoteRequest.sellToken);
+                resultToken = quoteRequest.buyToken;
+            } else {
+                amount = new SwapAmount(quoteRequest.amount, quoteRequest.buyToken);
+                resultToken = quoteRequest.sellToken;
+            }
+
             await performSwap(
                 quoteRequest.type,
                 account,
                 recipientAddress,
-                swapAmount,
-                quoteRequest.destinationToken,
+                amount,
+                resultToken,
                 quoteRequest.slippage
             );
 
@@ -212,7 +286,6 @@ export function SwapTab({
 
         return token.blockchain.toLowerCase().includes(queryLower);
     }, []);
-
 
     // Fetch available tokens on mount and every 30s
     useEffect(() => {
@@ -349,24 +422,7 @@ export function SwapTab({
         }
     }, [currentQuote, setBuyAmountText, setSellAmountText, setBuyHint, setSellHint])
 
-    // Validate recipient address
-    useEffect(() => {
-        if (!buyToken?.blockchain) {
-            return;
-        }
-
-        if (recipientAddress.trim() === '') {
-            setRecipientError(undefined);
-            return;
-        }
-
-        if (validateAddress(recipientAddress, buyToken.blockchain)) {
-            setRecipientError(undefined);
-        } else {
-            setRecipientError(t('transactions.swap.recipientError', { chain: buyToken.blockchain }));
-        }
-    }, [recipientAddress, buyToken?.blockchain, setRecipientError])
-
+    // Update rate
     useEffect(() => {
         if (!buyToken?.price || !sellToken?.price || buyToken.price === 0) {
             setRateText(undefined);
@@ -378,6 +434,7 @@ export function SwapTab({
         setRateText(`1 ${sellToken.symbol} = ${rate} ${buyToken.symbol}`);
     }, [buyToken, sellToken])
 
+    // Update tokens so rate can be up-to-date
     useEffect(() => {
         if (buyToken) {
             const updated = buyTokens.find(token => token.assetId === buyToken.id);
@@ -455,7 +512,7 @@ export function SwapTab({
                     amount={sellAmountText}
                     setAmount={handleSellAmountChange}
                     selectedToken={sellToken}
-                    setSelectedToken={setSellToken}
+                    setSelectedToken={handleSellTokenChange}
                     tokens={sellTokens}
                     hintText={sellHint}
                     errorText={sellError}
@@ -469,7 +526,7 @@ export function SwapTab({
                     amount={buyAmountText}
                     setAmount={handleBuyAmountChange}
                     selectedToken={buyToken}
-                    setSelectedToken={setBuyToken}
+                    setSelectedToken={handleBuyTokenChange}
                     renderSelectedItem={(token) => <BuyTokenSelectedItem token={token} />}
                     renderModalItem={(token) => <BuyTokenModalItem token={token} />}
                     tokens={buyTokens}
@@ -479,21 +536,6 @@ export function SwapTab({
                     onFocus={(e) => setFocusedField("buy")}
                 />
 
-                <View style={styles.detailsContainer}>
-                    <Text style={styles.rateText}>{rateText}</Text>
-
-                    <Pressable
-                        style={styles.slippageButton}
-                        onPress={() => setSlippageModalVisible(true)}
-                    >
-                        <IconSymbol name="settings" size={16} color={colorTokens['text.secondary']} />
-                        <Text style={styles.slippageButtonText}>
-                            {t('transactions.swap.slippageLabel', { slippage: (slippage / 100).toFixed(slippage % 100 === 0 ? 0 : 2) })}
-                        </Text>
-                        <IconSymbol name="chevron-right" size={16} color={colorTokens['text.muted']} />
-                    </Pressable>
-                </View>
-
                 {buyToken && (
                     <View style={styles.recipientContainer}>
                         <Text style={styles.recipientLabel}>{t('transactions.swap.recipientLabel', { chain: buyToken.blockchain })}</Text>
@@ -502,7 +544,7 @@ export function SwapTab({
                             placeholder={t('transactions.swap.recipientPlaceholder', { token: buyToken.symbol, chain: buyToken.blockchain })}
                             placeholderTextColor={colorTokens['text.muted']}
                             value={recipientAddress}
-                            onChangeText={setRecipientAddress}
+                            onChangeText={handleRecipientAddressChange}
                             autoCapitalize="none"
                             autoCorrect={false}
                         />
@@ -518,6 +560,21 @@ export function SwapTab({
                         </View>
                     </View>
                 )}
+
+                <View style={styles.detailsContainer}>
+                    <Text style={styles.rateText}>{rateText}</Text>
+
+                    <Pressable
+                        style={styles.slippageButton}
+                        onPress={() => setSlippageModalVisible(true)}
+                    >
+                        <IconSymbol name="settings" size={16} color={colorTokens['text.secondary']} />
+                        <Text style={styles.slippageButtonText}>
+                            {t('transactions.swap.slippageLabel', { slippage: (slippage / 100).toFixed(slippage % 100 === 0 ? 0 : 2) })}
+                        </Text>
+                        <IconSymbol name="chevron-right" size={16} color={colorTokens['text.muted']} />
+                    </Pressable>
+                </View>
 
                 <PrimaryButton
                     title="Swap"
@@ -645,7 +702,7 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         color: colorTokens['text.muted'],
     },
     recipientContainer: {
-        marginTop: spaceTokens[5],
+        marginTop: spaceTokens[0],
         gap: spaceTokens[1],
     },
     recipientLabel: {
