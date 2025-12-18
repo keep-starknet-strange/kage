@@ -27,7 +27,7 @@ KAGE offers a comprehensive suite of features for managing both public and confi
 - Ragequit: Not supported at this stage ([details here](https://docs.tongo.cash/sdk/operations/ragequit.html)).
 
 **ERC-20 token supported (Tongo Instances)**:
-- Mainnet: ETH, STRK, wBTC, USDC, USDT, DAI
+- Mainnet: ETH, STRK, wBTC, USDC.e, USDC, USDT, DAI
 - Sepolia: ETH, STRK, USDC
 
 **Security Architecture**: Seed phrases are encrypted with ChaCha20-Poly1305 and stored in secure, hardware-backed device storage—iOS Keychain on iOS and Android Keystore (with TEE/StrongBox support) on Android. In settings, you can optionally enable passphrase protection and biometric authentication. Biometrics gate access to sensitive operations, and all cryptographic keys remain on the device at all times.
