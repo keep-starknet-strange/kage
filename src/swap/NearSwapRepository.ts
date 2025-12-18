@@ -36,7 +36,20 @@ export class NearSwapRepository implements SwapRepository {
     }
 
     async getAvailableTokens(request: { type: "buy" } | { type: "sell", availableTokens: Token[] }): Promise<SwapToken[]> {
-        const tokens = await this.nearTokensCache.getTokens(request.type);
+        const tokens = await this.getTokensForType(request.type).then((tokens) => tokens.map(token => {
+            let modifiedAddress: string | undefined;
+
+            if (token.contractAddress && token.blockchain === TokenResponse.blockchain.STARKNET) {
+                modifiedAddress = TokenAddress.createOrNull(token.contractAddress)?.toString();
+            } else {
+                modifiedAddress = token.contractAddress;
+            }
+
+            return {
+                ...token,
+                contractAddress: modifiedAddress,
+            }
+        }));
 
         if (request.type === "buy") {
             return tokens.map(token => {
@@ -127,6 +140,10 @@ export class NearSwapRepository implements SwapRepository {
             return status;
         }
     }
+
+    protected getTokensForType(type: "buy" | "sell"): Promise<TokenResponse[]> {
+        return this.nearTokensCache.getTokens(type)
+    }
 }
 
 class NearTokensCache {
@@ -140,32 +157,10 @@ class NearTokensCache {
             return this.tokens;
         }
 
-        let serviceTokens: TokenResponse[];
-        if (type === "sell") {
-            serviceTokens = await this.mockResponse();
-        } else {
-            serviceTokens = await OneClickService.getTokens();
-        }
-
-        // const tokens = await OneClickService.getTokens();
-        const tokens = serviceTokens.map(token => {
-            let modifiedAddress: string | undefined;
-
-            if (token.contractAddress && token.blockchain === TokenResponse.blockchain.STARKNET) {
-                modifiedAddress = TokenAddress.createOrNull(token.contractAddress)?.toString();
-            } else {
-                modifiedAddress = token.contractAddress;
-            }
-
-            return {
-                ...token,
-                contractAddress: modifiedAddress,
-            }
-        });
-        this.tokens = tokens;
+        this.tokens = await OneClickService.getTokens();
         this.lastUpdated = new Date();
 
-        return tokens;
+        return this.tokens;
     }
 
     private async mockResponse(): Promise<TokenResponse[]> {
