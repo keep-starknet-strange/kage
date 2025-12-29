@@ -36,20 +36,33 @@ export class NearSwapRepository implements SwapRepository {
     }
 
     async getAvailableTokens(request: { type: "buy" } | { type: "sell", availableTokens: Token[] }): Promise<SwapToken[]> {
-        const tokens = await this.getTokensForType(request.type).then((tokens) => tokens.map(token => {
-            let modifiedAddress: string | undefined;
+        const tokens = await this.getTokensForType(request.type).then((tokens) => {
+            return tokens.map(token => {
+                let modifiedAddress: string | undefined;
 
-            if (token.contractAddress && token.blockchain === TokenResponse.blockchain.STARKNET) {
-                modifiedAddress = TokenAddress.createOrNull(token.contractAddress)?.toString();
-            } else {
-                modifiedAddress = token.contractAddress;
-            }
+                if (token.blockchain === TokenResponse.blockchain.STARKNET) {
+                    // Map assetId to contract address for Starknet tokens
+                    // The API doesn't provide contract addresses for Starknet, so we need to map them
+                    const assetIdToAddress: Record<string, string> = {
+                        'nep141:starknet.omft.near': '0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d', // STRK
+                        'nep142:starknet.omft.near': '0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7', // ETH
+                        'nep143:starknet.omft.near': '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8', // USDC
+                    };
 
-            return {
-                ...token,
-                contractAddress: modifiedAddress,
-            }
-        }));
+                    const mappedAddress = assetIdToAddress[token.assetId];
+                    if (mappedAddress) {
+                        modifiedAddress = TokenAddress.createOrNull(mappedAddress)?.toString();
+                    }
+                } else if (token.contractAddress) {
+                    modifiedAddress = token.contractAddress;
+                }
+
+                return {
+                    ...token,
+                    contractAddress: modifiedAddress,
+                }
+            });
+        });
 
         if (request.type === "buy") {
             return tokens.map(token => {
@@ -65,7 +78,7 @@ export class NearSwapRepository implements SwapRepository {
                     }
 
                     const availableToken = request.availableTokens.find(available => {
-                        return available.contractAddress === nearTokenAddress
+                        return available.contractAddress.toString() === nearTokenAddress.toString()
                     });
 
                     if (!availableToken) {
@@ -153,7 +166,7 @@ class NearTokensCache {
     private lastUpdated: Date = new Date();
 
     public async getTokens(type: "buy" | "sell"): Promise<TokenResponse[]> {
-        if (this.tokens.length > 0 && Date.now() - this.lastUpdated.getTime() > NearTokensCache.CACHE_VALIDITY_MS) {
+        if (this.tokens.length > 0 && Date.now() - this.lastUpdated.getTime() < NearTokensCache.CACHE_VALIDITY_MS) {
             return this.tokens;
         }
 
@@ -161,37 +174,5 @@ class NearTokensCache {
         this.lastUpdated = new Date();
 
         return this.tokens;
-    }
-
-    private async mockResponse(): Promise<TokenResponse[]> {
-        return [
-            {
-                assetId: "nep141:starknet.omft.near",
-                decimals: 18,
-                blockchain: TokenResponse.blockchain.STARKNET,
-                contractAddress: "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-                symbol: "STRK",
-                price: 0.106522,
-                priceUpdatedAt: new Date().toISOString()
-            },
-            {
-                assetId: "nep142:starknet.omft.near",
-                decimals: 18,
-                blockchain: TokenResponse.blockchain.STARKNET,
-                contractAddress: "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                symbol: "ETH",
-                price: 3144.04,
-                priceUpdatedAt: new Date().toISOString()
-            },
-            {
-                assetId: "nep143:starknet.omft.near",
-                decimals: 6,
-                blockchain: TokenResponse.blockchain.STARKNET,
-                contractAddress: "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
-                symbol: "USDC",
-                price: 0.999951,
-                priceUpdatedAt: new Date().toISOString()
-            }
-        ];
     }
 }

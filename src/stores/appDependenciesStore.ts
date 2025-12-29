@@ -28,7 +28,6 @@ import PrivateBalanceRepository from "./balance/privateBalanceRepository";
 import { PublicBalanceRepository } from "./balance/publicBalanceRepository";
 import { SwapRepository } from "@/swap/SwapRepository";
 import { NearSwapRepository } from "@/swap/NearSwapRepository";
-import { MockNearSwapRepository } from "@/swap/MockNearSwapRepository";
 
 export interface AppDependencies {
     encryptedStorage: EncryptedStorage;
@@ -100,7 +99,7 @@ export const useAppDependenciesStore = create<AppDependencies>(() => {
         privateBalanceRepository: new PrivateBalanceRepository(),
         marketRepository: new AVNUMarketRepository(),
         kmsProvider: new StarKMSProvider(),
-        swapRepository: new MockNearSwapRepository(),
+        swapRepository: new NearSwapRepository(),
     }
 });
 
