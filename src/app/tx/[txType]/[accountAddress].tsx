@@ -16,8 +16,9 @@ import { useLayoutEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useTranslation } from "react-i18next";
+import { SwapTab } from "@/components/screens/tx/swap-tab";
 
-type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer';
+type TxType = 'fund' | 'transfer' | 'withdraw' | 'publicTransfer' | 'swap';
 
 const TransactionScreen = () => {
     const { t } = useTranslation();
@@ -60,12 +61,14 @@ const TransactionScreen = () => {
         );
     }
 
+    const isTabsVisible = activeTab !== 'publicTransfer' && activeTab !== 'swap';
+
     return (
         <KeyboardAwareScrollView
             contentContainerStyle={[styles.container]}
             bottomOffset={spaceTokens[3]}
         >
-            {activeTab !== 'publicTransfer' && (
+            {isTabsVisible && (
                 <>
                     <View style={styles.tabContainer}>
                         <Pressable
@@ -130,6 +133,10 @@ const TransactionScreen = () => {
 
             {activeTab === 'publicTransfer' && (
                 <PublicTransferTab account={account} />
+            )}
+
+            {activeTab === 'swap' && (
+                <SwapTab account={account} />
             )}
         </KeyboardAwareScrollView >
     );

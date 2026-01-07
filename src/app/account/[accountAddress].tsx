@@ -18,6 +18,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { isPrivateTransferEnabled } from '@/utils/featureFlags';
 
 type TabType = 'public' | 'private';
 
@@ -79,6 +80,8 @@ export default function AccountDetailScreen() {
         });
     }, [navigation, account]);
 
+    const isPrivateTabAvailable = isPrivateTransferEnabled();
+
     // If account not found, show error
     if (!account) {
         return (
@@ -103,6 +106,9 @@ export default function AccountDetailScreen() {
                     onTransferPress={() => {
                         router.push(`/tx/publicTransfer/${accountAddress}`);
                     }}
+                    onSwapPress={() => {
+                        router.push(`/tx/swap/${accountAddress}`);
+                    }}
                     style={styles.balanceCard}
                 />
             )}
@@ -124,24 +130,26 @@ export default function AccountDetailScreen() {
             )}
 
             {/* Tab Bar */}
-            <View style={styles.tabBar}>
-                <Pressable
-                    style={[styles.tabButton, activeTab === 'public' && styles.tabButtonActive]}
-                    onPress={() => setActiveTab('public')}
-                >
-                    <Text style={[styles.tabButtonText, activeTab === 'public' && styles.tabButtonTextActive]}>
-                        Public
-                    </Text>
-                </Pressable>
-                <Pressable
-                    style={[styles.tabButton, activeTab === 'private' && styles.tabButtonActive]}
-                    onPress={() => setActiveTab('private')}
-                >
-                    <Text style={[styles.tabButtonText, activeTab === 'private' && styles.tabButtonTextActive]}>
-                        Private
-                    </Text>
-                </Pressable>
-            </View>
+            {isPrivateTabAvailable && (
+                <View style={styles.tabBar}>
+                    <Pressable
+                        style={[styles.tabButton, activeTab === 'public' && styles.tabButtonActive]}
+                        onPress={() => setActiveTab('public')}
+                    >
+                        <Text style={[styles.tabButtonText, activeTab === 'public' && styles.tabButtonTextActive]}>
+                            Public
+                        </Text>
+                    </Pressable>
+                    <Pressable
+                        style={[styles.tabButton, activeTab === 'private' && styles.tabButtonActive]}
+                        onPress={() => setActiveTab('private')}
+                    >
+                        <Text style={[styles.tabButtonText, activeTab === 'private' && styles.tabButtonTextActive]}>
+                            Private
+                        </Text>
+                    </Pressable>
+                </View>
+            )}
 
             {/* Tab Content */}
             <View style={[styles.tabsContainer, { paddingBottom: insets.bottom }]}>

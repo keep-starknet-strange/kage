@@ -1,8 +1,8 @@
 import { PrivateBalancesLocked } from "@/components/private-balances-locked";
+import { BalanceInput } from "@/components/ui/balance-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { PrivateAddressInput } from "@/components/ui/private-address-input";
 import { showToastError } from "@/components/ui/toast";
-import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account from "@/profile/account";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
@@ -14,8 +14,8 @@ import { PrivateTokenBalance } from "@/types/tokenBalance";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
 
 type TransferTabProps = {
     account: Account;
@@ -50,7 +50,6 @@ export function TransferTab({
             setIsTransferring(true);
             try {
                 // TODO handle wallet recipient too.
-                console.log("recipientAddress", recipientAddress.base58);
                 await transfer(account, amount, account, new PrivateTokenRecipient(recipientAddress));
             } catch (error) {
                 showToastError(error);
@@ -97,7 +96,7 @@ export function TransferTab({
                         placeholder={t('transactions.transfer.recipientPlaceholder')}
                         onAddressChange={setRecipientAddress}
                     />
-                    <TokenAmountInput
+                    <BalanceInput
                         label={t('forms.amount.label')}
                         placeholder={t('forms.amount.placeholder')}
                         balances={privateBalances ?? []}

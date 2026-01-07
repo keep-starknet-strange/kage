@@ -30,4 +30,12 @@ export namespace TokenAddress {
         const paddedHex = hexPart.padStart(64, '0');
         return `0x${paddedHex}`.toLowerCase() as TokenAddress;
     }
+
+    export function createOrNull(address: string): TokenAddress | null {
+        try {
+            return TokenAddress.create(address);
+        } catch (error) {
+            return null;
+        }
+    }
 }

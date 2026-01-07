@@ -1,7 +1,7 @@
 import { AccountAddressInput } from "@/components/ui/account-address-input";
+import { BalanceInput } from "@/components/ui/balance-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { showToastError } from "@/components/ui/toast";
-import { TokenAmountInput } from "@/components/ui/token-amount-input";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import Account, { AccountAddress } from "@/profile/account";
 import { ThemedStyleSheet, useThemedStyle } from "@/providers/ThemeProvider";
@@ -12,8 +12,8 @@ import { PublicTokenBalance } from "@/types/tokenBalance";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Text, View } from "react-native";
 
 type PublicTransferTabProps = {
     account: Account;
@@ -73,7 +73,7 @@ export function PublicTransferTab({
                 onAddressChange={setRecipientAddress}
             />
 
-            <TokenAmountInput
+            <BalanceInput
                 label={t('forms.amount.label')}
                 placeholder={t('forms.amount.placeholder')}
                 balances={publicBalances ?? []}

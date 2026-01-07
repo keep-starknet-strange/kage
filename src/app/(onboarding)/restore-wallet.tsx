@@ -28,7 +28,8 @@ function getRpcProvider(networkDefinition: NetworkDefinition): RpcProvider {
 }
 
 function isNetworkEligibleForRestore(networkDefinition: NetworkDefinition): boolean {
-    return networkDefinition.chainId === "SN_SEPOLIA";
+    const wellKnownNetworks = NetworkDefinition.wellKnown();
+    return wellKnownNetworks.some(wellKnownNetwork => wellKnownNetwork.chainId === networkDefinition.chainId);
 }
 
 export default function RestoreWalletScreen() {
@@ -103,7 +104,6 @@ export default function RestoreWalletScreen() {
 
             setTimeout(async () => {
                 while (true) {
-                    console.log("Deriving account data from index", startIndex);
                     const derivedData = await deriveAccountData(startIndex, selectedNetwork, seedPhraseWords);
                     derivedData.forEach((keyPairWithIndex, accountAddress) => {
                         accountData.set(accountAddress, keyPairWithIndex);

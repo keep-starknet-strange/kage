@@ -5,13 +5,16 @@ import KeyValueStorage from "@/storage/kv/KeyValueStorage";
 import { PrivateAmount, PublicAmount } from "@/types/amount";
 import { AppError } from "@/types/appError";
 import { PrivateTokenRecipient } from "@/types/privateRecipient";
+import { Quote } from "@/types/swap";
 import { Transaction } from "@/types/transaction";
 import formattedAddress from "@/utils/formattedAddress";
+import { tokenAmountToFormatted } from "@/utils/formattedBalance";
 import i18n from "@/utils/i18n";
 import { LOG } from "@/utils/logs";
+import { SwapAmount, SwapToken } from "@/utils/swap";
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
 import transferAbi from "res/config/trasnfer-abi.json";
-import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount, UniversalDetails } from "starknet";
+import { cairo, CallData, Contract, RpcError, RpcProvider, Account as StarknetAccount } from "starknet";
 import { create } from "zustand";
 import { useAccessVaultStore } from "./accessVaultStore";
 import { useAppDependenciesStore } from "./appDependenciesStore";
@@ -38,7 +41,13 @@ export interface OnChainState {
 
     deployAccount: (account: Account) => Promise<void>;
 
-    appendPendingTransaction: (transaction: Transaction) => void;
+    depositForSwap: (
+        quote: Quote,
+        from: Account,
+        fromToken: SwapToken,
+    ) => Promise<string>;
+
+    appendPendingTransaction: (transaction: Transaction) => Promise<void>;
 
     removePendingTransaction: (transactionHash: string) => void;
 
@@ -104,7 +113,6 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const tongoAccount = new TongoAccount(tokenKeyPair.keyPair.privateKey, amount.token.tongoAddress, provider);
             const sdkRate = await tongoAccount.rate();
             const privateAmount = amount.intoPrivateAmount(sdkRate);
-            console.log("privateAmount", privateAmount.toSdkAmount());
             const signerAccount = new StarknetAccount({
                 provider: provider,
                 address: signer.address,
@@ -115,7 +123,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
             const fundOp = await tongoAccount.fund({ amount: privateAmount.toSdkAmount(), sender: from.address });
             await fundOp.populateApprove();
             LOG.info("[TX]: 🚀 Funding account execute...");
-            
+
             const starknetTx = await signerAccount.execute([
                 fundOp.approve!,
                 fundOp.toCalldata()
@@ -127,6 +135,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 amount: privateAmount,
                 signer: signer,
                 txHash: starknetTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -171,6 +181,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 amount: amount,
                 recipient: recipient,
                 txHash: tx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -221,7 +233,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 await provider.waitForTransaction(rolloverTx.transaction_hash);
             }
 
-            LOG.info("[TX]: 🗝 Proving Transfer..."); 
+            LOG.info("[TX]: 🗝 Proving Transfer...");
             const transferOp = await tongoAccount.transfer({
                 to: recipient.privateTokenAddress.pubKey,
                 amount: amount.toSdkAmount(),
@@ -238,6 +250,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 signer: signer,
                 recipient: recipient,
                 txHash: starknetTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -305,6 +319,8 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 amount: amount,
                 signer: signer,
                 txHash: starknetTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
@@ -410,10 +426,70 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 type: "deployAccount",
                 account: account,
                 txHash: deployTx.transaction_hash,
+            }).catch((error) => {
+                showToastError(error);
             });
         },
 
-        appendPendingTransaction: (transaction: Transaction) => {
+        depositForSwap: async (
+            quote: Quote,
+            from: Account,
+            fromToken: SwapToken,
+        ) => {
+            const { appendPendingTransaction } = get();
+            const { requestAccess } = useAccessVaultStore.getState();
+
+            if (!quote.depositAddress) {
+                throw new AppError(i18n.t('errors.swapDepositAddressNotAvailable'));
+            }
+            
+            const provider = useRpcStore.getState().getProvider();
+            const amount = BigInt(quote.amountIn);
+            const swapAmount = new SwapAmount(amount, fromToken);
+
+            const result = await requestAccess({
+                requestFor: "privateKeys",
+                signing: [from],
+                tokens: new Map()
+            }, {
+                title: i18n.t('biometricPrompts.publicTransfer.title'),
+                subtitleAndroid: `Authorize to transfer ${swapAmount.formatted()} to initiate the swap`,
+                descriptionAndroid: "KAGE needs your authentication to securely transfer your public tokens.",
+                cancelAndroid: i18n.t('biometricPrompts.publicTransfer.cancelAndroid'),
+            });
+
+            const signerKeyPair = result.signing.get(from);
+            if (!signerKeyPair) {
+                throw new AppError(i18n.t('errors.signingKeyNotFound'), from.address);
+            }
+
+            const fromAccount = new StarknetAccount({
+                provider: provider,
+                address: from.address,
+                signer: signerKeyPair.privateKey,
+            });
+
+            const contract = new Contract({
+                abi: transferAbi,
+                address: fromToken.contractAddress,
+                providerOrAccount: fromAccount,
+            });
+
+            const tx = await contract.transfer(quote.depositAddress, cairo.uint256(swapAmount.amount));
+            const origin = tokenAmountToFormatted(false, BigInt(quote.amountIn), fromToken);
+
+            await appendPendingTransaction({
+                type: "swapDeposit",
+                from: from,
+                depositAddress: quote.depositAddress,
+                originAmountFormatted: origin,
+                txHash: tx.transaction_hash,
+            });
+
+            return tx.transaction_hash;
+        },
+
+        appendPendingTransaction: async (transaction: Transaction) => {
             const { removePendingTransaction } = get();
             const provider = useRpcStore.getState().getProvider();
 
@@ -427,7 +503,7 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                 pendingTransactionsStack: [transaction, ...state.pendingTransactionsStack],
             }));
 
-            provider.waitForTransaction(transaction.txHash)
+            await provider.waitForTransaction(transaction.txHash)
                 .then((receipt) => {
                     showToastTransaction(transaction);
                     removePendingTransaction(transaction.txHash);
@@ -439,11 +515,11 @@ export const useOnChainStore = create<OnChainState>((set, get) => {
                     LOG.debug("---- 🧾 Receipt: ", receipt, "for", transaction.txHash);
                 }).catch((error) => {
                     removePendingTransaction(transaction.txHash);
-                    showToastError(error);
-
                     if (transaction.type === "deployAccount") {
                         set({ deployStatus: updateStatus(get().deployStatus, transaction.account, "not-deployed") });
                     }
+
+                    throw error;
                 });
         },
 

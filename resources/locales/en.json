@@ -210,26 +210,47 @@
       "transfer": "Private Transfer",
       "withdraw": "Withdrawal",
       "publicTransfer": "Public Transfer",
-      "deployAccount": "Deploy Transaction"
+      "deployAccount": "Deploy Transaction",
+      "swapDeposit": "Deposit Transaction",
+      "swap": "Swap Transaction (Near)"
     },
     "status": {
       "funding": "Funding {{amount}}",
       "funded": "Funded {{amount}}",
+      "fundFailed": "Failed to fund {{amount}}",
       "transferringPrivate": "Transferring privately {{amount}}",
       "transferredPrivate": "Transferred privately {{amount}}",
+      "transferPrivateFailed": "Failed to transfer {{amount}}",
       "withdrawing": "Withdrawing {{amount}}",
       "withdrew": "Withdrew {{amount}}",
+      "withdrawFailed": "Failed to withdraw {{amount}}",
       "sending": "Sending {{amount}}",
       "sent": "Sent {{amount}}",
+      "sendFailed": "Failed to send {{amount}}",
       "deploying": "Account \"{{accountName}}\" deploying on Starknet",
-      "deployed": "Account \"{{accountName}}\" deployed on Starknet"
+      "deployed": "Account \"{{accountName}}\" deployed on Starknet",
+      "deployFailed": "Failed to deploy account \"{{accountName}}\"",
+      "swapDepositing": "Depositing {{amount}} to initiate the swap",
+      "swapDeposited": "Desposited {{amount}}. Swap in progress...",
+      "swapDepositFailed": "Failed to deposit {{amount}}",
+      "swapping": "Swapping {{originAmount}} for {{destinationAmount}}...",
+      "swapped": "Swapped {{originAmount}} for {{destinationAmount}}",
+      "swapFailed": "Failed to swap {{originAmount}} for {{destinationAmount}}",
+      "swapPending": "Pending",
+      "swapSuccess": "Success",
+      "swapRefunded": "Refunded"
     },
     "details": {
       "from": "From",
       "to": "To",
       "amount": "Amount",
       "signer": "Signer",
-      "txHash": "Transaction Hash:"
+      "txHash": "Transaction Hash:",
+      "swapDepositAddress": "NEAR Address",
+      "recipientAddress": "Recipient Address",
+      "originAmount": "Origin Amount",
+      "destinationAmount": "Destination Amount",
+      "status": "Status"
     },
     "fund": {
       "description": "Add private funds to your account.",
@@ -243,6 +264,22 @@
       "recipientLabel": "Recipient Address",
       "recipientPlaceholder": "Enter recipient's private address...",
       "transferButton": "Transfer"
+    },
+    "swap": {
+      "description": "Swap tokens with Near Intents",
+      "sellLabel": "You Sell",
+      "sellPlaceholder": "0.0",
+      "buyLabel": "You Buy",
+      "buyPlaceholder": "0.0",
+      "recipientLabel": "Recipient Address ({{chain}})",
+      "recipientPlaceholder": "{{token}} address in {{chain}} chain.",
+      "recipientError": "Invalid recipient address for {{chain}} chain",
+      "recipientWarning": "Make sure to enter a valid {{chain}} address. Sending to an incorrect address may result in permanent loss of funds.",
+      "slippageLabel": "Max slippage: {{slippage}}%",
+      "detail": {
+        "notFound": "Balances not found for this account",
+        "goBackButton": "Go Back"
+      }
     },
     "withdraw": {
       "description": "Withdraw tokens from your private balance to your public wallet.",
@@ -305,6 +342,7 @@
       "label": "Public Balance",
       "fundButton": "Fund",
       "sendButton": "Send",
+      "swapButton": "Swap",
       "fundModal": {
         "title": "Fund Account",
         "fromFaucet": "From Faucet",
@@ -365,7 +403,8 @@
     "rpcUrlNotSetNetwork": "RPC URL is not set for this network",
     "websocketUrlNotSetMainnet": "WebSocket URL is not set for mainnet in environment variables",
     "websocketUrlNotSetSepolia": "WebSocket URL is not set for sepolia in environment variables",
-    "websocketUrlNotSetNetwork": "WebSocket URL is not set for this network"
+    "websocketUrlNotSetNetwork": "WebSocket URL is not set for this network",
+    "swapDepositAddressNotAvailable": "Swap deposit address not available"
   },
   "biometricPrompts": {
     "signingTransaction": {

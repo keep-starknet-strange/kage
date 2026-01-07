@@ -2,9 +2,11 @@ import { IconSymbol } from "@/components/ui/icon-symbol/icon-symbol";
 import { fontStyles, radiusTokens, spaceTokens } from "@/design/tokens";
 import { ThemedStyleSheet, useTheme, useThemedStyle } from "@/providers/ThemeProvider";
 import Identifiable from "@/types/Identifiable";
-import { ReactNode, useState } from "react";
-import { Modal, Platform, Pressable, ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
+import { ReactNode, useMemo, useState } from "react";
+import { Modal, Platform, Pressable, ScrollView, StyleProp, Text, TextInput, View, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const MIN_ITEMS_FOR_SEARCH = 10;
 
 type ModalPickerProps<T extends Identifiable> = {
     items: T[];
@@ -12,10 +14,12 @@ type ModalPickerProps<T extends Identifiable> = {
     onSelectItem: (item: T) => void;
     label?: string;
     placeholder?: string;
+    searchPlaceholder?: string;
     disabled?: boolean;
     pickerButtonStyle?: StyleProp<ViewStyle>;
     renderItem: (item: T) => ReactNode;
     renderModalItem: (item: T) => ReactNode;
+    matchesSearch?: (item: T, searchQuery: string) => boolean;
 };
 
 export function ModalPicker<T extends Identifiable>({
@@ -24,20 +28,39 @@ export function ModalPicker<T extends Identifiable>({
     onSelectItem,
     label,
     placeholder,
+    searchPlaceholder = "Search...",
     disabled,
     pickerButtonStyle,
     renderItem,
     renderModalItem = renderItem,
+    matchesSearch,
 }: ModalPickerProps<T>) {
     const styles = useThemedStyle(themedStyleSheet);
     const insets = useSafeAreaInsets();
     const { colors: colorTokens } = useTheme();
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const handleSelectItem = (item: T) => {
         onSelectItem(item);
         setIsModalVisible(false);
+        setSearchQuery("");
     };
+
+    const handleCloseModal = () => {
+        setIsModalVisible(false);
+        setSearchQuery("");
+    };
+
+    const isSearchAvailable = useMemo(() => {
+        return items.length > MIN_ITEMS_FOR_SEARCH;
+    }, [items]);
+
+    const filteredItems = !isSearchAvailable || searchQuery.trim() === ""
+        ? items
+        : items.filter(item => {
+            return matchesSearch ? matchesSearch(item, searchQuery) : item.id.toString().toLowerCase().includes(searchQuery.toLowerCase());
+        });
 
     return (
         <View style={styles.container}>
@@ -69,7 +92,7 @@ export function ModalPicker<T extends Identifiable>({
                 animationType="slide"
                 presentationStyle="pageSheet"
                 allowSwipeDismissal={true}
-                onRequestClose={() => setIsModalVisible(false)}
+                onRequestClose={handleCloseModal}
             >
                 <Pressable
                     style={[
@@ -85,14 +108,34 @@ export function ModalPicker<T extends Identifiable>({
                         <Text style={styles.modalTitle}>{placeholder}</Text>
                         <Pressable
                             style={styles.closeButton}
-                            onPress={() => setIsModalVisible(false)}
+                            onPress={handleCloseModal}
                         >
                             <IconSymbol name="close" size={24} color={colorTokens['text.primary']} />
                         </Pressable>
                     </View>
 
+                    {isSearchAvailable && (
+                        <View style={styles.searchContainer}>
+                            <IconSymbol name="search" size={18} color={colorTokens['text.muted']} />
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder={searchPlaceholder}
+                                placeholderTextColor={colorTokens['text.muted']}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                            {searchQuery.length > 0 && (
+                                <Pressable onPress={() => setSearchQuery("")}>
+                                    <IconSymbol name="close" size={18} color={colorTokens['text.muted']} />
+                                </Pressable>
+                            )}
+                        </View>
+                    )}
+
                     <ScrollView style={styles.itemsList}>
-                        {items.map((item) => (
+                        {filteredItems.map((item) => (
                             <Pressable
                                 key={item.id}
                                 style={[
@@ -174,6 +217,25 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: radiusTokens.md,
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colorTokens['bg.sunken'],
+        marginHorizontal: spaceTokens[4],
+        marginVertical: spaceTokens[3],
+        paddingHorizontal: spaceTokens[3],
+        borderRadius: radiusTokens.sm,
+        borderWidth: 1,
+        borderColor: colorTokens['border.subtle'],
+        gap: spaceTokens[2],
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        ...fontStyles.ubuntuMono.regular,
+        color: colorTokens['text.primary'],
+        paddingVertical: spaceTokens[2],
     },
     itemsList: {
         flex: 1,

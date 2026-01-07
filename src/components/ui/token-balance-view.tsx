@@ -22,7 +22,14 @@ export const PublicTokenBalanceView = ({ balance }: PublicTokenBalanceViewProps)
         <View style={styles.tokenCard}>
             <View style={styles.tokenInfo}>
                 {balance.token.logo ? (
-                    <Image source={{ uri: balance.token.logo.toString() }} style={styles.tokenLogo} />
+                    <Image
+                        source={{ uri: balance.token.logo.toString() }}
+                        style={{
+                            width: spaceTokens[6],
+                            height: spaceTokens[6],
+                            borderRadius: radiusTokens.sm,
+                        }}
+                    />
                 ) : <IconSymbol name="currency" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
                 <Text style={styles.tokenSymbol}>{balance.token.name ?? balance.token.symbol}</Text>
             </View>
@@ -51,14 +58,21 @@ export const PrivateTokenBalanceView = ({ balance }: PrivateTokenBalanceViewProp
         return balance.formattedFiatPrice();
     }, [balance.fiatPrice]);
     const { colors: colorTokens } = useTheme();
-    
+
     return (
         <View style={styles.tokenCard}>
             <View style={styles.tokenInfo}>
                 {balance.token.logo ? (
-                    <Image source={{ uri: balance.token.logo.toString() }} style={styles.tokenLogo} />
+                    <Image
+                        source={{ uri: balance.token.logo.toString() }}
+                        style={{
+                            width: spaceTokens[6],
+                            height: spaceTokens[6],
+                            borderRadius: radiusTokens.sm,
+                        }}
+                    />
                 ) : <IconSymbol name="currency" size={spaceTokens[6]} color={colorTokens['text.primary']} />}
-                
+
                 <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start', gap: spaceTokens[2] }}>
                     <Text style={styles.tokenSymbol}>{balance.token.name ?? balance.token.symbol}</Text>
                     {balance.isUnlocked && (
@@ -102,11 +116,6 @@ const themedStyleSheet = ThemedStyleSheet.create((colorTokens) => ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spaceTokens[2],
-    },
-    tokenLogo: {
-        width: spaceTokens[6],
-        height: spaceTokens[6],
-        borderRadius: radiusTokens.sm,
     },
     tokenSymbol: {
         fontSize: 18,

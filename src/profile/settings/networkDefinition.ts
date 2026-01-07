@@ -1,6 +1,7 @@
 import { Expose, Transform, Type } from "class-transformer";
 import { NetworkId } from "../misc";
 import { AppError } from "@/types/appError";
+import { availableNetworks } from "@/utils/featureFlags";
 import i18n from "@/utils/i18n";
 
 export default class NetworkDefinition {
@@ -135,12 +136,18 @@ export default class NetworkDefinition {
     }
 
     static default(): NetworkDefinition {
-        return NetworkDefinition.sepolia();
+        return this.wellKnown()[0];
     }
 
     static wellKnown(): NetworkDefinition[] {
-        return [
-            NetworkDefinition.sepolia(),
-        ];
+        return availableNetworks().map(networkId => {
+            if (networkId === "SN_MAIN") {
+                return NetworkDefinition.mainnet();
+            } else if (networkId === "SN_SEPOLIA") {
+                return NetworkDefinition.sepolia();
+            } else {
+                throw new AppError(i18n.t('errors.networkNotConfigured', { networkId }));
+            }
+        });
     }
 }
